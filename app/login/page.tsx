@@ -52,12 +52,6 @@ export default function Login() {
         <button className="bg-green-700 rounded px-4 py-2 text-white mb-2">
           Sign In
         </button>
-        <button
-          formAction="/auth/sign-up"
-          className="border border-gray-700 rounded px-4 py-2 text-black mb-2"
-        >
-          Sign Up
-        </button>
         <Messages />
       </form>
     </div>
