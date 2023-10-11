@@ -3,7 +3,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "gen-types": "supabase gen types typescript --linked > types/database.type.ts"
+
   },
   "dependencies": {
     "@radix-ui/react-tabs": "^1.0.4",
