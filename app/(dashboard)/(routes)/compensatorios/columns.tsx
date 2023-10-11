@@ -1,22 +1,40 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
+import { CompensatorysEntity } from '@/types/collections';
+import { ArrowUpDown, MoreHorizontal } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-
-export type Contacts = {
-	id: string;
-	name: string;
-}
-
-export const columns: ColumnDef<Contacts>[] = [
+export const columns: ColumnDef<CompensatorysEntity>[] = [
   {
-    accessorKey: "id",
-    header: "ID",
+    accessorKey: "event_name",
+    header: "Nombre del Evento",
   },
   {
-    accessorKey: "name",
-    header: "Name",
+    accessorKey: "event_date",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Fecha
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "hours",
+    header: "Horas",
+  },
+  {
+    accessorKey: "approve_request",
+    header: "Estado",
+    cell: ({ row }) => {
+      const estado = row.getValue("approve_request") ? "Aprobado" : "Pendiente"
+
+      return <div className="text-center font-medium">{estado}</div>
+    },
   }
 ]

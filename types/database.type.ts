@@ -16,7 +16,7 @@ export interface Database {
           approved_date: string | null
           created_at: string
           event_date: string | null
-          event_name: string | null
+          event_name: string 
           hours: number | null
           id: string
           user_id: string | null
@@ -27,7 +27,7 @@ export interface Database {
           approved_date?: string | null
           created_at?: string
           event_date?: string | null
-          event_name?: string | null
+          event_name?: string
           hours?: number | null
           id?: string
           user_id?: string | null
@@ -38,7 +38,7 @@ export interface Database {
           approved_date?: string | null
           created_at?: string
           event_date?: string | null
-          event_name?: string | null
+          event_name?: string
           hours?: number | null
           id?: string
           user_id?: string | null

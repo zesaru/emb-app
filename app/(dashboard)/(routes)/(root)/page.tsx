@@ -39,7 +39,7 @@ export default async function Index() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">$45,231.89</div>
+                <div className="text-2xl font-bold">200</div>
                 <p className="text-xs text-muted-foreground">
                   Cantidad de Vacaciones por tomar
                 </p>
@@ -66,7 +66,7 @@ export default async function Index() {
                 </svg>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">+2350</div>
+                <div className="text-2xl font-bold">200</div>
                 <p className="text-xs text-muted-foreground">
                   horas de compensatorios por tomar
                 </p>
@@ -80,7 +80,7 @@ export default async function Index() {
 
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">6</div>
+                <div className="text-2xl font-bold">7</div>
                 <p className="text-xs text-muted-foreground">
                   número de personal administrativo
                 </p>
