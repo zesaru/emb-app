@@ -2,18 +2,19 @@
 
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useEffect, useState } from "react";
-import { type CompensatorysEntity } from "@/types/collections";
+import { type CompensatorysWithUser } from "@/types/collections";
 import { DataTable } from "./data-table"
 import { columns } from "./columns"
 
 const Compensatorios = () => {
   const supabase = createClientComponentClient()
-  const [compensatorys, setCompensatorys] = useState<CompensatorysEntity[]>([])
+  const [compensatorys, setCompensatorys] = useState<CompensatorysWithUser[]>([])
 
   useEffect(() => {
     const getUsers = async () => {
 
-      const { data } = await supabase.from('compensatorys').select('*')
+      const { data, error } = await supabase.from('compensatorys').select('*')
+
       if (data) {
         setCompensatorys(data)
       }
@@ -22,7 +23,7 @@ const Compensatorios = () => {
     getUsers()
   }, [supabase, setCompensatorys])
 
-  console.log(compensatorys)
+
 
   return (
     <div className="flex flex-col">

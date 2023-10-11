@@ -1,11 +1,11 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { CompensatorysEntity } from '@/types/collections';
+import { CompensatorysWithUser } from '@/types/collections';
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export const columns: ColumnDef<CompensatorysEntity>[] = [
+export const columns: ColumnDef<CompensatorysWithUser>[] = [
   {
     accessorKey: "event_name",
     header: "Nombre del Evento",
