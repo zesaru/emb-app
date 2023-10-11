@@ -13,8 +13,8 @@ const routes = [
   },
   {
     icon: Compass,
-    label: "Browse",
-    href: "/search",
+    label: "Compensatorios",
+    href: "/compensatorios",
   },
 ];
 
