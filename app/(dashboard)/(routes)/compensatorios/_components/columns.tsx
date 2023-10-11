@@ -7,6 +7,10 @@ import { Button } from "@/components/ui/button"
 
 export const columns: ColumnDef<CompensatorysWithUser>[] = [
   {
+    accessorKey: "user1.name",
+    header: "Usuario",
+  },
+  {
     accessorKey: "event_name",
     header: "Nombre del Evento",
   },
