@@ -1,6 +1,6 @@
 export const metadata = {
   title: 'EmbApp',
-  description: '',
+  description: 'EmbApp',
 }
 
 export default function RootLayout({
