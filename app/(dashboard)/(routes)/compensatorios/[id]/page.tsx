@@ -28,8 +28,7 @@ export default async function CompensatoriosbyId() {
 
   const compensatorys = await getsCompensatorioswithUserById();
 
-  const sum: SumCompensatorys[] = compensatorys.map((compensatory) => ({
-    event_name: compensatory.event_name,
+  const sum = compensatorys.map((compensatory) => ({
     hours: compensatory.hours ?? 0, // Add null check here
     approve_request: compensatory.approve_request ?? false, // Add null check here'
     compensated_hours: compensatory.compensated_hours ?? 0, // Add null check here
