@@ -1,8 +1,8 @@
-'use server'
-
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { CompensatorysWithUser } from "./../types/collections";
+
+export const dynamic = 'force-dynamic'
 
 const getsCompensatorioswithUser = async():Promise<CompensatorysWithUser[]> => {
     const supabase = createServerComponentClient({

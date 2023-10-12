@@ -1,8 +1,8 @@
-'use server'
-
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { UsersEntity } from "./../types/collections";
+
+export const dynamic = 'force-dynamic'
 
 const getUsers = async():Promise<UsersEntity[]> => {
     const supabase = createServerComponentClient({
