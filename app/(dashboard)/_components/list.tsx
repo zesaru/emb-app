@@ -1,23 +1,7 @@
-"use client";
+import getUsers from "@/actions/getUsers";
 
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { useEffect, useState } from "react";
-import { type UsersEntity } from "@/types/collections";
-const List = () => {
-    const [users, setUsers] = useState<UsersEntity[]>([])
-    const supabase = createClientComponentClient()
-  
-    useEffect(() => {
-      const getUsers = async () => {
-
-        const { data } = await supabase.from('users').select()
-        if (data) {
-          setUsers(data)
-        }
-      }
-  
-      getUsers()
-    }, [supabase, setUsers])
+export default async function List() {
+  const users = await getUsers();
 
   return (
     <div>
@@ -69,4 +53,3 @@ const List = () => {
   );
 };
 
-export default List;

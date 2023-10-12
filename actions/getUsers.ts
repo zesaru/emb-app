@@ -2,16 +2,16 @@
 
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import { CompensatorysWithUser } from "./../types/collections";
+import { UsersEntity } from "./../types/collections";
 
-const getsCompensatorioswithUser = async():Promise<CompensatorysWithUser[]> => {
+const getUsers = async():Promise<UsersEntity[]> => {
     const supabase = createServerComponentClient({
       cookies: cookies
     });
 
     const { data, error } = await supabase
-      .from('compensatorys')
-      .select('*, user1:users!user_id(*), user2:users!approved_by(*)')
+      .from('users')
+      .select('*')
   
     if (error) {
       console.log(error.message);
@@ -20,4 +20,4 @@ const getsCompensatorioswithUser = async():Promise<CompensatorysWithUser[]> => {
     return (data as any) || [];
 }
 
-export default getsCompensatorioswithUser;
+export default getUsers;
