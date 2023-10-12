@@ -11,6 +11,8 @@ interface SumCompensatorys {
   event_name: string;
   hours: number;
   approve_request: boolean;
+  final_approve_request: boolean;
+  compensated_hours: number;
 }
 
 export default async function CompensatoriosbyId() {
@@ -29,7 +31,9 @@ export default async function CompensatoriosbyId() {
   const sum: SumCompensatorys[] = compensatorys.map((compensatory) => ({
     event_name: compensatory.event_name,
     hours: compensatory.hours ?? 0, // Add null check here
-    approve_request: compensatory.approve_request ?? false, // Add null check here
+    approve_request: compensatory.approve_request ?? false, // Add null check here'
+    compensated_hours: compensatory.compensated_hours ?? 0, // Add null check here
+
   }));
 
   const totalHours = sum
@@ -46,13 +50,21 @@ export default async function CompensatoriosbyId() {
     .map((event) => event.hours)
     .reduce((total, hours) => total + hours, 0);
 
+    const totalHoursTaked = sum
+    .map((event) => event.compensated_hours)
+    .reduce((total, compensated_hours) => total + compensated_hours, 0);
+
+    const finla = totalHours - totalHoursTaked;
+
   return (
     <div className="flex flex-col">
       <div>
         <ul>
           <li>Número de Horas compensatorios solicitados {totalHours}</li>
           <li>Número de horas compensatorios aprobados {totalHoursAproved}</li>
-          <li>Número de Compensatorios Pendientes {totalHoursPending}</li>
+          <li>Número de Compensatorios Pendientes de aprobación {totalHoursPending}</li>
+          <li>Número de Compensatorios Tomados {totalHoursTaked}</li>
+          <li>Les resta {finla}</li>
         </ul>
       </div>
       <div className="container mx-auto py-10">

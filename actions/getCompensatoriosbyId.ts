@@ -13,6 +13,8 @@ const getsCompensatorioswithUserById = async():Promise<CompensatorysWithUser[]> 
       .from('compensatorys')
       .select('*, user1:users!user_id(*), user2:users!approved_by(*)')
       .eq('user_id', '6e84c678-1adc-4b7e-95b5-f59938209e03')
+      .order('event_date', { ascending: true })
+
   
     if (error) {
       console.log(error.message);
