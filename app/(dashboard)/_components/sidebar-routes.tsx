@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, Layout } from "lucide-react";
+import { Compass, Layout, SmilePlus  } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { SidebarItem } from "./sidebar-item";
@@ -15,6 +15,11 @@ const routes = [
     icon: Compass,
     label: "Compensatorios",
     href: "/compensatorios",
+  },
+  {
+    icon: SmilePlus,
+    label: "Agregar Compensatorio",
+    href: "/compensatorios/new",
   },
 ];
 
