@@ -7,15 +7,7 @@ import getsCompensatorioswithUserById from "@/actions/getCompensatoriosbyId";
 
 export const dynamic = "force-dynamic";
 
-interface SumCompensatorys {
-  event_name: string;
-  hours: number;
-  approve_request: boolean;
-  final_approve_request: boolean;
-  compensated_hours: number;
-}
-
-export default async function CompensatoriosbyId() {
+export default async function CompensatoriosbyId({ params }: { params: { id: string } } ) {
   const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
@@ -26,7 +18,7 @@ export default async function CompensatoriosbyId() {
     redirect("/login");
   }
 
-  const compensatorys = await getsCompensatorioswithUserById();
+  const compensatorys = await getsCompensatorioswithUserById(params.id);
 
   const sum = compensatorys.map((compensatory) => ({
     hours: compensatory.hours ?? 0, // Add null check here

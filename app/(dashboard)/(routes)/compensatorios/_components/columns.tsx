@@ -2,10 +2,20 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { CompensatorysWithUser } from '@/types/collections';
-import { ArrowUpDown } from "lucide-react"
+import { ArrowUpDown, GanttChartSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import Link from "next/link";
 
 export const columns: ColumnDef<CompensatorysWithUser>[] = [
+  {
+    accessorKey: "user_id",
+    header: "ID",
+    cell: ({ row }) => {
+      const id = row.getValue("user_id")
+
+      return <Link href={`/compensatorios/${id}`} className="text-center font-medium"><GanttChartSquare /></Link>
+    },
+  },
   {
     accessorKey: "user1.name",
     header: "Usuario",
