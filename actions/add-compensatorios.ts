@@ -3,7 +3,6 @@
 import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { revalidatePath } from "next/cache";
-import { redirect } from 'next/navigation';
 
 export const addPost = async (formData: FormData) => {
   const eventName = formData.get("event_name");

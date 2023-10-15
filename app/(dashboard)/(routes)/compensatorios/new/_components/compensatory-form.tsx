@@ -62,8 +62,8 @@ export function AccountForm() {
     data.append("event_date", formData.dob.toISOString());
 
     const response = await addPost(data);
-    console.log('===>>>>>>>>'+response?.error)
-    console.log('===>>>>>>>>'+response?.success)
+    // console.log('===>>>>>>>>'+response?.error)
+    // console.log('===>>>>>>>>'+response?.success)
     
     toast('🦄 Wow so easy!', {
       position: "top-right",
@@ -75,7 +75,6 @@ export function AccountForm() {
       progress: undefined,
       theme: "light",
       });
-      formRef.current?.reset();
   };
 
   return (
