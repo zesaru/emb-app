@@ -1,4 +1,6 @@
 import './globals.css'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const metadata = {
   title: 'Create Next App',
@@ -13,7 +15,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-          {children}
+        <ToastContainer/>
+        {children}
       </body>
     </html>
   )

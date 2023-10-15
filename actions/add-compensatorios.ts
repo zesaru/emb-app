@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { revalidatePath } from "next/cache";
+import { redirect } from 'next/navigation';
 
 export const addPost = async (formData: FormData) => {
   const eventName = formData.get("event_name");
@@ -17,16 +18,29 @@ export const addPost = async (formData: FormData) => {
 
   if (user === null) return;
 
-  console.log(eventDate)
+  try {
+    await supabase
+      .from("compensatorys")
+      .insert({
+        event_name: eventName,
+        hours: hours,
+        event_date: eventDate,
+        user_id: user.id,
+    });
+    
+    revalidatePath(`/compensatorios/new`)
+    return {
+      success: true,
+    }
+    ;
+  } catch (e) {
+    return {
+      error:e,  
+    }
+  }
 
-//   await supabase
-//     .from("compensatorys")
-//     .insert({
-//       event_name: eventName,
-//       hours: hours,
-//       event_date: eventDate,
-//       user_id: user.id,
-//     });
+    
 
-  revalidatePath(`/?content=${formData.toString()}`);
+
+
 };

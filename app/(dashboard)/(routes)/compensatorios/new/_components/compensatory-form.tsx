@@ -6,6 +6,7 @@ import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { useRef } from 'react'
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,19 +29,19 @@ import {
 } from "@/components/ui/popover";
 
 import { es } from "date-fns/locale";
+import { toast } from 'react-toastify';
 
 const accountFormSchema = z.object({
+  dob: z.date({
+    required_error: "A date is required.",
+  }),
   name: z.string().min(4, {
-    message: "Name must be at least 2 characters.",
+    message: "Name must be at least 4 characters.",
   }),
   hours: z.preprocess(
     (a) => parseInt(z.string().parse(a), 10),
     z.number().positive().min(1)
   ),
-
-  dob: z.date({
-    required_error: "A date of birth is required.",
-  }),
 });
 
 type AccountFormValues = z.infer<typeof accountFormSchema>;
@@ -52,6 +53,7 @@ export function AccountForm() {
     resolver: zodResolver(accountFormSchema),
     defaultValues,
   });
+  const formRef = useRef<HTMLFormElement>(null)
 
   const onSubmit = async (formData: AccountFormValues) => {
     const data = new FormData();
@@ -59,12 +61,26 @@ export function AccountForm() {
     data.append("hours", formData.hours.toString());
     data.append("event_date", formData.dob.toISOString());
 
-    await addPost(data);
+    const response = await addPost(data);
+    console.log('===>>>>>>>>'+response?.error)
+    console.log('===>>>>>>>>'+response?.success)
+    
+    toast('🦄 Wow so easy!', {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+      formRef.current?.reset();
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" >
+      <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" >
         <FormField
           control={form.control}
           name="dob"
