@@ -10,6 +10,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import List from "../../_components/list";
+import getUsersById from "@/actions/getUsersById";
+//import useUserStore  from "@/store/zustand";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +26,11 @@ export default async function Index() {
   if (session === null) {
     redirect("/login");
   }
+
+  
+  //const fulluser = await getUsersById(session.user.id);
+  
+  //const setUserData = useUserStore((state) => state.setUserData);
 
   return (
     <div className="w-full flex flex-col items-center">

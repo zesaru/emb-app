@@ -13,4 +13,4 @@ export const compensatoryFormSchema = z.object({
     ),
   });
   
-type compensatoryFormSchema = z.infer<typeof compensatoryFormSchema>;
+export type TCompensatoryFormSchema = z.infer<typeof compensatoryFormSchema>;

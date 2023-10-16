@@ -4,7 +4,7 @@ import { UsersEntity } from "./../types/collections";
 
 export const dynamic = 'force-dynamic'
 
-const getUsersById = async():Promise<UsersEntity[]> => {
+const getUsersById = async(id:string):Promise<UsersEntity[]> => {
     const supabase = createServerComponentClient({
       cookies: cookies
     });
@@ -12,7 +12,7 @@ const getUsersById = async():Promise<UsersEntity[]> => {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('id', '6e84c678-1adc-4b7e-95b5-f59938209e03')
+      .eq('id', id)
   
     if (error) {
       console.log(error.message);

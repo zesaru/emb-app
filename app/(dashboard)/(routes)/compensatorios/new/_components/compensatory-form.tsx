@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { es } from "date-fns/locale";
+import { de, es } from "date-fns/locale";
 import { toast } from 'react-toastify';
 
 const accountFormSchema = z.object({
@@ -53,7 +53,6 @@ export function AccountForm() {
     resolver: zodResolver(accountFormSchema),
     defaultValues,
   });
-  const formRef = useRef<HTMLFormElement>(null)
 
   const onSubmit = async (formData: AccountFormValues) => {
     const data = new FormData();
@@ -61,11 +60,11 @@ export function AccountForm() {
     data.append("hours", formData.hours.toString());
     data.append("event_date", formData.dob.toISOString());
 
+
     const response = await addPost(data);
-    // console.log('===>>>>>>>>'+response?.error)
-    // console.log('===>>>>>>>>'+response?.success)
-    
-    toast('🦄 Wow so easy!', {
+
+    if (response?.success) {
+    toast('🦄 Su registro ha sido ingresado!', {
       position: "top-right",
       autoClose: 3000,
       hideProgressBar: false,
@@ -75,11 +74,16 @@ export function AccountForm() {
       progress: undefined,
       theme: "light",
       });
+      form.reset({ hours: 0, name: "", dob: new Date() });
+    }
+      
+
+
   };
 
   return (
     <Form {...form}>
-      <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" >
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8" >
         <FormField
           control={form.control}
           name="dob"
@@ -90,7 +94,6 @@ export function AccountForm() {
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
-                      variant={"outline"}
                       className={cn(
                         "w-[240px] pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
