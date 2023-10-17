@@ -2,10 +2,8 @@ import { create } from 'zustand'
 
 type UserStore = {
     name: string,
-    email: string,
 
 }
-export const useUserStore = create<UserStore>(() => ({
+export const useUserStore = create<UserStore>((set) => ({
     name: '',
-    email: '',
 }));
