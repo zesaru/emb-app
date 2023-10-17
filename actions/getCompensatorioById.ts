@@ -11,7 +11,7 @@ const getsCompensatorioById = async(id:string):Promise<CompensatorysWithUser[]> 
 
     const { data, error } = await supabase
       .from('compensatorys')
-      .select('*, user1:users!user_id(*), user2:users!approved_by(*)')
+      .select('*, user1:users!user_id(*)')
       .eq('id', id)
   
     if (error) {
