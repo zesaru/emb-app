@@ -1,9 +1,14 @@
 import { create } from 'zustand'
 
-type UserStore = {
+type State = {
     name: string,
-
 }
-export const useUserStore = create<UserStore>((set) => ({
+
+type Action = {
+    updateName: (name: State['name']) => void,
+}
+
+export const useUserStore =create<State & Action>((set) => ({
     name: '',
+    updateName: (name) => set(() => ({ name: name })),
 }));

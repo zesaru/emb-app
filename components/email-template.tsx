@@ -1,13 +1,18 @@
+'use client'
+
 import * as React from 'react';
 
 interface EmailTemplateProps {
-  firstName: string;
+  hours: number;
+  event_name: string;
+  event_date: string;
 }
 
+
 export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
-  firstName,
+  hours,event_name,event_date
 }) => (
   <div>
-    <h1>Welcome, {firstName}!</h1>
+    <h1>La presente es para comunicarle que el usuario, {hours}! ha solicitado aprobar la siguiente solicitud <a href='https:emb-app/compensatorios'></a></h1>
   </div>
 );

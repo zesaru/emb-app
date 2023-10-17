@@ -10,8 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import List from "../../_components/list";
-import getUsersById from "@/actions/getUsersById";
-import { useUserStore }  from "@/store/";
+import { useForm } from 'react-hook-form';
 
 export const dynamic = "force-dynamic";
 
@@ -26,11 +25,7 @@ export default async function Index() {
   if (session === null) {
     redirect("/login");
   }
-
   
-  const User = await getUsersById(session.user.id);
-  console.log(User[0].name);
-  //useUserStore.setState({userData: userData.data[0]});
   return (
     <div className="w-full flex flex-col items-center">
 

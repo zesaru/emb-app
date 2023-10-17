@@ -4,19 +4,23 @@ import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { revalidatePath } from "next/cache";
 import { Resend } from 'resend';
+import { EmailTemplate } from "@/components/email-template";
 
-const resendInstance = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const addPost = async (formData: FormData) => {
   const eventName = formData.get("event_name");
   const hours = formData.get("hours");
   const eventDate = formData.get("event_date");
+ 
   if (formData === null) return;
 
   const supabase = createServerActionClient({ cookies });
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  console.log(user?.email);
 
   if (user === null) return;
 
@@ -29,19 +33,22 @@ export const addPost = async (formData: FormData) => {
         event_date: eventDate,
         user_id: user.id,
       }
-    )
+    ).select('*')
     ;
 
-    console.log(result)
-    
-    if (result.statusText === 'Created') {
-      //const { name, email, message } = result.data
+    const email =user?.email
+
+    if (result.statusText === 'Created' && result.data) {
+
+      const { hours, event_name, event_date } = result.data[0];
+
       try {
-        const data = await resendInstance.emails.send({
-          from: "Acme <onboarding@resend.dev>",
-          to: 'webdev@embassyofperuinjapan.org',
-          subject: 'Solicitud de Comepensatorio del usuario(a)' ,
-          text: 'test',
+        const data = await resend.emails.send({
+          from: "Team <team@peruinjapan.com>",
+          to: `${email}`,
+          subject: `Solicitud de Compensatorio del usuario(a) ${email}` ,
+          react: EmailTemplate({ hours, event_name, event_date}),
+          text: '',
         })
         return { success: true, data }
       } catch (error) {
