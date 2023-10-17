@@ -1,5 +1,6 @@
 'use client'
-
+import { Button } from '@react-email/button';
+import { Html } from '@react-email/html';
 import * as React from 'react';
 
 interface EmailTemplateProps {
@@ -12,7 +13,9 @@ interface EmailTemplateProps {
 export const EmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
   hours,event_name,event_date
 }) => (
-  <div>
-    <h1>La presente es para comunicarle que el usuario, {hours}! ha solicitado aprobar la siguiente solicitud <a href='https:emb-app/compensatorios'></a></h1>
-  </div>
+  <Html lang="en" dir="ltr">
+  <Button href="https://example.com" style={{ color: '#61dafb' }}>
+    Click me
+  </Button>
+</Html>
 );
