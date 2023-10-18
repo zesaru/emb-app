@@ -11,6 +11,7 @@ import { redirect } from "next/navigation";
 import CTable from "../_components/compensatory-table";
 import getUsersById from "@/actions/getUsersById";
 import getsCompensatorioById from "@/actions/getCompensatorioById";
+import BtnAprobar from "../_components/btnaprobar";
 
 export default async function Approvec({ params }: { params: { id: string } }) {
   const supabase = createServerComponentClient<Database>({ cookies });
@@ -23,10 +24,10 @@ export default async function Approvec({ params }: { params: { id: string } }) {
     redirect("/login");
   }
 
-  const User = await getUsersById(session?.user?.id);
+  //const User = await getUsersById(session?.user?.id);
 
   const idcompensatory = params.id;
-
+  const userid = session?.user?.id;
   const compensatory = await getsCompensatorioById(idcompensatory);
 
   return (
@@ -39,8 +40,11 @@ export default async function Approvec({ params }: { params: { id: string } }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <CTable compensatory={compensatory} user={User} />
+          <CTable compensatory={compensatory} />
         </CardContent>
+        <div className="flex justify-start px-8">
+          <BtnAprobar idcompensatorio={idcompensatory} idusuario={userid}/>
+        </div>
       </Card>
     </div>
   );

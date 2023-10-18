@@ -18,8 +18,13 @@ const routes = [
   },
   {
     icon: SmilePlus,
-    label: "Agregar Compensatorio",
+    label: "Registrar Compensatorio",
     href: "/compensatorios/new",
+  },
+  {
+    icon: SmilePlus,
+    label: "Solicitar Compensatorio",
+    href: "/compensatorios/request",
   },
 ];
 

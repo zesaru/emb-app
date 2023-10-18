@@ -1,3 +1,5 @@
+'use client';
+
 import {
   Table,
   TableBody,
@@ -8,11 +10,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-
-export default async function CTable(compensatory:any) {
-
-
-  console.log(compensatory)
+export default async function CTable({ compensatory }: { compensatory: any }) {
+  const compensatorio = compensatory[0];
+  const name = compensatorio.user1.name;
   return (
     <>
       <Table>
@@ -28,19 +28,16 @@ export default async function CTable(compensatory:any) {
         </TableHeader>
         <TableBody>
           <TableRow>
-            <TableCell className="font-medium">{compensatory.id}</TableCell>
-            <TableCell></TableCell>
-            <TableCell>{compensatory.event_name}</TableCell>
+            <TableCell className="font-medium">{compensatorio.id}</TableCell>
+            <TableCell>{compensatorio.user1.name}</TableCell>
+            <TableCell>{compensatorio.event_name}</TableCell>
             <TableCell className="text-center">
-              {compensatory.event_date}
+              {compensatorio.event_date}
             </TableCell>
-            <TableCell className="text-center">
-              {compensatory.hours}
-            </TableCell>
+            <TableCell className="text-center">{compensatorio.hours}</TableCell>
           </TableRow>
         </TableBody>
       </Table>
-      
     </>
   );
 }

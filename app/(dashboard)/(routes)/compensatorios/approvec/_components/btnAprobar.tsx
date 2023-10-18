@@ -1,21 +1,20 @@
-import React, { FunctionComponent } from "react";
+import UpdateCompensatorio from "@/actions/updateCompensatorio";
+import React from "react";
 
-interface Props {
-  children: React.ReactNode;
-  onClick?: () => void;
-}
+export default function BtnAprobar(compensatorio:any ) {
+  async function create(formData: FormData) {
+    "use server";
 
-const Button: FunctionComponent<Props> = ({ children, onClick }) => {
+    // mutate data
+    const aprobar = await UpdateCompensatorio(compensatorio.idcompensatorio, compensatorio.idusuario);
+    // revalidate cache
+  }
   return (
-    <button
-      onClick={() => {
-        onClick && onClick();
-      }}
-      className="px-3 py-2 bg-blue-400 rounded-lg text-white"
-    >
-      {children}
-    </button>
+    <form action={create}>
+      <button type="submit" className="btn btn-primary">
+        Aprobar
+      </button>
+    </form>
   );
 };
 
-export default Button;
