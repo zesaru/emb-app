@@ -1,9 +1,22 @@
-import React from 'react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-const Page = () => {
+export default function RequestPage() {
   return (
-    <div>Solicitar día de compensatorio</div>
-  )
+    <div className="space-y-6 p-5">
+      <Card>
+        <CardHeader>
+          <CardTitle>Compensatorios</CardTitle>
+          <CardDescription>SOLICITUD HORAS DE COMPENSATORIOS</CardDescription>
+        </CardHeader>
+        <CardContent>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
-
-export default Page

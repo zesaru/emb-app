@@ -27,7 +27,7 @@ export default async function UpdateCompensatorio(
           to: `${email}`,
           subject: `Aprobación de Compensatorio del usuario(a) ${email}` ,
           text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú 
-          en Japón para informarle que el usuario(a) ${email} ha aprobado su solicitud de compensatorio.`,
+          en Japón para informarle se ha aprobado su solicitud de compensatorio.`,
         })
         return { success: true, data }
       } catch (error) {
