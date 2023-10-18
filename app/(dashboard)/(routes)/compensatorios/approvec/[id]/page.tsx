@@ -9,9 +9,8 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import CTable from "../_components/compensatory-table";
-import getUsersById from "@/actions/getUsersById";
 import getsCompensatorioById from "@/actions/getCompensatorioById";
-import BtnAprobar from "../_components/btnaprobar";
+import BtnAprobar from "../_components/btnAprobar";
 
 export default async function Approvec({ params }: { params: { id: string } }) {
   const supabase = createServerComponentClient<Database>({ cookies });
@@ -24,10 +23,7 @@ export default async function Approvec({ params }: { params: { id: string } }) {
     redirect("/login");
   }
 
-  //const User = await getUsersById(session?.user?.id);
-
   const idcompensatory = params.id;
-  const userid = session?.user?.id;
   const compensatory = await getsCompensatorioById(idcompensatory);
 
   return (
@@ -43,7 +39,7 @@ export default async function Approvec({ params }: { params: { id: string } }) {
           <CTable compensatory={compensatory} />
         </CardContent>
         <div className="flex justify-start px-8">
-          <BtnAprobar idcompensatorio={idcompensatory} idusuario={userid}/>
+          <BtnAprobar compensatory={compensatory}/>
         </div>
       </Card>
     </div>

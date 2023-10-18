@@ -12,7 +12,6 @@ import {
 
 export default async function CTable({ compensatory }: { compensatory: any }) {
   const compensatorio = compensatory[0];
-  const name = compensatorio.user1.name;
   return (
     <>
       <Table>

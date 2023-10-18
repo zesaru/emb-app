@@ -20,8 +20,11 @@ export interface Database {
           created_at: string
           event_date: string | null
           event_name: string | null
+          final_approve_request: boolean | null
           hours: number | null
           id: string
+          t_time_finish: string | null
+          t_time_start: string | null
           user_id: string | null
         }
         Insert: {
@@ -34,8 +37,11 @@ export interface Database {
           created_at?: string
           event_date?: string | null
           event_name?: string | null
+          final_approve_request?: boolean | null
           hours?: number | null
           id?: string
+          t_time_finish?: string | null
+          t_time_start?: string | null
           user_id?: string | null
         }
         Update: {
@@ -48,8 +54,11 @@ export interface Database {
           created_at?: string
           event_date?: string | null
           event_name?: string | null
+          final_approve_request?: boolean | null
           hours?: number | null
           id?: string
+          t_time_finish?: string | null
+          t_time_start?: string | null
           user_id?: string | null
         }
         Relationships: [

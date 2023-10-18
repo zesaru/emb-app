@@ -1,14 +1,15 @@
 import UpdateCompensatorio from "@/actions/updateCompensatorio";
 import React from "react";
+import { toast } from "react-toastify";
 
-export default function BtnAprobar(compensatorio:any ) {
+export default function BtnAprobar({ compensatory }: { compensatory: any } ) {
   async function create(formData: FormData) {
     "use server";
 
     // mutate data
-    const aprobar = await UpdateCompensatorio(compensatorio.idcompensatorio, compensatorio.idusuario);
-    // revalidate cache
-  }
+    const response = await UpdateCompensatorio(compensatory);
+
+    }
   return (
     <form action={create}>
       <button type="submit" className="btn btn-primary">

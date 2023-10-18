@@ -1,40 +1,53 @@
 import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { Resend } from "resend";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export default async function UpdateCompensatorio(
-  id: string,
-  approved_by: string
-) {
+export default async function UpdateCompensatorio(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const approveby = session?.user?.id;
+  const compensatorio = compensatory[0];
+
   try {
-    const AprobarCompensatorio = await supabase
+    await supabase
       .from("compensatorys")
       .update({
         approve_request: true,
         approved_date: new Date(),
-        approved_by: approved_by,
+        approved_by: approveby,
       })
-      .eq("id", id)
+      .eq("id", compensatorio.id)
       .select(`*`);
 
-      const email = 'cmurillo@embperujapan.org'
-      try {
-        const data = await resend.emails.send({
-          from: "Team <team@peruinjapan.com>",
-          to: `${email}`,
-          subject: `Aprobación de Compensatorio del usuario(a) ${email}` ,
-          text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú 
-          en Japón para informarle se ha aprobado su solicitud de compensatorio.`,
-        })
-        return { success: true, data }
-      } catch (error) {
-        console.log(error);
-        return { success: false, error }
-        
-      }
+    await supabase
+      .from("users")
+      .update({
+        num_compensatorys:
+          compensatorio.user1.num_compensatorys + compensatorio.hours,
+      })
+      .eq("id", compensatorio.user1.id)
+      .select(`*`);
+
+    try {
+      const data = await resend.emails.send({
+        from: "Team <team@peruinjapan.com>",
+        to: `${ compensatorio.user1.email}`,
+        subject: `Aprobación de Compensatorio del usuario(a) ${ compensatorio.user1.email}`,
+        text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón para informarle se ha aprobado su solicitud de compensatorio.`,
+      });
+
+      revalidatePath(`/compensatorios/approvec/${compensatorio.id}`);
+    } catch (error) {
+      console.log(error);
+      return { success: false, error };
+    }
   } catch (error) {
     console.log(error);
   }

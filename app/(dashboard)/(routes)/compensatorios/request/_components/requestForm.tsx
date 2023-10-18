@@ -1,6 +1,5 @@
 "use client";
 
-import { addPost } from "@/actions/add-compensatorios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
@@ -27,53 +26,63 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { de, es } from "date-fns/locale";
 import { toast } from "react-toastify";
+import UpdateCompensatorioResquest from "@/actions/updateCompensatorioRequest";
 
-const accountFormSchema = z.object({
+const requestFormSchema = z.object({
   dob: z.date({
     required_error: "A date is required.",
-  }),
-  name: z.string().min(4, {
-    message: "Name must be at least 4 characters.",
   }),
   hours: z.preprocess(
     (a) => parseInt(z.string().parse(a), 10),
     z.number().positive().min(1)
   ),
+  time_start: z.string(
+    {
+        required_error: 'Hora de inicio no valida'
+    }
+  ),
+  time_finish: z.string(
+    {
+        required_error: 'Hora de finalización no valida'
+    }
+  )
+  
 });
 
-type AccountFormValues = z.infer<typeof accountFormSchema>;
+type RequestFormValues = z.infer<typeof requestFormSchema>;
 
-const defaultValues: Partial<AccountFormValues> = {};
+const defaultValues: Partial<RequestFormValues> = {};
 
-export function AccountForm() {
-  const form = useForm<AccountFormValues>({
-    resolver: zodResolver(accountFormSchema),
+export default function RequestForm() {
+  const form = useForm<RequestFormValues>({
+    resolver: zodResolver(requestFormSchema),
     defaultValues,
   });
 
-  const onSubmit = async (formData: AccountFormValues) => {
+  const onSubmit = async (formData: RequestFormValues) => {
     const data = new FormData();
-    data.append("event_name", formData.name);
-    data.append("hours", formData.hours.toString());
-    data.append("event_date", formData.dob.toISOString());
+    // data.append("event_date", formData.dob.toISOString());
+    // data.append("hours", formData.hours.toString());
+    // data.append("time_start", formData.time_start.toString());
+    // data.append("time_finish", formData.time_finish.toString());
+    console.log(formData);
+    //const response = await UpdateCompensatorioResquest(data);
 
-    const response = await addPost(data);
-
-    if (response?.success) {
-      toast("🦄 Su registro ha sido ingresado!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      form.reset({ hours: 0, name: "", dob: new Date() });
-    }
+    // if (response?.success) {
+    //   toast("🦄 Su registro ha sido ingresado!", {
+    //     position: "top-right",
+    //     autoClose: 3000,
+    //     hideProgressBar: false,
+    //     closeOnClick: true,
+    //     pauseOnHover: true,
+    //     draggable: true,
+    //     progress: undefined,
+    //     theme: "light",
+    //   });
+    //   form.reset({ hours: 0, name: "", dob: new Date() });
+    // }
+    //console.log(response);
   };
 
   return (
@@ -84,7 +93,7 @@ export function AccountForm() {
           name="dob"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Fecha del evento</FormLabel>
+              <FormLabel>Fecha</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -123,12 +132,12 @@ export function AccountForm() {
 
         <FormField
           control={form.control}
-          name="name"
+          name="hours"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nombre del evento</FormLabel>
+              <FormLabel>Número de horas</FormLabel>
               <FormControl>
-                <Input placeholder="ej.... Visita de la Canciller" {...field} />
+                <Input  placeholder="ej.... 8" {...field} />
               </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
@@ -138,12 +147,27 @@ export function AccountForm() {
 
         <FormField
           control={form.control}
-          name="hours"
+          name="time_start"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Número de horas</FormLabel>
               <FormControl>
-                <Input placeholder="ej.... 8" {...field} />
+                <Input  type='time' placeholder="ej.... 8" {...field} />
+              </FormControl>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="time_finish"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Número de horas</FormLabel>
+              <FormControl>
+                <Input  type='time' placeholder="ej.... 8" {...field} />
               </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
