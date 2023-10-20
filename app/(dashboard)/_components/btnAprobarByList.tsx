@@ -1,12 +1,11 @@
-import UpdateCompensatorio from "@/actions/updateCompensatorio";
 import React from "react";
 
-export default function BtnAprobar({ compensatory }: { compensatory: any } ) {
+export default function BtnAprobar(compensatory: any) {
   async function create(formData: FormData) {
-    "use server";
-
+    //"use server";
+    console.log(compensatory)
     // mutate data
-    const response = await UpdateCompensatorio(compensatory);
+    //const response = await UpdateCompensatorio(compensatory);
 
     }
   return (
@@ -17,4 +16,3 @@ export default function BtnAprobar({ compensatory }: { compensatory: any } ) {
     </form>
   );
 };
-

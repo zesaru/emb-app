@@ -108,7 +108,12 @@ export default async function Index() {
         </TabsContent>
       </Tabs>
       
-      <DataTable columns={columns} data={compensatorysnoapproved} />
+      <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
+        <div className="flex items-center justify-between">
+            <h2 className="text-m font-bold tracking-tight">Solicitud de registro por aprobar</h2>
+        </div>
+        <DataTable columns={columns} data={compensatorysnoapproved} />
+      </div>
     </div>
   );
 }
