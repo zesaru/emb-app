@@ -39,7 +39,7 @@ export default async function UpdateCompensatorio(compensatory: any) {
       const data = await resend.emails.send({
         from: "Team <team@peruinjapan.com>",
         to: `${ compensatorio.user1.email}`,
-        subject: `Aprobación de Compensatorio del usuario(a) ${ compensatorio.user1.email}`,
+        subject: `Solicitud de horas por compensatorio  ${ compensatorio.user1.email}`,
         text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón para informarle se ha aprobado su solicitud de compensatorio.`,
       });
 

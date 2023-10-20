@@ -9,7 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import List from "../../_components/list";
+
+import { DataTable } from '../../_components/data-table'
+import { columns } from "../../_components/columns";
+import getsCompensatoriosNoApproved from "@/actions/getCompensatoriosNoApproved";
+import GetNotApproved from "@/actions/getNotApproved";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +28,11 @@ export default async function Index() {
   if (session === null) {
     redirect("/login");
   }
+  const compensatorysnoapproved = await getsCompensatoriosNoApproved();
+  // not approved compensatorys
+  const notApproved = await GetNotApproved();
+  console.log(compensatorysnoapproved);
+
   
   return (
     <div className="w-full flex flex-col items-center">
@@ -34,61 +43,48 @@ export default async function Index() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Vacaciones
+                  Registro de compensatorios
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">200</div>
+                <div className="text-2xl font-bold">{notApproved[0].unapproved_count}</div>
                 <p className="text-xs text-muted-foreground">
-                  Cantidad de Vacaciones por tomar
+                  Cantidad de solicitudes por aprobar
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Compensatorios
+                  Horas de ausencias por aprobar
                 </CardTitle>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-4 w-4 text-muted-foreground"
-                >
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
+
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">200</div>
+                <div className="text-2xl font-bold">{notApproved[0].final_approve_request_count}</div>
                 <p className="text-xs text-muted-foreground">
-                  horas de compensatorios por tomar
+                  Cantidad de solicitudes por aprobar
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Admnistrativos
+                  Vacaciones 
                 </CardTitle>
 
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">7</div>
                 <p className="text-xs text-muted-foreground">
-                  número de personal administrativo
+                  Solicitidudes de vacaciones por aprobar
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Ausencias justificadas
+                  Tardanzas 
                 </CardTitle>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -111,7 +107,8 @@ export default async function Index() {
           </div>
         </TabsContent>
       </Tabs>
-      <List/>
+      
+      <DataTable columns={columns} data={compensatorysnoapproved} />
     </div>
   );
 }

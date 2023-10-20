@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/popover";
 
 import { toast } from "react-toastify";
-import UpdateCompensatorioResquest from "@/actions/updateCompensatorioRequest";
+import UpdateCompensatorioResquest from "@/actions/add-compensatorio-request";
 
 const requestFormSchema = z.object({
   dob: z.date({
@@ -37,17 +37,12 @@ const requestFormSchema = z.object({
     (a) => parseInt(z.string().parse(a), 10),
     z.number().positive().min(1)
   ),
-  time_start: z.string(
-    {
-        required_error: 'Hora de inicio no valida'
-    }
-  ),
-  time_finish: z.string(
-    {
-        required_error: 'Hora de finalización no valida'
-    }
-  )
-  
+  time_start: z.string({
+    required_error: "Hora de inicio no valida",
+  }),
+  time_finish: z.string({
+    required_error: "Hora de finalización no valida",
+  }),
 });
 
 type RequestFormValues = z.infer<typeof requestFormSchema>;
@@ -61,28 +56,27 @@ export default function RequestForm() {
   });
 
   const onSubmit = async (formData: RequestFormValues) => {
-    const data = new FormData();
-    // data.append("event_date", formData.dob.toISOString());
-    // data.append("hours", formData.hours.toString());
-    // data.append("time_start", formData.time_start.toString());
-    // data.append("time_finish", formData.time_finish.toString());
     console.log(formData);
-    //const response = await UpdateCompensatorioResquest(data);
+    const response = await UpdateCompensatorioResquest(formData);
 
-    // if (response?.success) {
-    //   toast("🦄 Su registro ha sido ingresado!", {
-    //     position: "top-right",
-    //     autoClose: 3000,
-    //     hideProgressBar: false,
-    //     closeOnClick: true,
-    //     pauseOnHover: true,
-    //     draggable: true,
-    //     progress: undefined,
-    //     theme: "light",
-    //   });
-    //   form.reset({ hours: 0, name: "", dob: new Date() });
-    // }
-    //console.log(response);
+    if (response?.success) {
+      toast("🦄 Su solicitud ha sido registrada", {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+      form.reset({
+        hours: 0,
+        time_start: "",
+        time_finish: "",
+        dob: new Date(),
+      });
+    }
   };
 
   return (
@@ -137,7 +131,7 @@ export default function RequestForm() {
             <FormItem>
               <FormLabel>Número de horas</FormLabel>
               <FormControl>
-                <Input  placeholder="ej.... 8" {...field} />
+                <Input placeholder="ej.... 8" {...field} />
               </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
@@ -152,7 +146,7 @@ export default function RequestForm() {
             <FormItem>
               <FormLabel>Número de horas</FormLabel>
               <FormControl>
-                <Input  type='time' placeholder="ej.... 8" {...field} />
+                <Input type="time" placeholder="ej.... 8" {...field} />
               </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
@@ -167,7 +161,7 @@ export default function RequestForm() {
             <FormItem>
               <FormLabel>Número de horas</FormLabel>
               <FormControl>
-                <Input  type='time' placeholder="ej.... 8" {...field} />
+                <Input type="time" placeholder="ej.... 8" {...field} />
               </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
