@@ -14,7 +14,6 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
     data: { session },
   } = await supabase.auth.getSession();
   const useridrequest = session?.user?.id;
-  console.log(compensatory)
   try {
     const result = await supabase
       .from("compensatorys")
@@ -27,7 +26,6 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
       })
       .select(`*`);
 
-    console.log(result)
 
     try {
       const data = await resend.emails.send({

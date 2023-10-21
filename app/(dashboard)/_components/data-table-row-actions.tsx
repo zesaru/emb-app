@@ -1,7 +1,8 @@
 "use client"
 
 import { Row } from "@tanstack/react-table"
-import BtnAprobar from "./btnAprobarByList"
+import { useTransition } from "react";
+import updateApproveRegister from "@/actions/updateApproveRegister";
 
 
 interface DataTableRowActionsProps<TData> {
@@ -11,10 +12,19 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
     row
 }: DataTableRowActionsProps<TData>) {
-    
+  const [isPending, startTransition] = useTransition();
+
+  const handleClick = () => {
+    startTransition(async () => {
+      const response = await updateApproveRegister(row.original);
+      console.log(response)
+    });
+  }
+  
+
   return (
     <div className="flex flex-row space-x-2">
-      <BtnAprobar compensatory={row.original}/>
+      <button onClick={handleClick}>Aprobar</button>
     </div>
   )
 }

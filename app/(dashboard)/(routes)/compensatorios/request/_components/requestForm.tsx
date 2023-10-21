@@ -56,7 +56,6 @@ export default function RequestForm() {
   });
 
   const onSubmit = async (formData: RequestFormValues) => {
-    console.log(formData);
     const response = await UpdateCompensatorioResquest(formData);
 
     if (response?.success) {

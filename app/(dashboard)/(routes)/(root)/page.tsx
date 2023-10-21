@@ -31,7 +31,6 @@ export default async function Index() {
   const compensatorysnoapproved = await getsCompensatoriosNoApproved();
   // not approved compensatorys
   const notApproved = await GetNotApproved();
-  console.log(compensatorysnoapproved);
 
   
   return (

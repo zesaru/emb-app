@@ -18,7 +18,6 @@ export default async function CompensatoriosbyId({ params }: { params: { id: str
     redirect("/login");
   }
 
-  console.log(params.id);
 
   const compensatorys = await getsCompensatorioswithUserById(params.id);
 
