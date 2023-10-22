@@ -18,7 +18,7 @@ export function DataTableRowActions<TData>({
   const handleClick = () => {
     startTransition(async () => {
       const response = await updateApproveRegisterHour(row.original);
-      console.log(response);
+            
       if (response?.success) {
         toast("🦄 Ha sido aprobado el descanso!", {
           position: "top-center",

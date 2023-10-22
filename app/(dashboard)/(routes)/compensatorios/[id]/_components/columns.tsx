@@ -23,9 +23,7 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
     header:"Horas compensadas",
     cell: ({ row }) => {
       const hours:number = row.getValue("compensated_hours") 
-      return hours > 0 ? <div className="font-medium">- {hours}</div> : <div className="font-medium"></div>
-      
-      
+      return hours > 0 ? <div className="font-medium">- {hours}</div> : <div className="font-medium "></div>
     }
   }
 ]
