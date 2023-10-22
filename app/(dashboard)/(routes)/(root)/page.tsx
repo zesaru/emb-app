@@ -12,8 +12,12 @@ import {
 
 import { DataTable } from '../../_components/data-table'
 import { columns } from "../../_components/columns";
+import { DataTableHour } from '../../_components/data-table-hour'
+import { columnsHour } from '../../_components/columns-hour';
+
 import getsCompensatoriosNoApproved from "@/actions/getCompensatoriosNoApproved";
 import GetNotApproved from "@/actions/getNotApproved";
+import getCompensatoriosHourNoapproved from "@/actions/getCompensatoriosHourNoapproved";
 
 export const dynamic = "force-dynamic";
 
@@ -29,13 +33,12 @@ export default async function Index() {
     redirect("/login");
   }
   const compensatorysnoapproved = await getsCompensatoriosNoApproved();
-  // not approved compensatorys
-  const notApproved = await GetNotApproved();
+  const compensatorysHournoapproved = await getCompensatoriosHourNoapproved();
 
+  const notApproved = await GetNotApproved();
   
   return (
     <div className="w-full flex flex-col items-center">
-
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -106,13 +109,27 @@ export default async function Index() {
           </div>
         </TabsContent>
       </Tabs>
-      
       <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
         <div className="flex items-center justify-between">
-            <h2 className="text-m font-bold tracking-tight">Solicitud de registro por aprobar</h2>
+            <h2 className="text-m font-bold tracking-tight">Aprobar registros de compensatorios</h2>
+        </div>
+        <DataTable columns={columns} data={compensatorysnoapproved} />
+      </div>
+
+      <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
+        <div className="flex items-center justify-between">
+            <h2 className="text-m font-bold tracking-tight">Aprobar horas de descanso por compensatorios</h2>
+        </div>
+        <DataTableHour columns={columnsHour} data={compensatorysHournoapproved} />
+      </div>
+
+      <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
+        <div className="flex items-center justify-between">
+            <h2 className="text-m font-bold tracking-tight">Vacaciones</h2>
         </div>
         <DataTable columns={columns} data={compensatorysnoapproved} />
       </div>
     </div>
+
   );
 }

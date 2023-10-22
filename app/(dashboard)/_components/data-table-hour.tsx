@@ -31,7 +31,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[]
 }
 
-export function DataTable<TData, TValue>({
+export function DataTableHour<TData, TValue>({
   columns,
   data,
   
