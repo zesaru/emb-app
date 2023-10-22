@@ -42,8 +42,7 @@ export const addPost = async (formData: FormData) => {
           from: "Team <team@peruinjapan.com>",
           to: `${email}`,
           subject: `Solicitud de Compensatorio del usuario(a) ${email}` ,
-          text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú 
-          en Japón ingrese al siguiente enlace para aprobar las solicitudes: https://emb-app.vercel.app/compensatorios/approvec/${id}`,
+          text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón ingrese al siguiente enlace para aprobar las solicitudes: https://emb-app.vercel.app/compensatorios/`,
         })
         return { success: true, data }
       } catch (error) {
