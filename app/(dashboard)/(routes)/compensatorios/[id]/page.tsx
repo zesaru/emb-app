@@ -62,7 +62,7 @@ export default async function CompensatoriosbyId(
                 </div>
                 <div className="grow">
                   <h3 className="text-xl text-gray-800">{totalHours}</h3>
-                  <p className="text-muted mb-0  text-gray-700">Solicitados</p>
+                  <p className="mb-0  text-gray-800">Solicitados</p>
                 </div>
               </div>
             </div>
@@ -76,7 +76,7 @@ export default async function CompensatoriosbyId(
                 </div>
                 <div className="flex-grow-1">
                   <h3 className="text-xl text-gray-800">{totalHoursAproved}</h3>
-                  <p className="text-muted mb-0  text-gray-700">Aprobados</p>
+                  <p className="mb-0  text-gray-800">Aprobados</p>
                 </div>
               </div>
             </div>

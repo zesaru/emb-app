@@ -14,10 +14,13 @@ import { DataTable } from '../../_components/data-table'
 import { columns } from "../../_components/columns";
 import { DataTableHour } from '../../_components/data-table-hour'
 import { columnsHour } from '../../_components/columns-hour';
+import { DataTableVacations } from '../../_components/data-table-vacaciones'
+import { columnVacations } from '../../_components/columms-vacations';
 
 import getsCompensatoriosNoApproved from "@/actions/getCompensatoriosNoApproved";
 import GetNotApproved from "@/actions/getNotApproved";
 import getCompensatoriosHourNoapproved from "@/actions/getCompensatoriosHourNoapproved";
+import getVacationsNoapproved from "@/actions/getVacationsNoApproved";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +37,7 @@ export default async function Index() {
   }
   const compensatorysnoapproved = await getsCompensatoriosNoApproved();
   const compensatorysHournoapproved = await getCompensatoriosHourNoapproved();
+  const vacationsnoapproved = await getVacationsNoapproved();
 
   const notApproved = await GetNotApproved();
   
@@ -127,7 +131,7 @@ export default async function Index() {
         <div className="flex items-center justify-between">
             <h2 className="text-m font-bold tracking-tight">Vacaciones</h2>
         </div>
-        <DataTable columns={columns} data={compensatorysnoapproved} />
+        <DataTableVacations columns={columnVacations} data={vacationsnoapproved} />
       </div>
     </div>
 

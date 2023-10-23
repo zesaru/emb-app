@@ -26,6 +26,11 @@ const routes = [
     label: "Solicitar Compensatorio",
     href: "/compensatorios/request",
   },
+  {
+    icon: SmilePlus,
+    label: "Vacaciones",
+    href: "/vacaciones/",
+  },
 ];
 
 
