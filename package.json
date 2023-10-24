@@ -7,6 +7,9 @@
     "gen-types": "supabase gen types typescript --linked > types/database.type.ts"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.9",
+    "@fullcalendar/daygrid": "^6.1.9",
+    "@fullcalendar/react": "^6.1.9",
     "@hookform/resolvers": "^3.3.2",
     "@radix-ui/react-dialog": "^1.0.5",
     "@radix-ui/react-dropdown-menu": "^2.0.6",
