@@ -1,7 +1,7 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { DataTable } from "./_components/data-table"
 import { columns } from "./_components/columns"
-import getsCompensatorioswithUser from "@/actions/getCompensatorioswithUser";
+import getVacationswithUser from "@/actions/getVacationswithUser";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
@@ -18,12 +18,13 @@ export default async function Compensatorios() {
   if (session === null) {
     redirect("/login");
   }
-  const compensatorys = await getsCompensatorioswithUser();
+  const vacations = await getVacationswithUser();
+  console.log(vacations);
 
   return (
     <div className="flex flex-col">
       <div className="container mx-auto py-10">
-        <DataTable columns={columns} data={compensatorys} />
+        <DataTable columns={columns} data={vacations} />
       </div>
     </div>
   )

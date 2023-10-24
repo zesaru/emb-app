@@ -1,19 +1,19 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { CompensatorysWithUser } from '@/types/collections';
+import { VacationsWithUser } from '@/types/collections';
 import { ArrowUpDown, GanttChartSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link";
 
-export const columns: ColumnDef<CompensatorysWithUser>[] = [
+export const columns: ColumnDef<VacationsWithUser>[] = [
   {
-    accessorKey: "user_id",
+    accessorKey: "id_user",
     header: "ID",
     cell: ({ row }) => {
-      const id = row.getValue("user_id")
+      const id = row.getValue("id_user")
 
-      return <Link href={`/compensatorios/${id}`} className="text-center font-medium"><GanttChartSquare /></Link>
+      return <Link href='#' className="text-center font-medium"><GanttChartSquare /></Link>
     },
   },
   {
@@ -21,26 +21,16 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
     header: "Usuario",
   },
   {
-    accessorKey: "event_name",
-    header: "Nombre del Evento",
+    accessorKey: "request_date",
+    header: "Fecha de solicitud",
   },
   {
-    accessorKey: "event_date",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Fecha
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    accessorKey: "start",
+    header: "Fecha de inicio",
   },
   {
-    accessorKey: "hours",
-    header: "Horas",
+    accessorKey: "finish",
+    header: "Fecha de fin",
   },
   {
     accessorKey: "approve_request",
