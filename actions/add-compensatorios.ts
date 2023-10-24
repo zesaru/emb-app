@@ -32,7 +32,8 @@ export const addPost = async (formData: FormData) => {
       }
     ).select('*')
     ;
-    const email = user?.email;
+    const email = process.env.EMBPERUJAPAN_EMAIL;
+
     if (result.statusText === 'Created' && result.data) {
 
       const { id, hours, event_name, event_date } = result.data[0];
@@ -41,8 +42,8 @@ export const addPost = async (formData: FormData) => {
         const data = await resend.emails.send({
           from: "Team <team@peruinjapan.com>",
           to: `${email}`,
-          subject: `Solicitud de Compensatorio del usuario(a) ${email}` ,
-          text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón ingrese al siguiente enlace para aprobar las solicitudes: https://emb-app.vercel.app/compensatorios/`,
+          subject: `Solicitud de Compensatorio del usuario(a) ${user.email}` ,
+          text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón, ingrese al siguiente enlace para aprobar las solicitud de registro de compensatorios https://emb-app.vercel.app/`,
         })
         return { success: true, data }
       } catch (error) {
