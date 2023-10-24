@@ -1,7 +1,6 @@
 "use client";
 
-import { Compass, Layout, SmilePlus, Palmtree, LayoutList    } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { Compass, Layout, SmilePlus, Palmtree, LayoutList, CalendarDays     } from "lucide-react";
 
 import { SidebarItem } from "./sidebar-item";
 
@@ -35,6 +34,11 @@ const routes = [
     icon: Palmtree,
     label: "Solicitar Vacaciones",
     href: "/vacaciones/new",
+  },
+  {
+    icon: CalendarDays ,
+    label: "Calendario Vacaciones",
+    href: "/calendar/",
   },
 ];
 

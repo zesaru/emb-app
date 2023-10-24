@@ -13,7 +13,6 @@ export default async function updateApproveRegisterHour(compensatory: any) {
     data: { session },
   } = await supabase.auth.getSession();
   const approved_by = session?.user?.id;
-  console.log(compensatory);
 
   if (session === null) return;
   await supabase

@@ -15,8 +15,8 @@ export default async function UpdateVacations(vacations: any) {
   const approved_by = session?.user?.id;
 
   if (session === null) return;
-  console.log(vacations);
-  const result1 = await supabase
+
+    await supabase
     .from("vacations")
     .update({
       approved_date: new Date(),
@@ -25,15 +25,14 @@ export default async function UpdateVacations(vacations: any) {
     })
     .eq("id", vacations.id)
     .select("*");
-    console.log(result1);
-    const result2 = await supabase
+    
+    await supabase
     .from("users")
     .update({
       num_vacations: vacations.num_vacations - vacations.days,
     })
     .eq("id", vacations.user_id)
     .select(`*`);
-  console.log(result2);
   try {
     const data = await resend.emails.send({
       from: "Team <team@peruinjapan.com>",

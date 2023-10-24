@@ -36,7 +36,7 @@ export const addVacation = async (data:any) => {
           from: "Team <team@peruinjapan.com>",
           to: `${email}`,//aca ingresar email del sistema@embperujapan.org
           subject: `Solicitud de Vacaciones del usuario(a) ${email}` ,
-          text: `El siguiente email ha sido enviado desde la plataforma de vacaciones de la Embajada del Perú en Japón ingrese al siguiente enlace para aprobar las solicitudes: https://emb-app.vercel.app/`,
+          text: `El siguiente email ha sido enviado desde la plataforma de vacaciones de la Embajada del Perú en Japón, ingrese al siguiente enlace para aprobar la solicitud de vacaciones -> https://emb-app.vercel.app/`,
         })
         return { success: true, data }
       } catch (error) {
