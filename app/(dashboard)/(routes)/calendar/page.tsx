@@ -23,7 +23,6 @@ export default async function Compensatorios() {
     <>
       <div className="flex flex-col">
         <div className="container mx-auto py-10">
-          <p>Calendar</p>
           <Calendar data={vacations} />
         </div>
       </div>

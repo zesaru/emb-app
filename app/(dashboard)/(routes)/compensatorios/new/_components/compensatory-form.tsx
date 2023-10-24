@@ -4,12 +4,14 @@ import { addPost } from "@/actions/add-compensatorios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
+import { es } from 'date-fns/locale'
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+
 import {
   Form,
   FormControl,
@@ -27,7 +29,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { de, es } from "date-fns/locale";
 import { toast } from "react-toastify";
 
 const accountFormSchema = z.object({
@@ -97,7 +98,7 @@ export function AccountForm() {
                       {field.value ? (
                         format(field.value, "PPP")
                       ) : (
-                        <span>Pick a date</span>
+                        <span>Selecciona una fecha</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -111,6 +112,7 @@ export function AccountForm() {
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01")
                     }
+                    locale={es}
                     initialFocus
                   />
                 </PopoverContent>

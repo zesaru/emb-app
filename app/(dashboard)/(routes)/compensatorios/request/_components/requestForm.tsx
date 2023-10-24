@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
+import { es } from 'date-fns/locale'
 import * as z from "zod";
 
 import { cn } from "@/lib/utils";
@@ -99,7 +100,7 @@ export default function RequestForm() {
                       {field.value ? (
                         format(field.value, "PPP")
                       ) : (
-                        <span>Pick a date</span>
+                        <span>Seleccione una fecha</span>
                       )}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
@@ -113,6 +114,7 @@ export default function RequestForm() {
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01")
                     }
+                    locale={es}
                     initialFocus
                   />
                 </PopoverContent>
