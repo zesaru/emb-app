@@ -40,6 +40,11 @@ const routes = [
     label: "Calendario Vacaciones",
     href: "/calendar/",
   },
+  {
+    icon: SmilePlus,
+    label: "Asistencia",
+    href: "/attendances",
+  }
 ];
 
 

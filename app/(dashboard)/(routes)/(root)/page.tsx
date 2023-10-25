@@ -37,7 +37,6 @@ export default async function Index() {
     redirect("/login");
   }
 
-  console.log(session.user.id);
   const user = await getUsersById(session.user.id);  
   
   const compensatorysnoapproved = await getsCompensatoriosNoApproved();

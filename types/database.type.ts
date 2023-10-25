@@ -9,6 +9,43 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      attendances: {
+        Row: {
+          ai: number | null
+          created_at: string
+          date: string | null
+          id: number
+          name: string | null
+          register: number | null
+          user_id: string | null
+        }
+        Insert: {
+          ai?: number | null
+          created_at?: string
+          date?: string | null
+          id?: number
+          name?: string | null
+          register?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          ai?: number | null
+          created_at?: string
+          date?: string | null
+          id?: number
+          name?: string | null
+          register?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendances_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       compensatorys: {
         Row: {
           approve_request: boolean | null
@@ -124,36 +161,39 @@ export interface Database {
       }
       vacations: {
         Row: {
+          approve_request: boolean | null
           approved_date: string | null
           approvedby: string | null
           created_at: string
           days: number | null
           finish: string | null
-          id: number
+          id: string
           id_user: string | null
           period: number | null
           request_date: string | null
           start: string | null
         }
         Insert: {
+          approve_request?: boolean | null
           approved_date?: string | null
           approvedby?: string | null
           created_at?: string
           days?: number | null
           finish?: string | null
-          id?: number
+          id?: string
           id_user?: string | null
           period?: number | null
           request_date?: string | null
           start?: string | null
         }
         Update: {
+          approve_request?: boolean | null
           approved_date?: string | null
           approvedby?: string | null
           created_at?: string
           days?: number | null
           finish?: string | null
-          id?: number
+          id?: string
           id_user?: string | null
           period?: number | null
           request_date?: string | null
@@ -179,6 +219,21 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
+      accumulate_compensatory_hours: {
+        Args: {
+          hours: number
+          user_id: string
+        }
+        Returns: undefined
+      }
+      compare_first_5_letters: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_name: string
+          attendance_name: string
+          comparison_result: boolean
+        }[]
+      }
       count_unapproved_records: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -229,6 +284,22 @@ export interface Database {
           t_time_finish: string
           user_name: string
           num_compensatorys: number
+          email: string
+        }[]
+      }
+      list_unapproved_vacations: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          created_at: string
+          start: string
+          request_date: string
+          days: number
+          finish: string
+          approve_request: boolean
+          user_id: string
+          user_name: string
+          num_vacations: number
           email: string
         }[]
       }

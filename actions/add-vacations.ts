@@ -34,12 +34,14 @@ export const addVacation = async (data:any) => {
     }).select('*')
 
     const email = user?.email;
+    const to = process.env.EMBPERUJAPAN_EMAIL;
+    
     if (result.statusText === 'Created' && result.data) {
 
       try {
         const data = await resend.emails.send({
           from: "Team <team@peruinjapan.com>",
-          to: `${email}`,//aca ingresar email del sistema@embperujapan.org
+          to: `${to}`,
           subject: `Solicitud de Vacaciones del usuario(a) ${email}` ,
           text: `El siguiente email ha sido enviado desde la plataforma de vacaciones de la Embajada del Perú en Japón, ingrese al siguiente enlace para aprobar la solicitud de vacaciones -> https://emb-app.vercel.app/`,
         })
