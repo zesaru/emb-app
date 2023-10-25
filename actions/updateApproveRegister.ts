@@ -12,9 +12,10 @@ export default async function updateApproveRegister(compensatory: any) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  const approved_by = session?.user?.id;
   console.log(compensatory);
-
+  console.log('lo que llega')
+  const approved_by = session?.user?.id;
+  
   if (session === null) return;
   await supabase
     .from("compensatorys")
@@ -26,14 +27,8 @@ export default async function updateApproveRegister(compensatory: any) {
     .eq("id", compensatory.id)
     .select("*");
 
-  await supabase
-    .from("users")
-    .update({
-      num_compensatorys: compensatory.num_compensatorys + compensatory.hours,
-    })
-    .eq("id", compensatory.user_id)
-    .select(`*`);
-
+    await supabase.rpc("accumulate_compensatory_hours", { hours: compensatory.hours, user_id: compensatory.user_id });
+    
   try {
     const data = await resend.emails.send({
       from: "Team <team@peruinjapan.com>",
