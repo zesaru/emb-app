@@ -4,12 +4,14 @@ import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
+import { format } from "date-fns";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function UpdateCompensatorioResquest(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
 
+  const fecha = (format(compensatory.dob, 'yyyy-MM-dd'));
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -22,10 +24,10 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
         user_id: useridrequest,
         t_time_start:compensatory.time_start,
         t_time_finish:compensatory.time_finish,
-        compensated_hours_day:compensatory.dob
+        compensated_hours_day: fecha
       })
       .select(`*`);
-
+      console.log(result);
 
     try {
       const data = await resend.emails.send({

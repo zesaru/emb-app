@@ -12,8 +12,7 @@ export default async function updateApproveRegister(compensatory: any) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  console.log(compensatory);
-  console.log('lo que llega')
+
   const approved_by = session?.user?.id;
   
   if (session === null) return;
@@ -28,7 +27,7 @@ export default async function updateApproveRegister(compensatory: any) {
     .select("*");
 
     await supabase.rpc("accumulate_compensatory_hours", { hours: compensatory.hours, user_id: compensatory.user_id });
-    
+
   try {
     const data = await resend.emails.send({
       from: "Team <team@peruinjapan.com>",

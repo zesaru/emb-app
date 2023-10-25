@@ -3,10 +3,15 @@
 import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { Resend } from 'resend';
+import { format } from "date-fns";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 export const addVacation = async (data:any) => {
  
+
+  const start = (format(data.start, 'yyyy-MM-dd'));
+  const finish = (format(data.finish, 'yyyy-MM-dd'));
+
   if (data === null) return;
   const supabase = createServerActionClient({ cookies });
   const {
@@ -21,8 +26,8 @@ export const addVacation = async (data:any) => {
     const result = await supabase
     .from("vacations")
     .insert({
-      start: data.start,
-      finish: data.finish,
+      start: start,
+      finish: finish,
       days: data.days,
       id_user:user_id,
       request_date: new Date().toISOString(),

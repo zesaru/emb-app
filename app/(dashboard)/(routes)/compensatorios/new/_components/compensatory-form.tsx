@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/popover";
 
 import { toast } from "react-toastify";
+import { co } from "@fullcalendar/core/internal-common";
 
 const accountFormSchema = z.object({
   dob: z.date({
@@ -56,10 +57,11 @@ export function AccountForm() {
 
   const onSubmit = async (formData: AccountFormValues) => {
     const data = new FormData();
+  
     data.append("event_name", formData.name);
     data.append("hours", formData.hours.toString());
-    data.append("event_date", formData.dob.toISOString());
-
+    data.append("event_date", format(formData.dob, 'yyyy-MM-dd'));
+    
     const response = await addPost(data);
 
     if (response?.success) {
