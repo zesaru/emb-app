@@ -1,19 +1,18 @@
-"use server";
-
-import { cookies } from "next/headers";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { supabase } from '@/lib/supabase'
 
 const getUsers = async(data:any) => {
-  const supabase = createRouteHandlerClient({ cookies })
     const result = await supabase
-      .auth
-      .updateUser({
+    .auth
+    .updateUser({
         email: data.email,
         password: data.password,
       })
     
     console.log(result)
-    return (result as any) || [];
+
+    return (result as any)?.result || [];
+
 }
+
 
 export default getUsers;

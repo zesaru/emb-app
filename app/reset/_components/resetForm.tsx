@@ -15,7 +15,12 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import resetPassword from "@/actions/resetPassword"
+import { Icons } from "@/components/animatespin"
+import { useState } from "react"
+import React from "react"
+import { toast } from "react-toastify"
+import { supabase } from '@/lib/supabase'
+
 
 
 const FormSchema = z.object({
@@ -29,21 +34,38 @@ const FormSchema = z.object({
 
 
 export default  function ResetForm() {
+  const [loading, setLoading] = React.useState((false) as boolean);
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       username: "",
+      password: "",
     },
   })
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
-
-    console.log(data);
-    const response = await resetPassword(data);
+    async function onSubmit(dat: z.infer<typeof FormSchema>) {
+ 
+    try {
+      setLoading(true);
+      const { data , error } = await supabase.auth.updateUser({
+        email: dat.username,
+        password: dat.password,
+      });
+      if (data.user) {
+        toast.success("Contraseña cambiada con éxito");
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Error al cambiar la contraseña");
+    } finally {
+      setLoading(false);
+    }
 
   }
 
   return (
+    <>
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
         <FormField
@@ -53,10 +75,9 @@ export default  function ResetForm() {
             <FormItem>
               <FormLabel>email</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input type="email" placeholder="mail@mail.com" {...field} />
               </FormControl>
               <FormDescription>
-                This is your public display name.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -70,17 +91,21 @@ export default  function ResetForm() {
             <FormItem>
               <FormLabel>password</FormLabel>
               <FormControl>
-                <Input placeholder="shadcn" {...field} />
+                <Input type='password' placeholder="******" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">{loading ? 
+          
+            <Icons.spinner className="animate-spin" /> 
+
+          : 
+          "Guardar"}
+        </Button>
       </form>
     </Form>
+    </>
   )
 }
