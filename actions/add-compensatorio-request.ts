@@ -17,7 +17,7 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
   } = await supabase.auth.getSession();
   const useridrequest = session?.user?.id;
   try {
-    const result = await supabase
+      await supabase
       .from("compensatorys")
       .insert({
         compensated_hours: compensatory.hours,
@@ -27,7 +27,6 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
         compensated_hours_day: fecha
       })
       .select(`*`);
-      console.log(result);
 
     try {
       const data = await resend.emails.send({

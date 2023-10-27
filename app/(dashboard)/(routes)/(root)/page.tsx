@@ -226,7 +226,7 @@ export default async function Index() {
                 </div>
               </div>
               <div className="grow">
-                <h3 className="text-xl text-gray-800">21</h3>
+                <h3 className="text-xl text-gray-800">{user[0].num_compensatorys}</h3>
                 <p className="mb-0">Compensatorios</p>
               </div>
             </div>

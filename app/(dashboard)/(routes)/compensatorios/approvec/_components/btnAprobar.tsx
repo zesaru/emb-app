@@ -5,7 +5,6 @@ export default function BtnAprobar({ compensatory }: { compensatory: any } ) {
   async function create(formData: FormData) {
     "use server";
 
-    // mutate data
     const response = await UpdateCompensatorio(compensatory);
 
     }
