@@ -24,7 +24,6 @@ export default async function Attendances() {
 
   const attendances = await getAttendanceswithUser();
 
-  
   return (
     <div className="flex flex-col">
       <div className="container mx-auto py-10">

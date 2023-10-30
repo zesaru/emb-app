@@ -1,27 +1,12 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { AttendancesWithUser, CompensatorysWithUser } from '@/types/collections';
-import { ArrowUpDown, GanttChartSquare } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import Link from "next/link";
+import { AttendancesWithUser } from '@/types/collections';
+import { verificarPuntualidad } from "../_util/util";
 
 export const columns: ColumnDef<AttendancesWithUser>[] = [
-  // {
-  //   accessorKey: "id",
-  //   header: "ID",
-  //   // cell: ({ row }) => {
-  //   //   const id = row.getValue("user_id")
-
-  //   //   return <Link href={`/compensatorios/${id}`} className="text-center font-medium"><GanttChartSquare /></Link>
-  //   // },
-  // },
-  // {
-  //   accessorKey: "user1.name",
-  //   header: "Usuario",
-  // },
   {
-    accessorKey: "name",
+    accessorKey: "user_name",
     header: "nombre",
   },
   {
@@ -31,6 +16,11 @@ export const columns: ColumnDef<AttendancesWithUser>[] = [
   {
     accessorKey: "hora_entrada",
     header: "hora de entrada",
+    cell: ({ row }) => {
+      const estado:any = row.getValue("hora_entrada")
+      const ok = verificarPuntualidad(estado, '9:00:00')
+      return <span className={`inline-flex items-center rounded-md ${ok ? 'bg-green-50' : 'bg-red-50'} px-2 py-1 text-xs font-medium ${ok ? 'text-green-800' : 'text-red-800'} ring-1 ring-inset ${ok ? 'ring-green-600/20' : 'ring-red-600/20'}`}>{estado}</span>
+    },
   },
   {
     accessorKey: "hora_salida",
