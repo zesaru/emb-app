@@ -16,5 +16,7 @@ user1: any; users:UsersEntity[]
 
 export interface AttendancesWithUser extends AttendancesEntity
 {
+  t_time_start: any;
+  t_time_finish: any;
 user1: any; users:UsersEntity[] 
 };
