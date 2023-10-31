@@ -26,7 +26,7 @@ export default async function updateApproveRegister(compensatory: any) {
     .eq("id", compensatory.id)
     .select("*");
 
-    await supabase.rpc("accumulate_compensatory_hours", { hours: compensatory.hours, user_id: compensatory.user_id });
+  await supabase.rpc("accumulate_compensatory_hours", { hours: compensatory.hours, user_id: compensatory.user_id });
 
   try {
     const data = await resend.emails.send({

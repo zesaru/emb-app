@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { AttendancesWithUser } from '@/types/collections';
 import { verificarPuntualidad } from "../_util/util";
+import { DataTableRowActions } from "./data-table-row-actions";
 
 export const columns: ColumnDef<AttendancesWithUser>[] = [
   {
@@ -32,6 +33,7 @@ export const columns: ColumnDef<AttendancesWithUser>[] = [
   },
   {
     header: 'Compensatorio / Vacaciones',
+    
     accessorFn: row => {
       if (row.t_time_start !== null) {
         return `${row.t_time_start} ${row.t_time_finish}`;
@@ -39,6 +41,18 @@ export const columns: ColumnDef<AttendancesWithUser>[] = [
         return ''; 
       }
     }
+  },
+  {
+    header: "acciones",
+    cell: ({ row }) => {
+      const estado:any = row.getValue("hora_entrada")
+      const ok = verificarPuntualidad(estado, '9:00:00')
+      if (estado==='' || estado===null || ok) {
+        return '' 
+      } else {
+        return <DataTableRowActions row={row} />
+      }
+    },
   }
   
 ]
