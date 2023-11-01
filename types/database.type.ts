@@ -303,6 +303,19 @@ export interface Database {
           email: string
         }[]
       }
+      listar_horas_entrada_salida: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          name: string
+          fecha: string
+          hora_entrada: string
+          hora_salida: string
+          t_time_start: string
+          t_time_finish: string
+          compensated_hours_day: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
