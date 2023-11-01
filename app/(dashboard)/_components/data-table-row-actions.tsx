@@ -36,7 +36,7 @@ export function DataTableRowActions<TData>({
 
   return (
     <div className="flex flex-row space-x-2">
-      <button onClick={handleClick}>Aprobar</button>
+      <button onClick={handleClick} type="button" className="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm px-4 py-2 text-center mr-1 mb-1">Aprobar</button>
     </div>
   )
 }
