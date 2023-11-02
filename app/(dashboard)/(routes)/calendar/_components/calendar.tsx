@@ -23,7 +23,6 @@ export default function Calendar(vacations: any) {
     }
   );
 
-  console.log(events)
 
   return (
     <div>

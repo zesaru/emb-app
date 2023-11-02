@@ -8,7 +8,6 @@ const getUsers = async(data:any) => {
         password: data.password,
       })
     
-    console.log(result)
 
     return (result as any)?.result || [];
 

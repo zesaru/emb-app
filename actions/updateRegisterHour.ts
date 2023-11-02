@@ -9,7 +9,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export default async function updateApproveRegisterHour(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
 
-  console.log(compensatory);
   const {
     data: { session },
   } = await supabase.auth.getSession();
