@@ -19,7 +19,6 @@ export default async function Compensatorios() {
     redirect("/login");
   }
   const vacations = await getVacationswithUser();
-  console.log(vacations);
 
   return (
     <div className="flex flex-col">

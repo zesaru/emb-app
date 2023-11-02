@@ -36,7 +36,6 @@ export const addPost = async (formData: FormData) => {
 
     if (result.statusText === 'Created' && result.data) {
 
-      const { id, hours, event_name, event_date } = result.data[0];
 
       try {
         const data = await resend.emails.send({

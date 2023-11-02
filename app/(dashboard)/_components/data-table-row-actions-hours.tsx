@@ -4,6 +4,7 @@ import { Row } from "@tanstack/react-table"
 import { useTransition } from "react";
 import updateApproveRegisterHour from "@/actions/updateRegisterHour";
 import { toast } from "react-toastify";
+import React from "react";
 
 
 interface DataTableRowActionsProps<TData> {
@@ -33,6 +34,7 @@ export function DataTableRowActions<TData>({
       }
     });
   }
+
 
   return (
     <div className="flex flex-row space-x-2">

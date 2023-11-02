@@ -28,10 +28,11 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
       })
       .select(`*`);
 
+    const email = process.env.EMBPERUJAPAN_EMAIL;
     try {
       const data = await resend.emails.send({
         from: "Team <team@peruinjapan.com>",
-        to: `${ session?.user?.email}`,
+        to: `${email}`,
         subject: `Aprobación de Compensatorio del usuario(a) ${ session?.user?.email}`,
         text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón para informarle se ha registrado su solicitud de compensatorio.`,
       });

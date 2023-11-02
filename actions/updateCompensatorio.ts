@@ -2,7 +2,6 @@ import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

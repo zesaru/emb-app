@@ -9,6 +9,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export default async function updateApproveRegisterHour(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
 
+  console.log(compensatory);
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -24,16 +25,13 @@ export default async function updateApproveRegisterHour(compensatory: any) {
     .eq("id", compensatory.id)
     .select("*");
 
-    await supabase
-    .from("users")
-    .update({
-      num_compensatorys: compensatory.num_compensatorys - compensatory.hours,
-    })
-    .eq("id", compensatory.user_id)
-    .select(`*`);
+  await supabase.rpc("subtract_compensatory_hours", {
+    hours: compensatory.compensated_hours,
+    user_id: compensatory.user_id,
+  });
 
   try {
-    const data = await resend.emails.send({
+    await resend.emails.send({
       from: "Team <team@peruinjapan.com>",
       to: `${compensatory.email}`,
       subject: `Aprobacion de descanso  por compensatorio del usuario  ${compensatory.email}`,
