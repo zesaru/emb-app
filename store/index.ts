@@ -1,14 +1,30 @@
-import { create } from 'zustand'
+import { type StateCreator, create } from 'zustand';
+import { devtools, persist } from 'zustand/middleware';
+import { customSessionStorage } from './custom.storage';
 
-type State = {
-    name: string,
+interface PersonState {
+  userName: string;
 }
 
-type Action = {
-    updateName: (name: State['name']) => void,
+interface Actions {
+  setUserName: ( value: string ) => void;
 }
 
-export const useUserStore =create<State & Action>((set) => ({
-    name: '',
-    updateName: (name) => set(() => ({ name: name })),
-}));
+const storeAPi: StateCreator<PersonState & Actions, [ [ "zustand/devtools", never ] ]> = ( set ) => ( {
+
+  userName: 'Cesar Murillo',
+
+  setUserName: ( value: string ) => set( ( { userName: value } ), false, 'setUserName' ),
+
+} );
+
+export const usePersonStore = create<PersonState & Actions>()(
+  devtools(
+    persist(
+      storeAPi
+      , {
+        name: 'person-storage',
+        storage: customSessionStorage,
+      } )
+  )
+);

@@ -333,30 +333,6 @@ export default async function Index() {
                         <h1 className="text-3xl text-gray-800 my-2.5">xxxxx</h1>
                         <p className="text-gray-400 text-sm">Ultimo mes</p>
                         <hr className="my-3.5" />
-                        {/* <div className="flex items-center">
-                <div className="lg:w-1/2">
-                  <div className="flex items-center">
-                    <div className="me-4 shrink">
-                      <svg className="h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
-                    </div>
-                    <div className="grow">
-                      <h5 className="mt-0 mb-0">15%</h5>
-                      <p className="text-muted mb-0 fs-13">Prev Week</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="lg:w-1/2">
-                  <div className="flex items-center">
-                    <div className="me-3 flex-shrink-0">
-                      <svg className="h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" /></svg>
-                    </div>
-                    <div className="flex-grow-1">
-                      <h5 className="mt-0 mb-0">10%</h5>
-                      <p className="text-muted mb-0 fs-13">Prev Month</p>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
                       </div>
                     </div>
                   </div>
