@@ -10,6 +10,10 @@
  * console.log(initials); // Output: "JD"
  */
 export function getInitials(inputString: string): string {
+
+    if (!inputString) {
+        return '';
+    }
     const words = inputString.split(' ');
     const initials = words.map((word) => word.charAt(0)); 
     return initials.join(''); 

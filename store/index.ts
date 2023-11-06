@@ -12,7 +12,7 @@ interface Actions {
 
 const storeAPi: StateCreator<PersonState & Actions, [ [ "zustand/devtools", never ] ]> = ( set ) => ( {
 
-  userName: 'Cesar Murillo',
+  userName: '',
 
   setUserName: ( value: string ) => set( ( { userName: value } ), false, 'setUserName' ),
 
