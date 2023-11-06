@@ -8,11 +8,11 @@ import { format } from "date-fns";
 const resend = new Resend(process.env.RESEND_API_KEY);
 export const addVacation = async (data:any) => {
  
+  if (data === null) return;
 
   const start = (format(data.start, 'yyyy-MM-dd'));
   const finish = (format(data.finish, 'yyyy-MM-dd'));
 
-  if (data === null) return;
   const supabase = createServerActionClient({ cookies });
   const {
     data: { user },
@@ -24,28 +24,26 @@ export const addVacation = async (data:any) => {
 
   try {
     const result = await supabase
-    .from("vacations")
-    .insert({
-      start: start,
-      finish: finish,
-      days: data.days,
-      id_user:user_id,
-      request_date: new Date().toISOString(),
-    }).select('*')
+    .rpc('insertar_vacaciones', {
+      p_start : start,
+      p_finish : finish,
+      p_days : data.days,
+      p_id_user :user_id,
+    })
 
-    const email = user?.email;
     const to = process.env.EMBPERUJAPAN_EMAIL;
-    
-    if (result.statusText === 'Created' && result.data) {
+    if (result.statusText === 'OK' && result.data) {
 
       try {
-        const data = await resend.emails.send({
+        await resend.emails.send({
           from: "Team <team@peruinjapan.com>",
           to: `${to}`,
-          subject: `Solicitud de Vacaciones del usuario(a) ${email}` ,
-          text: `El siguiente email ha sido enviado desde la plataforma de vacaciones de la Embajada del Perú en Japón, ingrese al siguiente enlace para aprobar la solicitud de vacaciones -> https://emb-app.vercel.app/`,
+          subject: `Solicitud de Vacaciones del usuario(a) ${result.data[0].users_name }` ,
+          text: `El señor(a) ${result.data[0].users_name } 
+          ha solicitado vacaciones desde el ${start} hasta el ${finish} sumando un total de ${data.days} día(s).
+          Por favor ingrese al siguiente enlace para aprobar la solicitud de vacaciones -> https://emb-app.vercel.app/`,
         })
-        return { success: true, data }
+        return { success: true }
       } catch (error) {
         console.log(error);
         return { success: false, error }
@@ -60,5 +58,4 @@ export const addVacation = async (data:any) => {
       error:e,  
     }
   }
-
 }
