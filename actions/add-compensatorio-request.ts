@@ -8,6 +8,11 @@ import { format } from "date-fns";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+/**
+ * Insert a new compensatory request into the database and send an email notification.
+ * @param compensatory - An object containing the compensatory request data.
+ * @returns An object with a success flag indicating if the operation was successful and an error object if the operation failed.
+ */
 export default async function UpdateCompensatorioResquest(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
 

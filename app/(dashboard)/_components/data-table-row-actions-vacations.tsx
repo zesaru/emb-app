@@ -18,19 +18,19 @@ export function DataTableRowActions<TData>({
   const handleClick = () => {
     startTransition(async () => {
       const response = await updateApproveVacations(row.original);
-      //console.log(row.original);      
-      // if (response?.success) {
-      //   toast("🦄 Ha sido aprobado el dia de vacaciones!", {
-      //     position: "top-center",
-      //     autoClose: 3000,
-      //     hideProgressBar: false,
-      //     closeOnClick: true,
-      //     pauseOnHover: true,
-      //     draggable: true,
-      //     progress: undefined,
-      //     theme: "light",
-      //   });
-      // }
+      console.log(row.original);      
+      if (response?.success) {
+        toast("🦄 Ha sido aprobado el dia de vacaciones!", {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+      }
     });
   }
 
