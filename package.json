@@ -4,7 +4,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "gen-types": "supabase gen types typescript --linked > types/database.type.ts"
+    "gen-types": "supabase gen types typescript --linked > types/database.type.ts",
+    "inngest:dev": "npx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.9",
@@ -34,9 +35,10 @@
     "cmdk": "^0.2.0",
     "date-fns": "^2.30.0",
     "init": "^0.1.2",
+    "inngest": "^3.6.2",
     "lucide-react": "^0.284.0",
     "next": "^13.5.6-canary.1",
-    "postcss": "8.4.29",
+    "postcss": "^8.4.32",
     "react": "18.2.0",
     "react-day-picker": "^8.8.2",
     "react-dom": "18.2.0",
