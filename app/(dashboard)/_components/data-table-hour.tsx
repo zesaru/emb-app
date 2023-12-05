@@ -25,6 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -64,14 +65,14 @@ export function DataTableHour<TData, TValue>({
   return (
     <div>
     <div className="flex items-center py-4">
-        {/* <Input
-          placeholder="Filtrar evento"
-          value={(table.getColumn("event_name")?.getFilterValue() as string) ?? ""}
+        <Input
+          placeholder="Filtrar nombres..."
+          value={(table.getColumn("user_name")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table.getColumn("event_name")?.setFilterValue(event.target.value)
+            table.getColumn("user_name")?.setFilterValue(event.target.value)
           }
           className="max-w-sm"
-        /> */}
+        />
       </div>
     <div className="rounded-md border">
       <Table>
