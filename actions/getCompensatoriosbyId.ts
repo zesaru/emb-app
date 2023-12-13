@@ -9,11 +9,10 @@ const getsCompensatorioswithUserById = async(id:string):Promise<CompensatorysWit
       cookies: cookies
     });
 
-    const { data, error } = await supabase
-      .from('compensatorys')
-      .select('*, user1:users!user_id(*), user2:users!approved_by(*)')
-      .eq('user_id', id)
-      .order('event_date', { ascending: true })
+    
+    const { data, error } = await supabase.rpc("get_compensatorys_for_user", {
+      user_id: id,
+    });
 
   
     if (error) {
