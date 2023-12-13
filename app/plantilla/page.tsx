@@ -1,5 +1,3 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
-import getCountNoApproved from '../../actions/getCountNoApproved';
 import {
   Tailwind,
   Img,
@@ -7,20 +5,10 @@ import {
   Column,
   Section,
 } from "@react-email/components";
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+
 
 const  Email  = async() => {
-  const supabase = createServerComponentClient<Database>({ cookies });
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (session === null) {
-    redirect("/login");
-  }
-  const CountNoApproved = await getCountNoApproved();
   return (
     <Tailwind
       config={{
@@ -53,14 +41,13 @@ const  Email  = async() => {
           <Column className="bg-[#F0C48A] p-2 m-2 text-slate-100 w-24 text-center">Horas de descanso</Column>
           <Column className="bg-[#F0C48A] p-2 m-2 text-slate-100 w-24 text-center">Vacaciones</Column>
         </Section>
-        { CountNoApproved.map((item:any) => (
         <Section>
-          <Column className="border-2 p-2 m-2 w-24">{item.user_name}</Column>
-          <Column className="border-2 p-2 m-2 w-24 text-center">{item.cantidad_registros_no_aprobados}</Column>
-          <Column className="border-2 p-2 m-2 w-24 text-center">{item.cantidad_horas_compensatorios_no_aprobados}</Column>
-          <Column className="border-2 p-2 m-2 w-24 text-center">{item.cantidad_vacaciones_no_aprobadas}</Column>
+          <Column className="border-2 p-2 m-2 w-24">xxx</Column>
+          <Column className="border-2 p-2 m-2 w-24 text-center">xxxx</Column>
+          <Column className="border-2 p-2 m-2 w-24 text-center">xxx</Column>
+          <Column className="border-2 p-2 m-2 w-24 text-center">xxxx</Column>
         </Section>
-        ))}
+
       </Html>
     </Tailwind>
   );
