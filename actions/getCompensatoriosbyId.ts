@@ -13,7 +13,6 @@ const getsCompensatorioswithUserById = async(id:string):Promise<CompensatorysWit
     const { data, error } = await supabase.rpc("get_compensatorys_for_user", {
       user_id: id,
     });
-
   
     if (error) {
       console.log(error.message);

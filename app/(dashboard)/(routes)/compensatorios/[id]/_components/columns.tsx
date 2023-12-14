@@ -11,7 +11,7 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
   },
   {
     accessorKey: "event_name",
-    header: "Fecha",
+    header: "Descripción",
   },
   {
     accessorKey: "event_date",
@@ -20,7 +20,12 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
   
   {
     accessorKey: "hours",
-    header: "Horas",
+    header: "Registradas/hrs",
+    cell: ({ row }) => {
+      const hours:number = row.getValue("hours")
+      const ok:any = row.original.approve_request 
+      return <div ><span className={`font-medium ${ok ?  'bg-green-600 text-white p-1' : 'bg-green-400'}`}>{hours}</span></div>
+    },
   },
   {
     accessorKey:"compensated_hours",
