@@ -6,10 +6,6 @@ import { CompensatorysWithUser } from '@/types/collections';
 
 export const columns: ColumnDef<CompensatorysWithUser>[] = [
   {
-    accessorKey: "user_name",
-    header: "Usuario",
-  },
-  {
     accessorKey: "event_name",
     header: "Descripción",
   },
