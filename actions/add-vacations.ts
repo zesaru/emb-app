@@ -3,15 +3,16 @@
 import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { Resend } from 'resend';
-import { format } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 export const addVacation = async (data:any) => {
  
   if (data === null) return;
 
-  const start = (format(data.start, 'yyyy-MM-dd'));
-  const finish = (format(data.finish, 'yyyy-MM-dd'));
+  const start =   formatInTimeZone(data.start, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX') 
+
+  const finish = formatInTimeZone(data.finish, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX') 
 
   const supabase = createServerActionClient({ cookies });
   const {
