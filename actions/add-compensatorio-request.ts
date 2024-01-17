@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
 import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
-import { format } from "date-fns";
+import { formatInTimeZone } from 'date-fns-tz'
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,8 +16,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export default async function UpdateCompensatorioResquest(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
 
-  //const fecha = (format(compensatory.dob, 'yyyy-MM-dd'));
-  const fecha = compensatory.toISOString();
+  const fecha = formatInTimeZone(compensatory.dob, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX') 
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -26,7 +25,7 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
   try {
 
     await supabase.rpc("insert_compensatory_rest", { p_user_id: useridrequest, p_t_time_start: compensatory.time_start, p_t_time_finish: compensatory.time_finish, p_compensated_hours_day: fecha, p_compensated_hours: compensatory.hours });
-    const email = process.env.C_EMAIL;
+    const email = process.env.EMBPERUJAPAN_EMAIL;
     try {
       const data = await resend.emails.send({
         from: "Team <team@peruinjapan.com>",
@@ -47,3 +46,4 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
     console.log(error);
   }
 }
+
