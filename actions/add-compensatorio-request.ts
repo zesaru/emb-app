@@ -21,18 +21,10 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
     data: { session },
   } = await supabase.auth.getSession();
   const useridrequest = session?.user?.id;
-  try {
-      await supabase
-      .from("compensatorys")
-      .insert({
-        compensated_hours: compensatory.hours,
-        user_id: useridrequest,
-        t_time_start:compensatory.time_start,
-        t_time_finish:compensatory.time_finish,
-        compensated_hours_day: fecha
-      })
-      .select(`*`);
 
+  try {
+
+    await supabase.rpc("insert_compensatory_rest", { p_user_id: useridrequest, p_t_time_start: compensatory.time_start, p_t_time_finish: compensatory.time_finish, p_compensated_hours_day: fecha, p_compensated_hours: compensatory.hours });
     const email = process.env.EMBPERUJAPAN_EMAIL;
     try {
       const data = await resend.emails.send({

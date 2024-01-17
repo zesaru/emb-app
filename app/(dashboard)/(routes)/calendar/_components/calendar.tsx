@@ -5,7 +5,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import esLocale from '@fullcalendar/core/locales/es';
 
 export default function Calendar(vacations: any) {
-  //const events = vacations
+
   const events: any = [];
 
   vacations.data.forEach(
@@ -23,7 +23,7 @@ export default function Calendar(vacations: any) {
     }
   );
 
-
+  console.log(events);
   return (
     <div>
       <FullCalendar
