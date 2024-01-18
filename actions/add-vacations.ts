@@ -6,6 +6,12 @@ import { Resend } from 'resend';
 import { formatInTimeZone } from "date-fns-tz";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+/**
+ * Adds a vacation request to the server.
+ * 
+ * @param data - The vacation request data.
+ * @returns An object indicating the success or failure of the request.
+ */
 export const addVacation = async (data:any) => {
  
   if (data === null) return;
