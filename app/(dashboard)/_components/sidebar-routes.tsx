@@ -28,7 +28,7 @@ const routes = [
   {
     icon: LayoutList,
     label: "Vacaciones",
-    href: "/vacaciones/",
+    href: "/vacaciones",
   },
   {
     icon: Palmtree,
@@ -38,12 +38,17 @@ const routes = [
   {
     icon: CalendarDays ,
     label: "Calendario Vacaciones",
-    href: "/calendar/",
+    href: "/calendar",
   },
   {
     icon: SmilePlus,
     label: "Asistencia",
     href: "/attendances",
+  },
+  {
+    icon: LayoutList,
+    label: "Reporte",
+    href: "/report",
   }
 ];
 
