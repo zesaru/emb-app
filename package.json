@@ -25,6 +25,7 @@
     "@react-email/components": "0.0.12",
     "@react-email/html": "0.0.4",
     "@react-email/preview": "0.0.8",
+    "@react-email/render": "^1.1.2",
     "@supabase/auth-helpers-nextjs": "latest",
     "@supabase/supabase-js": "latest",
     "@tanstack/react-table": "^8.10.6",
