@@ -1,42 +1,32 @@
-'use client';
+'use client'
 
-import Messages from "./messages";
+import { useSearchParams, useRouter } from 'next/navigation'
+import { toast } from 'react-toastify'
+import LoginForm from './_components/LoginForm'
+import { loginWithCredentials } from '@/actions/auth-login'
 
 export default function Login() {
-  
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const error = searchParams.get('error')
+  const message = searchParams.get('message')
+
+  const handleLogin = async (data: { email: string; password: string }) => {
+    try {
+      await loginWithCredentials(data.email, data.password)
+      toast.success('Sesión iniciada correctamente')
+      router.push('/')
+    } catch (error: any) {
+      toast.error(error.message || 'Error al iniciar sesión')
+      throw error
+    }
+  }
+
   return (
-    <div className="grid h-screen place-items-center">
-      <div className="flex flex-col w-full px-8 sm:max-w-md justify-center gap-2">
-        <form
-          className="flex-1 flex flex-col w-full justify-center gap-2 text-foreground"
-          action="/auth/sign-in"
-          method="post"
-        >
-          <label className="text-md" htmlFor="email">
-            Email
-          </label>
-          <input
-            className="rounded-md px-4 py-2 bg-inherit border mb-6"
-            name="email"
-            placeholder="you@example.com"
-            required
-          />
-          <label className="text-md" htmlFor="password">
-            Password
-          </label>
-          <input
-            className="rounded-md px-4 py-2 bg-inherit border mb-6"
-            type="password"
-            name="password"
-            placeholder="••••••••"
-            required
-          />
-          <button className="bg-green-700 rounded px-4 py-2 text-white mb-2">
-            Sign In
-          </button>
-          <Messages />
-        </form>
-      </div>
-    </div>
-  );
+    <LoginForm 
+      onSubmit={handleLogin}
+      error={error || undefined}
+      message={message || undefined}
+    />
+  )
 }

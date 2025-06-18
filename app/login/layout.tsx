@@ -1,16 +1,12 @@
 export const metadata = {
-  title: 'EmbApp',
-  description: 'EmbApp',
+  title: 'EmbApp - Iniciar Sesión',
+  description: 'Iniciar sesión en EmbApp',
 }
 
-export default function RootLayout({
+export default function LoginLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  )
+  return children
 }
