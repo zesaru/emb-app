@@ -37,3 +37,20 @@ yarn-error.log*
 next-env.d.ts
 .qodo
 CLAUDE.md
+
+# backups and database dumps
+/backups/*
+!/backups/README.md
+/sql/
+*.sql
+*.dump
+*.backup
+*.tar.gz
+*-backup-*
+backup-*
+
+# supabase local development
+/supabase/.temp/
+/supabase/functions/_shared/
+/supabase/seed.sql
+backups/README.md
