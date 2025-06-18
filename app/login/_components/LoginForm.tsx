@@ -14,8 +14,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils"
 
 const loginSchema = z.object({
-  email: z.string().email("Ingresa un email válido").min(1, "El email es requerido"),
-  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").min(1, "La contraseña es requerida"),
+  email: z.string().min(1, "El email es requerido").email("Ingresa un email válido"),
+  password: z.string().min(1, "La contraseña es requerida").min(6, "La contraseña debe tener al menos 6 caracteres"),
   rememberMe: z.boolean().default(false),
 })
 
@@ -34,11 +34,26 @@ export default function LoginForm({ onSubmit, error, message }: LoginFormProps) 
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid }
+    watch,
+    formState: { errors, isValid, isDirty }
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
-    mode: "onChange"
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+      rememberMe: false
+    }
   })
+
+  // Watch the form values to enable/disable button
+  const email = watch("email")
+  const password = watch("password")
+  
+  // Simple validation: email has @ and password has at least 6 chars
+  const isEmailValid = email && email.includes("@") && email.length > 3
+  const isPasswordValid = password && password.length >= 6
+  const canSubmit = isEmailValid && isPasswordValid && !isSubmitting
 
   const handleFormSubmit = async (data: LoginFormData) => {
     setIsSubmitting(true)
@@ -140,7 +155,7 @@ export default function LoginForm({ onSubmit, error, message }: LoginFormProps) 
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={!isValid || isSubmitting}
+              disabled={!canSubmit || isSubmitting}
             >
               {isSubmitting ? (
                 <>

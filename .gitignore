@@ -49,6 +49,9 @@ CLAUDE.md
 *-backup-*
 backup-*
 
+# database scripts and schema
+sql/create_security_tables.sql
+
 # supabase local development
 /supabase/.temp/
 /supabase/functions/_shared/
