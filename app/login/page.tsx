@@ -11,9 +11,9 @@ export default function Login() {
   const error = searchParams.get('error')
   const message = searchParams.get('message')
 
-  const handleLogin = async (data: { email: string; password: string }) => {
+  const handleLogin = async (data: { email: string; password: string; rememberMe: boolean }) => {
     try {
-      await loginWithCredentials(data.email, data.password)
+      await loginWithCredentials(data.email, data.password, data.rememberMe)
       toast.success('Sesión iniciada correctamente')
       router.push('/')
     } catch (error: any) {

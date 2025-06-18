@@ -9,12 +9,14 @@ import { Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 
 const loginSchema = z.object({
   email: z.string().email("Ingresa un email válido").min(1, "El email es requerido"),
   password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").min(1, "La contraseña es requerida"),
+  rememberMe: z.boolean().default(false),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -121,6 +123,19 @@ export default function LoginForm({ onSubmit, error, message }: LoginFormProps) 
                 <p className="text-sm text-green-800">{message}</p>
               </div>
             )}
+
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="rememberMe" 
+                {...register("rememberMe")}
+              />
+              <Label 
+                htmlFor="rememberMe" 
+                className="text-sm font-normal cursor-pointer"
+              >
+                Recordar en este dispositivo
+              </Label>
+            </div>
 
             <Button 
               type="submit" 
