@@ -1,5 +1,6 @@
-'use client';
+'use client'
 
+import { User, Settings, Shield, Calendar, Users, Loader2 } from 'lucide-react'
 import {
     Avatar,
     AvatarFallback,
@@ -16,39 +17,127 @@ import {
     DropdownMenuShortcut,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
-import { LogOut } from "lucide-react"
-import { Logo } from "./logo"
+import { Badge } from "@/components/ui/badge"
 import LogoutButton from "@/components/LogoutButton"
-import { usePersonStore } from "@/store"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { getInitials } from "@/lib/acronym"
   
-  export function UserNav() {
+export function UserNav() {
+  const { profile, loading, isAdmin } = useCurrentUser()
 
-    const initials = getInitials(usePersonStore( state => state.userName ));
-
+  if (loading) {
     return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src="/avatars/01.png" alt="@shadcn" />
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="end" forceMount>
-          <DropdownMenuLabel className="font-normal">
-            {/* <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">shadcn</p>
-              <p className="text-xs leading-none text-muted-foreground">
-                m@example.com
-              </p>
-            </div> */}
-          </DropdownMenuLabel>
-          <DropdownMenuItem>
-            <LogOut/><LogoutButton />
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Button variant="ghost" className="relative h-10 w-10 rounded-full" disabled>
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </Button>
     )
   }
+
+  if (!profile) {
+    return (
+      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Avatar className="h-10 w-10">
+          <AvatarFallback>U</AvatarFallback>
+        </Avatar>
+      </Button>
+    )
+  }
+
+  const initials = getInitials(profile.name)
+  const displayName = profile.name || 'Usuario'
+  const displayEmail = profile.email || 'Sin email'
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-10 w-10 rounded-full ring-2 ring-transparent hover:ring-gray-200 transition-all">
+          <Avatar className="h-10 w-10 border-2 border-white shadow-md">
+            <AvatarImage 
+              src={profile.avatar_url || "/avatars/user.jpg"} 
+              alt={displayName} 
+              className="object-cover"
+            />
+            <AvatarFallback className="bg-gradient-to-br from-red-500 to-red-600 text-white font-semibold text-sm">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          {/* Indicador online */}
+          <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white rounded-full"></div>
+        </Button>
+      </DropdownMenuTrigger>
+      
+      <DropdownMenuContent className="w-72" align="end" forceMount>
+        <DropdownMenuLabel className="font-normal p-4">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-12 w-12">
+              <AvatarImage 
+                src={profile.avatar_url || "/avatars/user.jpg"} 
+                alt={displayName} 
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-gradient-to-br from-red-500 to-red-600 text-white font-semibold">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium leading-none">{displayName}</p>
+                {isAdmin && (
+                  <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Admin
+                  </Badge>
+                )}
+              </div>
+              <p className="text-xs leading-none text-muted-foreground mt-1">
+                {displayEmail}
+              </p>
+              <div className="flex items-center gap-1 mt-1">
+                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+                <span className="text-xs text-green-600">En línea</span>
+              </div>
+            </div>
+          </div>
+        </DropdownMenuLabel>
+        
+        <DropdownMenuSeparator />
+        
+        <DropdownMenuGroup>
+          <DropdownMenuItem className="cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            <span>Mi Perfil</span>
+            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem className="cursor-pointer">
+            <Calendar className="mr-2 h-4 w-4" />
+            <span>Mi Calendario</span>
+            <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Configuración</span>
+            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          
+          {isAdmin && (
+            <DropdownMenuItem className="cursor-pointer">
+              <Users className="mr-2 h-4 w-4" />
+              <span>Gestionar Usuarios</span>
+              <DropdownMenuShortcut>⌘U</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuGroup>
+        
+        <DropdownMenuSeparator />
+        
+        <DropdownMenuItem asChild>
+          <div className="w-full">
+            <LogoutButton variant="dropdown" showConfirmation={true} />
+          </div>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
