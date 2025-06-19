@@ -22,14 +22,14 @@ export default async function Index() {
   const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
 
-  if (session === null) {
+  if (!authUser) {
     redirect("/login");
   }
 
-  const user = await getUsersById(session.user.id);
+  const user = await getUsersById(authUser.id);
 
   const compensatorysnoapproved = await getsCompensatoriosNoApproved();
   const compensatorysHournoapproved = await getCompensatoriosHourNoapproved();

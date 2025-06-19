@@ -12,10 +12,10 @@ export default async function Compensatorios() {
   const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session === null) {
+  if (!user) {
     redirect("/login");
   }
   const vacations = await getVacationswithUser();

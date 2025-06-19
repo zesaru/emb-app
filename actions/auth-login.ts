@@ -132,7 +132,7 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
       password,
     })
 
-    const loginSuccess = !authError && authData?.user
+    const loginSuccess = !authError && !!authData?.user
 
     // 7. Record login attempt
     await securityManager.recordLoginAttempt(identifier, loginSuccess, {
@@ -227,7 +227,7 @@ export async function loginWithCredentials(email: string, password: string, reme
       password: validatedFields.data.password,
     })
 
-    const loginSuccess = !authError && authData?.user
+    const loginSuccess = !authError && !!authData?.user
 
     // Record attempt
     await securityManager.recordLoginAttempt(identifier, loginSuccess, {

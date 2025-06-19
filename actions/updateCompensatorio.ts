@@ -9,9 +9,9 @@ export default async function UpdateCompensatorio(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const approveby = session?.user?.id;
+    data: { user },
+  } = await supabase.auth.getUser();
+  const approveby = user?.id;
   const compensatorio = compensatory[0];
 
   try {

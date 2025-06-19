@@ -17,15 +17,15 @@ export default async function CompensatoriosbyId({
   const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session === null) {
+  if (!user) {
     redirect("/login");
   }
 
   const compensatorys = await getsCompensatorioswithUserById(params.id);
-  const user = await getUsersById(params.id);
+  const userData = await getUsersById(params.id);
 
   const sum = compensatorys.map((compensatory) => ({
     hours: compensatory.hours ?? 0,
@@ -127,7 +127,7 @@ export default async function CompensatoriosbyId({
               </div>
               <div className="flex-grow-1">
                 <h3 className="text-xl text-gray-800">
-                  {user[0].num_compensatorys}
+                  {userData[0].num_compensatorys}
                 </h3>
                 <p className="mb-0  text-gray-800">Compensatorios restantes</p>
               </div>
@@ -138,7 +138,7 @@ export default async function CompensatoriosbyId({
       <div className="container mx-auto py-10">
         <div className="flex p-2">
           <User />
-          <div className="flex px-2">{user[0].name}</div>
+          <div className="flex px-2">{userData[0].name}</div>
         </div>
         <DataTable columns={columns} data={compensatorys} />
       </div>

@@ -10,11 +10,11 @@ export default async function updateApproveRegisterHour(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const approved_by = session?.user?.id;
+    data: { user },
+  } = await supabase.auth.getUser();
+  const approved_by = user?.id;
 
-  if (session === null) return;
+  if (!user) return;
   await supabase
     .from("compensatorys")
     .update({

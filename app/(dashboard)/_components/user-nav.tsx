@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge"
 import LogoutButton from "@/components/LogoutButton"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
 import { getInitials } from "@/lib/acronym"
+import { ChangePasswordDialog } from "./change-password-dialog"
   
 export function UserNav() {
   const { profile, loading, isAdmin } = useCurrentUser()
@@ -53,7 +54,7 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-10 w-10 rounded-full ring-2 ring-transparent hover:ring-gray-200 transition-all">
           <Avatar className="h-10 w-10 border-2 border-white shadow-md">
             <AvatarImage 
-              src={profile.avatar_url || "/avatars/user.jpg"} 
+              src={profile.avatar_url || "/avatars/user.svg"} 
               alt={displayName} 
               className="object-cover"
             />
@@ -71,7 +72,7 @@ export function UserNav() {
           <div className="flex items-center gap-3">
             <Avatar className="h-12 w-12">
               <AvatarImage 
-                src={profile.avatar_url || "/avatars/user.jpg"} 
+                src={profile.avatar_url || "/avatars/user.svg"} 
                 alt={displayName} 
                 className="object-cover"
               />
@@ -119,6 +120,10 @@ export function UserNav() {
             <Settings className="mr-2 h-4 w-4" />
             <span>Configuración</span>
             <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem asChild>
+            <ChangePasswordDialog />
           </DropdownMenuItem>
           
           {isAdmin && (

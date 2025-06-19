@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import DOMPurify from 'isomorphic-dompurify'
 
 // Enhanced validation schemas with security considerations
 export const loginSchema = z.object({
@@ -94,10 +93,13 @@ export class InputSanitizer {
   }
   
   static sanitizeHtml(input: string): string {
-    return DOMPurify.sanitize(input, {
-      ALLOWED_TAGS: [],
-      ALLOWED_ATTR: []
-    })
+    // Simple HTML sanitization for server-side
+    return input
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#x27;')
+      .replace(/\//g, '&#x2F;')
   }
   
   static sanitizeFilename(filename: string): string {
@@ -187,7 +189,7 @@ export class SecurityValidator {
         /script\s*>/i
       ]
       
-      if (sqlPatterns.some(pattern => pattern.test(data.email))) {
+      if (sqlPatterns.some(pattern => pattern.test(data.email!))) {
         reasons.push('SQL injection pattern detected in email')
       }
     }

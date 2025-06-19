@@ -107,6 +107,6 @@ export async function logoutAction(options: LogoutOptions = {}) {
 }
 
 export async function logoutAndRedirect(allDevices: boolean = false) {
-  await logoutAction({ allDevices, reason: 'user_initiated' })
-  redirect('/login')
+  const result = await logoutAction({ allDevices, reason: 'user_initiated' })
+  return result
 }

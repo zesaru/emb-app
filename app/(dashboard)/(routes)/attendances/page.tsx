@@ -13,21 +13,21 @@ export default async function Attendances() {
   const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session === null) {
+  if (!user) {
     redirect("/login");
   }
   
-  const user = await getUsersById(session.user.id);  
+  const userData = await getUsersById(user.id);  
 
   const attendances = await getAttendanceswithUser();
 
   return (
     <div className="flex flex-col">
       <div className="container mx-auto py-10">
-      { user[0].admin==='admin' ?
+      { userData[0].admin==='admin' ?
         <DataTable columns={columns} data={attendances} />
         : <p>Me pareció ver un lindo gatito</p>
       }

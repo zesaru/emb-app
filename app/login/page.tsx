@@ -1,32 +1,25 @@
-'use client'
+import { Suspense } from 'react'
+import { redirectIfAuthenticated } from '@/lib/auth'
+import LoginPageClient from './_components/LoginPageClient'
 
-import { useSearchParams, useRouter } from 'next/navigation'
-import { toast } from 'react-toastify'
-import LoginForm from './_components/LoginForm'
-import { loginWithCredentials } from '@/actions/auth-login'
+function LoginFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+        <p className="mt-2 text-sm text-gray-600">Cargando...</p>
+      </div>
+    </div>
+  )
+}
 
-export default function Login() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const error = searchParams.get('error')
-  const message = searchParams.get('message')
-
-  const handleLogin = async (data: { email: string; password: string; rememberMe: boolean }) => {
-    try {
-      await loginWithCredentials(data.email, data.password, data.rememberMe)
-      toast.success('Sesión iniciada correctamente')
-      router.push('/')
-    } catch (error: any) {
-      toast.error(error.message || 'Error al iniciar sesión')
-      throw error
-    }
-  }
+export default async function Login() {
+  // Redirect to dashboard if already authenticated
+  await redirectIfAuthenticated()
 
   return (
-    <LoginForm 
-      onSubmit={handleLogin}
-      error={error || undefined}
-      message={message || undefined}
-    />
+    <Suspense fallback={<LoginFallback />}>
+      <LoginPageClient />
+    </Suspense>
   )
 }

@@ -19,49 +19,41 @@ import { Icons } from "@/components/animatespin"
 import { useState } from "react"
 import React from "react"
 import { toast } from "react-toastify"
-import { supabase } from '@/lib/supabase'
+import { resetPasswordAction } from "@/actions/auth-change-password"
+import { passwordResetSchema } from "@/lib/validation"
 
 
 
-const FormSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 5 characters.",
-  }),
-  password: z.string().min(5, {
-    message: "Password must be at least 5 characters.",
-  }),
-})
+type ResetFormData = z.infer<typeof passwordResetSchema>
 
+export default function ResetForm() {
+  const [loading, setLoading] = React.useState(false)
 
-export default  function ResetForm() {
-  const [loading, setLoading] = React.useState((false) as boolean);
-
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<ResetFormData>({
+    resolver: zodResolver(passwordResetSchema),
     defaultValues: {
-      username: "",
-      password: "",
+      email: "",
     },
   })
 
-    async function onSubmit(dat: z.infer<typeof FormSchema>) {
- 
+  async function onSubmit(data: ResetFormData) {
     try {
-      setLoading(true);
-      const { data , error } = await supabase.auth.updateUser({
-        email: dat.username,
-        password: dat.password,
-      });
-      if (data.user) {
-        toast.success("Contraseña cambiada con éxito");
+      setLoading(true)
+      
+      const result = await resetPasswordAction(data.email)
+      
+      if (result.success) {
+        toast.success("Se ha enviado un enlace de recuperación a tu email")
+        form.reset()
+      } else {
+        toast.error(result.error || "Error al enviar el email de recuperación")
       }
     } catch (error) {
-      console.log(error);
-      toast.error("Error al cambiar la contraseña");
+      console.log(error)
+      toast.error("Error inesperado. Intenta nuevamente.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-
   }
 
   return (
@@ -70,39 +62,35 @@ export default  function ResetForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
         <FormField
           control={form.control}
-          name="username"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>email</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="mail@mail.com" {...field} />
+                <Input 
+                  type="email" 
+                  placeholder="tu-email@ejemplo.com" 
+                  {...field} 
+                  disabled={loading}
+                />
               </FormControl>
               <FormDescription>
+                Te enviaremos un enlace para restablecer tu contraseña.
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="password"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>password</FormLabel>
-              <FormControl>
-                <Input type='password' placeholder="******" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        <Button type="submit" disabled={loading} className="min-w-[140px]">
+          {loading ? (
+            <>
+              <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> 
+              Enviando...
+            </>
+          ) : (
+            "Enviar Enlace"
           )}
-        />
-        <Button type="submit">{loading ? 
-          
-            <Icons.spinner className="animate-spin" /> 
-
-          : 
-          "Guardar"}
         </Button>
       </form>
     </Form>

@@ -10,12 +10,12 @@ export default async function updateApproveRegister(compensatory: any) {
   const supabase = createServerActionClient({ cookies });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const approved_by = session?.user?.id;
+  const approved_by = user?.id;
   
-  if (session === null) return;
+  if (!user) return;
   await supabase
     .from("compensatorys")
     .update({

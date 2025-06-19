@@ -16,10 +16,10 @@ export default async function Approvec({ params }: { params: { id: string } }) {
   const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session === null) {
+  if (!user) {
     redirect("/login");
   }
 
