@@ -12,7 +12,7 @@ interface LogoutOptions {
 }
 
 export async function logoutAction(options: LogoutOptions = {}) {
-  const headersList = headers()
+  const headersList = await headers()
   const request = new Request('http://localhost', { headers: headersList })
   const identifier = getClientIdentifier(request)
   const clientInfo = getClientInfo(request)
@@ -41,7 +41,7 @@ export async function logoutAction(options: LogoutOptions = {}) {
       })
 
       // Clear remember me sessions
-      const rememberToken = RememberMeCookieManager.getRememberMeToken()
+      const rememberToken = await RememberMeCookieManager.getRememberMeToken()
       if (rememberToken) {
         try {
           const validation = await deviceSessionManager.validateRememberMeToken(
@@ -79,7 +79,7 @@ export async function logoutAction(options: LogoutOptions = {}) {
       }
 
       // Clear remember me cookie
-      RememberMeCookieManager.clearRememberMeToken()
+      await RememberMeCookieManager.clearRememberMeToken()
     }
 
     // Sign out from Supabase

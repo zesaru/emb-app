@@ -7,7 +7,6 @@ import { clearAuthCookies } from '@/lib/auth-cookies'
 export async function simpleLogout() {
   try {
     console.log('Starting simple logout...')
-    const cookieStore = cookies()
     const supabase = createServerActionClient({ cookies })
     
     // Get current user before logout

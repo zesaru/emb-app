@@ -9,6 +9,7 @@ import { DataTableHour } from "../../_components/data-table-hour";
 import { columnsHour } from "../../_components/columns-hour";
 import { DataTableVacations } from "../../_components/data-table-vacaciones";
 import { columnVacations } from "../../_components/columms-vacations";
+import { Database } from "@/types/database.type";
 
 import getsCompensatoriosNoApproved from "@/actions/getCompensatoriosNoApproved";
 import GetNotApproved from "@/actions/getNotApproved";

@@ -297,21 +297,21 @@ export class RememberMeCookieManager {
     path: '/'
   }
   
-  static setRememberMeToken(token: string, expiresAt: Date): void {
-    const cookieStore = cookies()
+  static async setRememberMeToken(token: string, expiresAt: Date): Promise<void> {
+    const cookieStore = await cookies()
     cookieStore.set(this.COOKIE_NAME, token, {
       ...this.COOKIE_OPTIONS,
       expires: expiresAt
     })
   }
   
-  static getRememberMeToken(): string | undefined {
-    const cookieStore = cookies()
+  static async getRememberMeToken(): Promise<string | undefined> {
+    const cookieStore = await cookies()
     return cookieStore.get(this.COOKIE_NAME)?.value
   }
   
-  static clearRememberMeToken(): void {
-    const cookieStore = cookies()
+  static async clearRememberMeToken(): Promise<void> {
+    const cookieStore = await cookies()
     cookieStore.delete(this.COOKIE_NAME)
   }
 }

@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers'
 
 export async function debugCookies() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   
   try {
     const allCookies = cookieStore.getAll()

@@ -11,8 +11,10 @@ import { redirect } from "next/navigation";
 import CTable from "../_components/compensatory-table";
 import getsCompensatorioById from "@/actions/getCompensatorioById";
 import BtnAprobar from "../_components/btnAprobar";
+import { Database } from "@/types/database.type";
 
-export default async function Approvec({ params }: { params: { id: string } }) {
+export default async function Approvec({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
@@ -23,7 +25,7 @@ export default async function Approvec({ params }: { params: { id: string } }) {
     redirect("/login");
   }
 
-  const idcompensatory = params.id;
+  const idcompensatory = id;
   const compensatory = await getsCompensatorioById(idcompensatory);
 
   return (

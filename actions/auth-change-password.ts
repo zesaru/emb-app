@@ -13,7 +13,7 @@ interface ChangePasswordResult {
 }
 
 export async function changePasswordAction(formData: FormData): Promise<ChangePasswordResult> {
-  const headersList = headers()
+  const headersList = await headers()
   const request = new Request('http://localhost', { headers: headersList })
   const identifier = getClientIdentifier(request)
   const clientInfo = getClientInfo(request)
@@ -158,7 +158,7 @@ export async function changePasswordAction(formData: FormData): Promise<ChangePa
 }
 
 export async function resetPasswordAction(email: string): Promise<{ success?: boolean; error?: string }> {
-  const headersList = headers()
+  const headersList = await headers()
   const request = new Request('http://localhost', { headers: headersList })
   const identifier = getClientIdentifier(request)
   const clientInfo = getClientInfo(request)

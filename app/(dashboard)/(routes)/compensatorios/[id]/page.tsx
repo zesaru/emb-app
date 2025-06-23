@@ -6,14 +6,16 @@ import { columns } from "./_components/columns";
 import { User } from 'lucide-react';
 import getsCompensatorioswithUserById from "@/actions/getCompensatoriosbyId";
 import getUsersById from "@/actions/getUsersById";
+import { Database } from "@/types/database.type";
 
 export const dynamic = "force-dynamic";
 
 export default async function CompensatoriosbyId({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
@@ -24,8 +26,8 @@ export default async function CompensatoriosbyId({
     redirect("/login");
   }
 
-  const compensatorys = await getsCompensatorioswithUserById(params.id);
-  const userData = await getUsersById(params.id);
+  const compensatorys = await getsCompensatorioswithUserById(id);
+  const userData = await getUsersById(id);
 
   const sum = compensatorys.map((compensatory) => ({
     hours: compensatory.hours ?? 0,

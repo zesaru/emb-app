@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers'
 
 export async function clearAuthCookies() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   
   console.log('Starting cookie cleanup...')
   

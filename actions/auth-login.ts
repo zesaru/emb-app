@@ -16,7 +16,7 @@ interface LoginResult {
 }
 
 export async function loginAction(formData: FormData): Promise<LoginResult> {
-  const headersList = headers()
+  const headersList = await headers()
   const request = new Request('http://localhost', { headers: headersList })
   const identifier = getClientIdentifier(request)
   const clientInfo = getClientInfo(request)
@@ -184,7 +184,7 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
 }
 
 export async function loginWithCredentials(email: string, password: string, rememberMe: boolean = false): Promise<void> {
-  const headersList = headers()
+  const headersList = await headers()
   const request = new Request('http://localhost', { headers: headersList })
   const identifier = getClientIdentifier(request)
   const clientInfo = getClientInfo(request)
@@ -269,7 +269,7 @@ export async function loginWithCredentials(email: string, password: string, reme
         )
 
         // Set the remember me cookie
-        RememberMeCookieManager.setRememberMeToken(
+        await RememberMeCookieManager.setRememberMeToken(
           rememberMeToken.token,
           rememberMeToken.expiresAt
         )
