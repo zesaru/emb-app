@@ -5,12 +5,13 @@ import getAttendanceswithUser from "@/actions/getAttendanceswithUser";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import getUsersById from "@/actions/getUsersById";
+import { Database } from "@/types/database.type";
 
 export const dynamic = "force-dynamic";
 
 export default async function Attendances() {
 
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createServerComponentClient<Database>({ cookies: await cookies });
 
   const {
     data: { user },

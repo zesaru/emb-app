@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { createSecurityManager, getClientIdentifier, getClientInfo, securityConfig } from '@/lib/rate-limiter'
@@ -126,7 +126,23 @@ export async function loginAction(formData: FormData): Promise<LoginResult> {
     const { email, password } = validatedFields.data
 
     // 6. Attempt authentication
-    const supabase = createServerActionClient({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -221,7 +237,23 @@ export async function loginWithCredentials(email: string, password: string, reme
     }
 
     // Attempt login
-    const supabase = createServerActionClient({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: validatedFields.data.email,
       password: validatedFields.data.password,

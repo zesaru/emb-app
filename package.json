@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "gen-types": "supabase gen types typescript --linked > types/database.type.ts",
@@ -30,6 +30,7 @@
     "@react-email/preview": "latest",
     "@react-email/render": "latest",
     "@supabase/auth-helpers-nextjs": "latest",
+    "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "latest",
     "@tanstack/react-table": "^8.10.6",
     "add": "^2.0.6",

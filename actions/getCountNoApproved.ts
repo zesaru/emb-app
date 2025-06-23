@@ -8,7 +8,7 @@ const getCountNoApproved = async () => {
     cookies: cookies,
   });
 
-  const  { data }  = await supabase.rpc("listar_vacaciones_compensatorios_no_aprobados_por_usuario");
+  const  { data }  = await supabase.rpc("count_unapproved_records");
   return (data as any) || [];
 };
 

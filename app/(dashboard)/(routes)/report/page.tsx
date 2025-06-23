@@ -3,9 +3,10 @@ export const dynamic = "force-dynamic";
 import List from '../../_components/list'
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { Database } from "@/types/database.type";
 
 const Report = async () => {
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createServerComponentClient<Database>({ cookies: await cookies });
 
   const {
     data: { user },

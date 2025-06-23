@@ -1,6 +1,6 @@
 'use server'
 
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
 import { createSecurityManager, getClientIdentifier, getClientInfo, securityConfig } from '@/lib/rate-limiter'
 import { changePasswordSchema, InputSanitizer, SecurityValidator, genericErrorMessages } from '@/lib/validation'
@@ -66,7 +66,23 @@ export async function changePasswordAction(formData: FormData): Promise<ChangePa
     const { currentPassword: validCurrentPassword, newPassword: validNewPassword } = validatedFields.data
 
     // 5. Get current user
-    const supabase = createServerActionClient({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
@@ -183,7 +199,23 @@ export async function resetPasswordAction(email: string): Promise<{ success?: bo
       return { error: 'Email inválido' }
     }
 
-    const supabase = createServerActionClient({ cookies })
+    const cookieStore = await cookies()
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
     
     // Send password reset email
     const { error } = await supabase.auth.resetPasswordForEmail(sanitizedEmail, {

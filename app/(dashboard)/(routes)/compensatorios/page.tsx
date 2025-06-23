@@ -4,12 +4,13 @@ import { columns } from "./_components/columns"
 import getsCompensatorioswithUser from "@/actions/getCompensatorioswithUser";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { Database } from "@/types/database.type";
 
 export const dynamic = "force-dynamic";
 
 export default async function Compensatorios() {
 
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createServerComponentClient<Database>({ cookies: await cookies });
 
   const {
     data: { user },

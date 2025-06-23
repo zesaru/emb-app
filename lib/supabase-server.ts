@@ -2,7 +2,7 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
 export async function getServerUser() {
-  const supabase = createServerComponentClient({ cookies })
+  const supabase = createServerComponentClient({ cookies: await cookies })
   const { data: { user }, error } = await supabase.auth.getUser()
   
   if (error) {
@@ -13,6 +13,6 @@ export async function getServerUser() {
   return user
 }
 
-export function createServerSupabaseClient() {
-  return createServerComponentClient({ cookies })
+export async function createServerSupabaseClient() {
+  return createServerComponentClient({ cookies: await cookies })
 }
