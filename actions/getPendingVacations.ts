@@ -1,10 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { VacationsWithUser } from "./../types/collections";
+import { VacationsWithUser } from "@/types/collections";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
-const getVacationsWithUser = async():Promise<VacationsWithUser[]> => {
+const getPendingVacations = async(): Promise<VacationsWithUser[]> => {
     const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,15 +26,15 @@ const getVacationsWithUser = async():Promise<VacationsWithUser[]> => {
     const { data, error } = await supabase
       .from('vacations')
       .select('*, user1:users!id_user(*)')
-      .eq('approve_request', true) // Solo vacaciones aprobadas
-      .gte('days',  0)
-      .order('start', { ascending: false })
+      .eq('approve_request', false) // Solo vacaciones NO aprobadas
+      .gte('days', 0)
+      .order('start', { ascending: false });
   
     if (error) {
-      console.log(error.message);
+      console.log('Error fetching pending vacations:', error.message);
     }
 
     return (data as any) || [];
 }
 
-export default getVacationsWithUser;
+export default getPendingVacations;
