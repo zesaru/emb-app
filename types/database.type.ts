@@ -125,6 +125,7 @@ export interface Database {
           created_at: string
           email: string
           id: string
+          is_active: boolean | null
           name: string | null
           num_compensatorys: number | null
           num_vacations: number | null
@@ -135,6 +136,7 @@ export interface Database {
           created_at?: string
           email: string
           id: string
+          is_active?: boolean | null
           name?: string | null
           num_compensatorys?: number | null
           num_vacations?: number | null
@@ -145,6 +147,7 @@ export interface Database {
           created_at?: string
           email?: string
           id?: string
+          is_active?: boolean | null
           name?: string | null
           num_compensatorys?: number | null
           num_vacations?: number | null

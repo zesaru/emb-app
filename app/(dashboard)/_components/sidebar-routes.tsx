@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, Layout, SmilePlus, Palmtree, LayoutList, CalendarDays     } from "lucide-react";
+import { Compass, Layout, SmilePlus, Palmtree, LayoutList, CalendarDays, Users } from "lucide-react";
 
 import { SidebarItem } from "./sidebar-item";
 
@@ -49,6 +49,11 @@ const routes = [
     icon: LayoutList,
     label: "Reporte",
     href: "/report",
+  },
+  {
+    icon: Users,
+    label: "Usuarios",
+    href: "/usuarios",
   }
 ];
 

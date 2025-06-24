@@ -25,8 +25,7 @@ const getUsers = async():Promise<UsersEntity[]> => {
 
     const { data, error } = await supabase
       .from('users')
-      .select('*')
-      .eq('is_active', true);
+      .select('*');
   
     if (error) {
       console.log(error.message);
