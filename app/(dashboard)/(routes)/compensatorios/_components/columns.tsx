@@ -17,7 +17,7 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
     },
   },
   {
-    accessorKey: "user1.name",
+    accessorKey: "users.name",
     header: "Usuario",
   },
   {

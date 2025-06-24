@@ -11,8 +11,6 @@ import {
   useReactTable,
   getPaginationRowModel,
   getFilteredRowModel,
-  
-
 } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
@@ -35,7 +33,6 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
-  
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(

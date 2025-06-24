@@ -13,6 +13,11 @@ const nextConfig = {
     
     return config
   },
+  // Disable OpenTelemetry warnings and vendor chunk issues (Next.js 15+)
+  serverExternalPackages: [
+    '@opentelemetry/auto-instrumentations-node',
+    '@opentelemetry/instrumentation',
+  ],
 }
 
 module.exports = nextConfig

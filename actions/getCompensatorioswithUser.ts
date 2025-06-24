@@ -11,7 +11,7 @@ const getsCompensatorioswithUser = async():Promise<CompensatorysWithUser[]> => {
 
     const { data, error } = await supabase
       .from('compensatorys')
-      .select('*, user1:users!user_id(*), user2:users!approved_by(*)')
+      .select('*, users:users!user_id(*)')
       .gte('hours',  0)
       .order('event_date', { ascending: false })
   

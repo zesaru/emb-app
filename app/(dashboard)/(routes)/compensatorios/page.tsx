@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Compensatorios() {
 
-  const supabase = createServerComponentClient<Database>({ cookies: await cookies });
+  const supabase = createServerComponentClient<Database>({ cookies });
 
   const {
     data: { user },

@@ -28,7 +28,7 @@ export default async function CTable({ compensatory }: { compensatory: any }) {
         <TableBody>
           <TableRow>
             <TableCell className="font-medium">{compensatorio.id}</TableCell>
-            <TableCell>{compensatorio.user1.name}</TableCell>
+            <TableCell>{compensatorio.users?.name}</TableCell>
             <TableCell>{compensatorio.event_name}</TableCell>
             <TableCell className="text-center">
               {compensatorio.event_date}

@@ -27,30 +27,22 @@ export async function middleware(req: NextRequest) {
   const { data: { user }, error } = await supabase.auth.getUser()
 
   // Define route types
-  const isAuthRoute = req.nextUrl.pathname === '/login' || req.nextUrl.pathname === '/reset'
-  const isProtectedRoute = !isAuthRoute && 
-                          !req.nextUrl.pathname.startsWith('/auth') && 
-                          !req.nextUrl.pathname.startsWith('/api') &&
-                          req.nextUrl.pathname !== '/favicon.ico'
-
-  console.log('Middleware check:', {
-    pathname: req.nextUrl.pathname,
-    hasUser: !!user,
-    isAuthRoute,
-    isProtectedRoute,
-    userError: error?.message
-  })
+  const pathname = req.nextUrl.pathname
+  const isAuthRoute = pathname === '/login' || pathname === '/reset'
+  const isPublicRoute = pathname.startsWith('/auth') || 
+                        pathname.startsWith('/api') || 
+                        pathname.startsWith('/_next') ||
+                        pathname === '/favicon.ico'
+  const isProtectedRoute = !isAuthRoute && !isPublicRoute
 
   // If no user and trying to access protected route, redirect to login
   if (!user && isProtectedRoute) {
-    console.log('No user, redirecting to login')
     const loginUrl = new URL('/login', req.url)
     return NextResponse.redirect(loginUrl)
   }
 
   // If user exists and trying to access auth routes, redirect to dashboard
   if (user && isAuthRoute) {
-    console.log('User exists, redirecting to dashboard')
     const dashboardUrl = new URL('/', req.url)
     return NextResponse.redirect(dashboardUrl)
   }
@@ -61,12 +53,12 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except:
      * - _next/static (static files)
-     * - _next/image (image optimization files)
+     * - _next/image (image optimization files)  
      * - favicon.ico (favicon file)
-     * - public (public files)
+     * - public folder (public assets)
      */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }
