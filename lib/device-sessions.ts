@@ -1,4 +1,4 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import crypto from 'crypto'
 
@@ -17,7 +17,31 @@ interface RememberMeToken {
 }
 
 export class DeviceSessionManager {
-  private supabase = createServerComponentClient({ cookies })
+  private async getSupabase() {
+    const cookieStore = await cookies();
+    return createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored if you have middleware refreshing
+              // user sessions.
+            }
+          },
+        },
+      }
+    );
+  }
   
   // Generate secure remember me token
   async createRememberMeSession(
@@ -26,13 +50,15 @@ export class DeviceSessionManager {
     durationDays: number = 30
   ): Promise<RememberMeToken> {
     try {
+      const supabase = await this.getSupabase();
+      
       // Generate cryptographically secure token
       const token = crypto.randomBytes(64).toString('hex')
       const deviceFingerprint = this.generateDeviceFingerprint(deviceInfo)
       const expiresAt = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000)
       
       // Store in database
-      const { error } = await this.supabase
+      const { error } = await supabase
         .from('device_sessions')
         .insert({
           user_id: userId,
@@ -70,8 +96,10 @@ export class DeviceSessionManager {
         return { valid: false }
       }
       
+      const supabase = await this.getSupabase();
+      
       // Find active session with this token
-      const { data: session, error } = await this.supabase
+      const { data: session, error } = await supabase
         .from('device_sessions')
         .select('*')
         .eq('remember_token', token)
@@ -107,7 +135,7 @@ export class DeviceSessionManager {
       }
       
       // Update last used timestamp
-      await this.supabase
+      await supabase
         .from('device_sessions')
         .update({ last_used_at: new Date().toISOString() })
         .eq('id', session.id)
@@ -126,7 +154,9 @@ export class DeviceSessionManager {
   // Revoke a specific device session
   async revokeDeviceSession(sessionId: string, userId?: string): Promise<boolean> {
     try {
-      let query = this.supabase
+      const supabase = await this.getSupabase();
+      
+      let query = supabase
         .from('device_sessions')
         .update({ is_active: false })
         .eq('id', sessionId)
@@ -152,7 +182,9 @@ export class DeviceSessionManager {
   // Revoke all device sessions for a user
   async revokeAllUserSessions(userId: string, exceptSessionId?: string): Promise<boolean> {
     try {
-      let query = this.supabase
+      const supabase = await this.getSupabase();
+      
+      let query = supabase
         .from('device_sessions')
         .update({ is_active: false })
         .eq('user_id', userId)
@@ -185,7 +217,9 @@ export class DeviceSessionManager {
     isCurrent: boolean
   }>> {
     try {
-      const { data: sessions, error } = await this.supabase
+      const supabase = await this.getSupabase();
+      
+      const { data: sessions, error } = await supabase
         .from('device_sessions')
         .select('*')
         .eq('user_id', userId)
@@ -214,7 +248,9 @@ export class DeviceSessionManager {
   // Clean up expired sessions
   async cleanupExpiredSessions(): Promise<void> {
     try {
-      await this.supabase
+      const supabase = await this.getSupabase();
+      
+      await supabase
         .from('device_sessions')
         .delete()
         .lt('expires_at', new Date().toISOString())
@@ -253,7 +289,9 @@ export class DeviceSessionManager {
   
   private async deactivateSession(sessionId: string): Promise<void> {
     try {
-      await this.supabase
+      const supabase = await this.getSupabase();
+      
+      await supabase
         .from('device_sessions')
         .update({ is_active: false })
         .eq('id', sessionId)
@@ -271,7 +309,9 @@ export class DeviceSessionManager {
     metadata?: Record<string, any>
   }): Promise<void> {
     try {
-      await this.supabase
+      const supabase = await this.getSupabase();
+      
+      await supabase
         .from('security_events')
         .insert({
           user_id: event.user_id,

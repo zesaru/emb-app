@@ -1,4 +1,4 @@
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import crypto from 'crypto'
 
@@ -26,7 +26,31 @@ interface SecurityEvent {
 }
 
 export class SecurityManager {
-  private supabase = createServerComponentClient({ cookies })
+  private async getSupabase() {
+    const cookieStore = await cookies();
+    return createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // The `setAll` method was called from a Server Component.
+              // This can be ignored if you have middleware refreshing
+              // user sessions.
+            }
+          },
+        },
+      }
+    );
+  }
 
   async checkRateLimit(options: RateLimitOptions): Promise<RateLimitResult> {
     const { maxAttempts, windowMs, identifier, blockDurationMs = windowMs } = options
@@ -34,8 +58,10 @@ export class SecurityManager {
     const windowStart = new Date(now.getTime() - windowMs)
 
     try {
+      const supabase = await this.getSupabase();
+      
       // Check if currently blocked
-      const { data: blockedCheck } = await this.supabase
+      const { data: blockedCheck } = await supabase
         .rpc('is_ip_blocked', { p_identifier: identifier })
 
       if (blockedCheck) {
@@ -55,7 +81,7 @@ export class SecurityManager {
       }
 
       // Get recent failed attempts count
-      const { data: failedCount } = await this.supabase
+      const { data: failedCount } = await supabase
         .rpc('count_failed_attempts', { 
           p_identifier: identifier,
           p_window_minutes: Math.floor(windowMs / (60 * 1000))
@@ -67,7 +93,7 @@ export class SecurityManager {
       if (blocked) {
         // Block the identifier
         const blockedUntil = new Date(now.getTime() + blockDurationMs)
-        await this.supabase
+        await supabase
           .from('login_attempts')
           .insert({
             identifier,
@@ -123,8 +149,10 @@ export class SecurityManager {
     }
   ): Promise<void> {
     try {
+      const supabase = await this.getSupabase();
+      
       // Record login attempt
-      await this.supabase
+      await supabase
         .from('login_attempts')
         .insert({
           identifier,
@@ -159,7 +187,9 @@ export class SecurityManager {
 
   async logSecurityEvent(event: SecurityEvent): Promise<void> {
     try {
-      await this.supabase
+      const supabase = await this.getSupabase();
+      
+      await supabase
         .from('security_events')
         .insert({
           event_type: event.event_type,
@@ -178,8 +208,10 @@ export class SecurityManager {
     data?: { email?: string; ipAddress?: string }
   ): Promise<void> {
     try {
+      const supabase = await this.getSupabase();
+      
       // Check for multiple different emails from same identifier
-      const { data: emailAttempts } = await this.supabase
+      const { data: emailAttempts } = await supabase
         .from('login_attempts')
         .select('email')
         .eq('identifier', identifier)
@@ -204,7 +236,7 @@ export class SecurityManager {
       }
 
       // Check for rapid-fire attempts
-      const { data: recentAttempts } = await this.supabase
+      const { data: recentAttempts } = await supabase
         .from('login_attempts')
         .select('created_at')
         .eq('identifier', identifier)
@@ -233,17 +265,19 @@ export class SecurityManager {
     suspiciousActivityDetected: boolean
   }> {
     try {
+      const supabase = await this.getSupabase();
+      
       const [failedAttemptsResult, blockedResult, lastLoginResult, suspiciousResult] = await Promise.all([
-        this.supabase.rpc('count_failed_attempts', { p_identifier: identifier }),
-        this.supabase.rpc('is_ip_blocked', { p_identifier: identifier }),
-        this.supabase
+        supabase.rpc('count_failed_attempts', { p_identifier: identifier }),
+        supabase.rpc('is_ip_blocked', { p_identifier: identifier }),
+        supabase
           .from('login_attempts')
           .select('created_at')
           .eq('identifier', identifier)
           .eq('success', true)
           .order('created_at', { ascending: false })
           .limit(1),
-        this.supabase
+        supabase
           .from('security_events')
           .select('id')
           .eq('metadata->>identifier', identifier)

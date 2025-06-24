@@ -11,6 +11,12 @@ const nextConfig = {
       }
     }
     
+    // Suppress Supabase Realtime warnings
+    config.ignoreWarnings = [
+      { message: /Critical dependency: the request of a dependency is an expression/ },
+      { module: /@supabase\/realtime-js/ }
+    ]
+    
     return config
   },
   // Disable OpenTelemetry warnings and vendor chunk issues (Next.js 15+)
