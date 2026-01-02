@@ -5,7 +5,7 @@ import { CompensatorysWithUser } from "./../types/collections";
 export const dynamic = 'force-dynamic'
 
 const getsCompensatorioswithUserById = async(id:string):Promise<CompensatorysWithUser[]> => {
-    const supabase = createClient();
+    const supabase = await createClient();
 
 
     const { data, error } = await supabase.rpc("get_compensatorys_for_user", {

@@ -14,7 +14,7 @@ export const addPost = async (formData: FormData) => {
 
   if (formData === null) return { success: false, error: "Datos vacíos" };
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

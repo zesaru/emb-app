@@ -8,7 +8,7 @@ import { createClient } from '@/utils/supabase/server';
  * @throws Error si el usuario no existe o no es admin
  */
 export async function requireAdmin(userId: string): Promise<void> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("users")
@@ -52,7 +52,7 @@ export async function isAdmin(userId: string): Promise<boolean> {
  * @throws Error si no hay usuario autenticado o no es admin
  */
 export async function requireCurrentUserAdmin(): Promise<void> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: { user }, error: authError } = await supabase.auth.getUser();
 

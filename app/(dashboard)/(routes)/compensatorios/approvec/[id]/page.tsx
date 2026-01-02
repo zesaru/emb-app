@@ -12,7 +12,7 @@ import getsCompensatorioById from "@/actions/getCompensatorioById";
 import BtnAprobar from "../_components/btnAprobar";
 
 export default async function Approvec({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { session },

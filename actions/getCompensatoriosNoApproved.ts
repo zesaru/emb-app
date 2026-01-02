@@ -5,7 +5,7 @@ import { CompensatorysWithUser } from "./../types/collections";
 export const dynamic = 'force-dynamic'
 
 const getsCompensatoriosNoApproved = async():Promise<CompensatorysWithUser[]> => {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD
     // Solo admins deberían ver la cola de aprobación

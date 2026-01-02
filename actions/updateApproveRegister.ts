@@ -16,7 +16,7 @@ interface CompensatoryInput {
 }
 
 export default async function updateApproveRegister(compensatory: CompensatoryInput) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Obtener usuario autenticado
   const {

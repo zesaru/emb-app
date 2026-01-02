@@ -12,7 +12,7 @@ import { BackupResult } from "@/lib/backup/backup-types";
  * @returns {Promise<BackupResult>} Result of the backup operation
  */
 export const createBackup = async (): Promise<BackupResult> => {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Get current user
   const {

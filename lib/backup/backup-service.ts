@@ -105,7 +105,7 @@ const TABLE_SCHEMAS: Record<string, TableSchema> = {
 export const backupService = {
   async createBackup(): Promise<BackupResult> {
     const startTime = Date.now();
-    const supabase = createClient();
+    const supabase = await createClient();
 
     try {
       const backupData: BackupData = {
@@ -184,7 +184,7 @@ export const backupService = {
   },
 
   async restoreBackup(backupId: string): Promise<RestoreResult> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const tablesAffected: string[] = [];
 
     try {

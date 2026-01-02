@@ -8,17 +8,18 @@ import Link from "next/link";
 
 export const columns: ColumnDef<VacationsWithUser>[] = [
   {
-    accessorKey: "id_user",
+    accessorKey: "user_id",
     header: "ID",
     cell: ({ row }) => {
-      const id = row.getValue("id_user")
+      const id = row.getValue("user_id")
 
       return <Link href='#' className="text-center font-medium"><GanttChartSquare /></Link>
     },
   },
   {
-    accessorKey: "user1.name",
+    accessorFn: (row) => row.user1?.name,
     header: "Usuario",
+    id: "user1.name",
   },
   {
     accessorKey: "request_date",

@@ -8,7 +8,7 @@ import { Plus } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function BackupsPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { session },

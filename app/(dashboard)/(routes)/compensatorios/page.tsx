@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Compensatorios() {
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { session },

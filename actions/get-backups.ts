@@ -11,7 +11,7 @@ import { BackupMetadata } from "@/lib/backup/backup-types";
  * @returns {Promise<BackupMetadata[]>} Array of backup metadata
  */
 export const getBackups = async (): Promise<BackupMetadata[]> => {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Get current user
   const {

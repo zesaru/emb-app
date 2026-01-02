@@ -5,7 +5,7 @@ import { CompensatorysWithUser } from "./../types/collections";
 export const dynamic = 'force-dynamic'
 
 const getsCompensatorioById = async(id:string):Promise<CompensatorysWithUser[]> => {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -15,7 +15,7 @@ const getsCompensatorioById = async(id:string):Promise<CompensatorysWithUser[]> 
 
     const { data, error } = await supabase
       .from('compensatorys')
-      .select('*, user1:users!user_id(*)')
+      .select('*, user1:users!compensatorys_user_id_fkey(*)')
       .eq('id', id);
 
     if (error) {

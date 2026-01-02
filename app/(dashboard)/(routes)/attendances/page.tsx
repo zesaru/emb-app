@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Attendances() {
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { session },

@@ -14,7 +14,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  * @returns An object with a success flag indicating if the operation was successful and an error object if the operation failed.
  */
 export default async function UpdateCompensatorioResquest(compensatory: any) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

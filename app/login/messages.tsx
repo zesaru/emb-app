@@ -1,8 +1,9 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 
-export default function Messages() {
+function MessagesInner() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
   const message = searchParams.get('message')
@@ -19,5 +20,13 @@ export default function Messages() {
         </p>
       )}
     </>
+  )
+}
+
+export default function Messages() {
+  return (
+    <Suspense fallback={<p className="mt-4 text-center">Cargando...</p>}>
+      <MessagesInner />
+    </Suspense>
   )
 }

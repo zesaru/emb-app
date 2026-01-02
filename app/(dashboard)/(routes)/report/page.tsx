@@ -4,7 +4,7 @@ import List from '../../_components/list'
 import { redirect } from "next/navigation";
 
 const Report = async () => {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { session },

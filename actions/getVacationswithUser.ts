@@ -5,7 +5,7 @@ import { VacationsWithUser } from "./../types/collections";
 export const dynamic = 'force-dynamic'
 
 const getVacationsWithUser = async():Promise<VacationsWithUser[]> => {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -15,7 +15,7 @@ const getVacationsWithUser = async():Promise<VacationsWithUser[]> => {
 
     const { data, error } = await supabase
       .from('vacations')
-      .select('*, user1:users!id_user(*)')
+      .select('*, user1:users!vacations_user_id_fkey(*)')
       .gte('days',  0);
 
     if (error) {

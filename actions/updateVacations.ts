@@ -17,7 +17,7 @@ interface VacationInput {
 }
 
 export default async function UpdateVacations(vacations: VacationInput) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Obtener usuario autenticado
   const {

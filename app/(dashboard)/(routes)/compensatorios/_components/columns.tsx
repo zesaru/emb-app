@@ -17,8 +17,9 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
     },
   },
   {
-    accessorKey: "user1.name",
+    accessorFn: (row) => row.user1?.name,
     header: "Usuario",
+    id: "user1.name",
   },
   {
     accessorKey: "event_name",

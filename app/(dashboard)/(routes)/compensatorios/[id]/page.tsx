@@ -13,7 +13,7 @@ export default async function CompensatoriosbyId({
 }: {
   params: { id: string };
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { session },

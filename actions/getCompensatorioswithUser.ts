@@ -5,11 +5,11 @@ import { CompensatorysWithUser } from "./../types/collections";
 export const dynamic = 'force-dynamic'
 
 const getsCompensatorioswithUser = async():Promise<CompensatorysWithUser[]> => {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { data, error } = await supabase
       .from('compensatorys')
-      .select('*, user1:users!user_id(*), user2:users!approved_by(*)')
+      .select('*, user1:users!compensatorys_user_id_fkey(*), user2:users!compensatorys_approved_by_fkey(*)')
       .gte('hours',  0)
       .order('event_date', { ascending: false });
   

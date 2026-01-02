@@ -36,7 +36,7 @@ export const addVacation = async (data: any) => {
     return { success: false, error: "La fecha de fin debe ser posterior a la de inicio" };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -15,7 +15,7 @@ import { emailSchema, passwordUpdateSchema } from "@/lib/validation/schemas";
  * @returns Resultado de la operación
  */
 export async function resetPassword(data: { email: string; password: string }) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Obtener usuario autenticado
   const {
@@ -79,7 +79,7 @@ export async function adminResetPassword(data: {
   userId: string;
   password: string;
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Obtener usuario autenticado
   const {

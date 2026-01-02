@@ -5,7 +5,7 @@ import { VacationsWithUser } from "./../types/collections";
 export const dynamic = 'force-dynamic'
 
 const getVacationsNoapproved = async():Promise<VacationsWithUser[]> => {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD
     // Solo admins deberían ver la cola de aprobación

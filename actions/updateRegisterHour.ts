@@ -8,7 +8,7 @@ import { compensatoryRegisterApprovalSchema } from "@/lib/validation/schemas";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async function updateApproveRegisterHour(compensatory: any) {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const {
     data: { user },

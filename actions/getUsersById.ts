@@ -5,7 +5,7 @@ import { UsersEntity } from "./../types/collections";
 export const dynamic = 'force-dynamic'
 
 const getUsersById = async(id:string):Promise<UsersEntity[]> => {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD
     const { data: { user }, error: authError } = await supabase.auth.getUser();
