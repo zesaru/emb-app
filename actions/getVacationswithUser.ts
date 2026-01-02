@@ -7,11 +7,17 @@ export const dynamic = 'force-dynamic'
 const getVacationsWithUser = async():Promise<VacationsWithUser[]> => {
     const supabase = createClient();
 
+    // Verificar autenticación - CRÍTICO PARA SEGURIDAD
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('vacations')
       .select('*, user1:users!id_user(*)')
       .gte('days',  0);
-  
+
     if (error) {
       console.log(error.message);
     }

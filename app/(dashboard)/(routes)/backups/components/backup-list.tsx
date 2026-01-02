@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { toast } from "react-toastify";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -123,9 +124,11 @@ export function BackupList({ initialBackups }: BackupListProps) {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+
+      toast.success("Backup descargado exitosamente");
     } catch (error) {
       console.error("Error downloading backup:", error);
-      alert("Error al descargar el backup");
+      toast.error("Error al descargar el backup");
     }
   };
 
@@ -146,11 +149,11 @@ export function BackupList({ initialBackups }: BackupListProps) {
 
       if (!response.ok) throw new Error("Error al restaurar backup");
 
-      alert("Backup restaurado exitosamente");
+      toast.success("Backup restaurado exitosamente");
       setRestoreDialogOpen(false);
     } catch (error) {
       console.error("Error restoring backup:", error);
-      alert("Error al restaurar el backup");
+      toast.error("Error al restaurar el backup");
     }
   };
 
@@ -167,10 +170,10 @@ export function BackupList({ initialBackups }: BackupListProps) {
       if (!response.ok) throw new Error("Error al eliminar backup");
 
       setData(data.filter((b) => b.id !== backup.id));
-      alert("Backup eliminado exitosamente");
+      toast.success("Backup eliminado exitosamente");
     } catch (error) {
       console.error("Error deleting backup:", error);
-      alert("Error al eliminar el backup");
+      toast.error("Error al eliminar el backup");
     }
   };
 

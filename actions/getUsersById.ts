@@ -7,11 +7,17 @@ export const dynamic = 'force-dynamic'
 const getUsersById = async(id:string):Promise<UsersEntity[]> => {
     const supabase = createClient();
 
+    // Verificar autenticación - CRÍTICO PARA SEGURIDAD
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', id);
-  
+
     if (error) {
       console.log(error.message);
     }

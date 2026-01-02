@@ -5,8 +5,6 @@ import { backupService } from "@/lib/backup/backup-service";
 import { emailNotifier } from "@/lib/backup/email-notifier";
 import { RestoreResult } from "@/lib/backup/backup-types";
 
-export const dynamic = 'force-dynamic';
-
 /**
  * Restores a backup from local or cloud storage.
  * Only accessible to admin users.

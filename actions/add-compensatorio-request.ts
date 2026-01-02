@@ -3,7 +3,8 @@
 import { createClient } from "@/utils/supabase/server";
 import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
-import { formatInTimeZone } from 'date-fns-tz'
+import { formatInTimeZone } from 'date-fns-tz';
+import { compensatoryRequestSchema } from "@/lib/validation/schemas";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -15,21 +16,38 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export default async function UpdateCompensatorioResquest(compensatory: any) {
   const supabase = createClient();
 
-  const fecha = formatInTimeZone(compensatory.dob, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX')
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const useridrequest = user?.id;
 
-  try {
+  if (!user) {
+    return { success: false, error: "No autenticado" };
+  }
 
-    await supabase.rpc("insert_compensatory_rest", { p_user_id: useridrequest, p_t_time_start: compensatory.time_start, p_t_time_finish: compensatory.time_finish, p_compensated_hours_day: fecha, p_compensated_hours: compensatory.hours });
+  // Validar datos de entrada con Zod
+  try {
+    compensatoryRequestSchema.parse(compensatory);
+  } catch (error: any) {
+    return { success: false, error: error.errors?.[0]?.message || "Datos inválidos" };
+  }
+
+  const fecha = formatInTimeZone(compensatory.dob, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX');
+
+  try {
+    await supabase.rpc("insert_compensatory_rest", {
+      p_user_id: useridrequest,
+      p_t_time_start: compensatory.time_start,
+      p_t_time_finish: compensatory.time_finish,
+      p_compensated_hours_day: fecha,
+      p_compensated_hours: compensatory.hours
+    });
     const email = process.env.EMBPERUJAPAN_EMAIL;
     try {
       const data = await resend.emails.send({
         from: "Team <team@peruinjapan.com>",
         to: `${email}`,
-        subject: `Aprobación de Compensatorio del usuario(a) ${ user?.email}`,
+        subject: `Aprobación de Compensatorio del usuario(a) ${user.email}`,
         text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón para informarle se ha registrado su solicitud de compensatorio.`,
       });
 
@@ -38,11 +56,11 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
         success: true,
       }
     } catch (error) {
-      console.log(error);
-      return { success: false, error };
+      // No exponer errores sensibles en logs
+      return { success: false, error: "Error enviando email" };
     }
   } catch (error) {
-    console.log(error);
+    return { success: false, error: "Error procesando solicitud" };
   }
 }
 

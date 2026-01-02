@@ -5,8 +5,6 @@ import { backupService } from "@/lib/backup/backup-service";
 import { emailNotifier } from "@/lib/backup/email-notifier";
 import { BackupResult } from "@/lib/backup/backup-types";
 
-export const dynamic = 'force-dynamic';
-
 /**
  * Creates a backup of the database.
  * Only accessible to admin users.

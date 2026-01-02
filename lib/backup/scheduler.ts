@@ -31,7 +31,7 @@ export function startBackupScheduler(): void {
           await emailNotifier.notifyBackupSuccess(result);
         } else {
           console.error("[Backup Scheduler] Backup falló:", result.error);
-          await emailNotifier.notifyBackupFailure(result.error || "Error desconocido");
+          await emailNotifier.notifyBackupFailure(result.error || "Error desconocido", result.duration);
         }
       } catch (error) {
         console.error("[Backup Scheduler] Error durante backup:", error);
@@ -73,7 +73,7 @@ export async function runBackupNow(): Promise<void> {
       await emailNotifier.notifyBackupSuccess(result);
     } else {
       console.error("[Backup Scheduler] Backup falló:", result.error);
-      await emailNotifier.notifyBackupFailure(result.error || "Error desconocido");
+      await emailNotifier.notifyBackupFailure(result.error || "Error desconocido", result.duration);
     }
   } catch (error) {
     console.error("[Backup Scheduler] Error:", error);

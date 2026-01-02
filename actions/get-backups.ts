@@ -4,8 +4,6 @@ import { createClient } from "@/utils/supabase/server";
 import { storageManager } from "@/lib/backup/storage-manager";
 import { BackupMetadata } from "@/lib/backup/backup-types";
 
-export const dynamic = 'force-dynamic';
-
 /**
  * Lists all available backups from both local and cloud storage.
  * Only accessible to admin users.

@@ -1,9 +1,27 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { BackupMetadata } from './backup-types';
-import { createStorageClient } from '@/utils/supabase/storage';
+import { createClient } from '@supabase/supabase-js';
 
 const BACKUP_DIR = path.join(process.cwd(), 'backups');
+
+// Cliente administrativo con service_role key para operaciones de Storage
+// Nota: Estas operaciones requieren service_role key que debe estar configurada en el entorno
+function createAdminStorageClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error('Missing Supabase service role environment variables');
+  }
+
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  });
+}
 
 export const storageManager = {
   async saveToLocal(file: Buffer, filename: string): Promise<BackupMetadata> {
@@ -33,31 +51,45 @@ export const storageManager = {
   },
 
   async saveToCloud(file: Buffer, filename: string): Promise<void> {
-    const storage = createStorageClient();
-    const bucketName = 'backups';
+    // Nota: El bucket de backups debe ser creado manualmente en Supabase
+    // para usar las funciones administrativas de Storage
 
-    // Ensure bucket exists
-    const { data: buckets } = await storage.listBuckets();
-    const bucketExists = buckets?.some(b => b.name === bucketName);
+    try {
+      const storage = createAdminStorageClient();
+      const bucketName = 'backups';
 
-    if (!bucketExists) {
-      const { error: createError } = await storage.createBucket(bucketName, {
-        public: false
+      // Intentar crear el bucket (puede fallar si ya existe)
+      try {
+        const { error: createError } = await storage.storage.createBucket(bucketName, {
+          public: false
+        });
+
+        if (createError && !createError.message.includes('already exists')) {
+          console.warn('Could not create bucket:', createError.message);
+        }
+      } catch (e: any) {
+        // Ignorar errores de bucket ya existente
+        if (!e.message?.includes('already exists')) {
+          console.warn('Bucket creation warning:', e.message);
+        }
+      }
+
+      // Upload file
+      const { error } = await storage.storage.from(bucketName).upload(filename, file, {
+        contentType: 'application/json',
+        upsert: true
       });
 
-      if (createError && createError.message !== 'Bucket already exists') {
-        throw new Error(`Failed to create bucket: ${createError.message}`);
+      if (error) {
+        throw new Error(`Failed to upload to cloud: ${error.message}`);
       }
-    }
-
-    // Upload file
-    const { error } = await storage.from(bucketName).upload(filename, file, {
-      contentType: 'application/json',
-      upsert: true
-    });
-
-    if (error) {
-      throw new Error(`Failed to upload to cloud: ${error.message}`);
+    } catch (error: any) {
+      // Si falla por falta de service_role key, solo loggear warning
+      if (error.message?.includes('service role')) {
+        console.warn('Cloud storage not available: service role key not configured');
+        return;
+      }
+      throw error;
     }
   },
 
@@ -99,11 +131,11 @@ export const storageManager = {
   },
 
   async listCloudBackups(): Promise<BackupMetadata[]> {
-    const storage = createStorageClient();
-    const bucketName = 'backups';
-
     try {
-      const { data, error } = await storage.from(bucketName).list();
+      const storage = createAdminStorageClient();
+      const bucketName = 'backups';
+
+      const { data, error } = await storage.storage.from(bucketName).list();
 
       if (error) {
         throw error;
@@ -120,17 +152,23 @@ export const storageManager = {
         checksum: '',
         tablesCount: 0
       }));
-    } catch (error) {
+    } catch (error: any) {
+      // Si falla por falta de service_role key, retornar array vacío
+      if (error.message?.includes('service role') || error.message?.includes('Missing')) {
+        console.warn('Cloud storage not available: service role key not configured');
+        return [];
+      }
       console.error('Error listing cloud backups:', error);
       return [];
     }
   },
 
   async downloadFromCloud(filename: string): Promise<Buffer> {
-    const storage = createStorageClient();
+    const storage = createAdminStorageClient();
     const bucketName = 'backups';
 
     const { data, error } = await storage
+      .storage
       .from(bucketName)
       .download(filename);
 
@@ -148,10 +186,11 @@ export const storageManager = {
   },
 
   async deleteCloudBackup(filename: string): Promise<void> {
-    const storage = createStorageClient();
+    const storage = createAdminStorageClient();
     const bucketName = 'backups';
 
     const { error } = await storage
+      .storage
       .from(bucketName)
       .remove([filename]);
 

@@ -5,7 +5,9 @@
     "build": "next build",
     "start": "next start",
     "gen-types": "supabase gen types typescript --linked > types/database.type.ts",
-    "backup:setup": "mkdir -p backups"
+    "backup:setup": "mkdir -p backups",
+    "backup:to-sql": "tsx scripts/backup-to-sql.ts",
+    "backup:restore-local": "tsx scripts/restore-to-local.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.9",
@@ -64,6 +66,8 @@
     "@types/react": "18.2.12",
     "@types/react-dom": "18.2.5",
     "encoding": "^0.1.13",
-    "supabase": "^1.100.1"
+    "pg": "^8.16.3",
+    "supabase": "^1.100.1",
+    "tsx": "^4.21.0"
   }
 }

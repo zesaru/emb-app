@@ -28,6 +28,15 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.production
+
+# backups
+/backups/*.json
+
+# supabase local
+supabase/.temp/
+supabase/branches/
+supabase/.branches/
 
 # vercel
 .vercel

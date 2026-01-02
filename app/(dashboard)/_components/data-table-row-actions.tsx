@@ -4,20 +4,30 @@ import { Row } from "@tanstack/react-table"
 import { useTransition } from "react";
 import updateApproveRegister from "@/actions/updateApproveRegister";
 import { toast } from "react-toastify";
+import { CompensatorysWithUser } from "@/types/collections";
 
-
-interface DataTableRowActionsProps<TData> {
-  row: Row<TData>
+interface DataTableRowActionsProps {
+  row: Row<CompensatorysWithUser>
 }
 
-export function DataTableRowActions<TData>({
+export function DataTableRowActions({
     row
-}: DataTableRowActionsProps<TData>) {
+}: DataTableRowActionsProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleClick = () => {
     startTransition(async () => {
-      const response = await updateApproveRegister(row.original);
+      // Convertir CompensatorysWithUser al formato esperado por updateApproveRegister
+      const data = row.original;
+      const userEmail = data.user1?.email ?? data.users?.[0]?.email ?? '';
+      const compensatoryInput = {
+        id: data.id,
+        user_id: data.user_id ?? '',
+        email: userEmail || 'no-email',
+        hours: data.hours ?? 0,
+      };
+
+      const response = await updateApproveRegister(compensatoryInput);
       if (response?.success) {
         toast("🦄 El registro ha sido aprobado!", {
           position: "top-center",
@@ -29,7 +39,18 @@ export function DataTableRowActions<TData>({
           progress: undefined,
           theme: "light",
         });
-        
+
+      } else if (response?.error) {
+        toast(`❌ Error: ${response.error}`, {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
       }
     });
   }
