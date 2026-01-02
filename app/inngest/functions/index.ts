@@ -1,1 +1,0 @@
-export { scheduleMail } from './scheduleMail';

@@ -1,26 +1,25 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import { Resend } from 'resend';
 import { formatInTimeZone } from "date-fns-tz";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 /**
  * Adds a vacation request to the server.
- * 
+ *
  * @param data - The vacation request data.
  * @returns An object indicating the success or failure of the request.
  */
 export const addVacation = async (data:any) => {
- 
+
   if (data === null) return;
 
-  const start =   formatInTimeZone(data.start, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX') 
+  const start =   formatInTimeZone(data.start, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX')
 
-  const finish = formatInTimeZone(data.finish, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX') 
+  const finish = formatInTimeZone(data.finish, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX')
 
-  const supabase = createServerActionClient({ cookies });
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

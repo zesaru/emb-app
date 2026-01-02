@@ -5,15 +5,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import CTable from "../_components/compensatory-table";
 import getsCompensatorioById from "@/actions/getCompensatorioById";
 import BtnAprobar from "../_components/btnAprobar";
 
 export default async function Approvec({ params }: { params: { id: string } }) {
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createClient();
 
   const {
     data: { session },

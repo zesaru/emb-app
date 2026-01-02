@@ -1,16 +1,15 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import { DataTable } from "./_components/data-table"
 import { columns } from "./_components/columns"
 import getAttendanceswithUser from "@/actions/getAttendanceswithUser";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import getUsersById from "@/actions/getUsersById";
 
 export const dynamic = "force-dynamic";
 
 export default async function Attendances() {
 
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createClient();
 
   const {
     data: { session },

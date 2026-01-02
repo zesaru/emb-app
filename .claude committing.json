@@ -1,0 +1,7 @@
+{
+  "commitMessage": {
+    "template": "{title}",
+    "includeCoAuthors": false,
+    "includeClaudeAttribution": false
+  }
+}

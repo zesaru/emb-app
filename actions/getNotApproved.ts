@@ -1,12 +1,10 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+
 
 export const dynamic = "force-dynamic";
 
 const GetNotApproved = async () => {
-  const supabase = createServerComponentClient<Database>({
-    cookies: cookies,
-  });
+  const supabase = createClient();
 
   const {data } = await supabase.rpc("count_unapproved_records");
 

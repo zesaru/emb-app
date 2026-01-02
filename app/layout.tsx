@@ -1,6 +1,5 @@
 import './globals.css'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import ToasterProvider from '@/components/toaster-provider'
 
 export const metadata = {
   title: 'Emb-App',
@@ -15,7 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ToastContainer/>
+        <ToasterProvider />
         {children}
       </body>
     </html>

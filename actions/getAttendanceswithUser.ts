@@ -1,17 +1,14 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+
 import { AttendancesWithUser } from "../types/collections";
 
 export const dynamic = 'force-dynamic'
 
 const getAttendanceswithUser = async() => {
-    const supabase = createServerComponentClient({
-      cookies: cookies
-    });
+    const supabase = createClient();
 
     const { data, error } = await supabase
-      .rpc('listar_horas_entrada_salida')
-      .select('*')
+      .rpc('listar_horas_entrada_salida');
   
     if (error) {
       console.log(error.message);

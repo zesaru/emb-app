@@ -1,21 +1,20 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 export default async function updateApproveRegister(compensatory: any) {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = createClient();
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const approved_by = session?.user?.id;
-  
-  if (session === null) return;
+  const approved_by = user?.id;
+
+  if (user === null) return;
   await supabase
     .from("compensatorys")
     .update({

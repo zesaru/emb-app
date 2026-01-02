@@ -1,7 +1,6 @@
 "use server";
 
-import { cookies } from "next/headers";
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { Resend } from 'resend';
 
@@ -11,10 +10,10 @@ export const addPost = async (formData: FormData) => {
   const eventName = formData.get("event_name");
   const hours = formData.get("hours");
   const eventDate = formData.get("event_date");
- 
+
   if (formData === null) return;
 
-  const supabase = createServerActionClient({ cookies });
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

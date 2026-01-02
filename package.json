@@ -4,8 +4,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "gen-types": "supabase gen types typescript --linked > types/database.type.ts",
-    "inngest:dev": "npx inngest-cli@latest dev --no-discovery -u http://localhost:3000/api/inngest"
+    "gen-types": "supabase gen types typescript --linked > types/database.type.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.9",
@@ -25,8 +24,8 @@
     "@react-email/components": "0.0.12",
     "@react-email/html": "0.0.4",
     "@react-email/preview": "0.0.8",
-    "@supabase/auth-helpers-nextjs": "latest",
-    "@supabase/supabase-js": "latest",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.10",
     "@tanstack/react-table": "^8.10.6",
     "add": "^2.0.6",
     "autoprefixer": "10.4.15",
@@ -38,7 +37,6 @@
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
     "init": "^0.1.2",
-    "inngest": "^3.6.2",
     "lucide-react": "^0.284.0",
     "next": "^13.5.6-canary.1",
     "postcss": "^8.4.32",

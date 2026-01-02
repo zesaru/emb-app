@@ -1,6 +1,5 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
 import { User } from 'lucide-react';
@@ -14,7 +13,7 @@ export default async function CompensatoriosbyId({
 }: {
   params: { id: string };
 }) {
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createClient();
 
   const {
     data: { session },

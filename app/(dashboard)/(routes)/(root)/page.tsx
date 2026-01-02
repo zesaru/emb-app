@@ -1,5 +1,4 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +18,7 @@ import Usertabs from "../../_components/usertabs";
 export const dynamic = "force-dynamic";
 
 export default async function Index() {
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createClient();
 
   const {
     data: { session },

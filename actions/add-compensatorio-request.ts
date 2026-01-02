@@ -1,7 +1,6 @@
 'use server';
 
-import { cookies } from "next/headers";
-import { createServerActionClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
 import { formatInTimeZone } from 'date-fns-tz'
@@ -14,13 +13,13 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  * @returns An object with a success flag indicating if the operation was successful and an error object if the operation failed.
  */
 export default async function UpdateCompensatorioResquest(compensatory: any) {
-  const supabase = createServerActionClient({ cookies });
+  const supabase = createClient();
 
-  const fecha = formatInTimeZone(compensatory.dob, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX') 
+  const fecha = formatInTimeZone(compensatory.dob, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX')
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const useridrequest = session?.user?.id;
+    data: { user },
+  } = await supabase.auth.getUser();
+  const useridrequest = user?.id;
 
   try {
 
@@ -30,7 +29,7 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
       const data = await resend.emails.send({
         from: "Team <team@peruinjapan.com>",
         to: `${email}`,
-        subject: `Aprobación de Compensatorio del usuario(a) ${ session?.user?.email}`,
+        subject: `Aprobación de Compensatorio del usuario(a) ${ user?.email}`,
         text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón para informarle se ha registrado su solicitud de compensatorio.`,
       });
 

@@ -1,14 +1,13 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import getVacationswithUser from "@/actions/getVacationswithUser";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import Calendar from "./_components/calendar";
 
 export const dynamic = "force-dynamic";
 
 export default async function Compensatorios() {
 
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createClient();
 
   const {
     data: { session },

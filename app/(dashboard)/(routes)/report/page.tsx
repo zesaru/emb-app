@@ -1,11 +1,10 @@
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 export const dynamic = "force-dynamic";
 import List from '../../_components/list'
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 const Report = async () => {
-  const supabase = createServerComponentClient<Database>({ cookies });
+  const supabase = createClient();
 
   const {
     data: { session },
