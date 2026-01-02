@@ -26,17 +26,23 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
+# local env files - NEVER commit actual env files with keys
+.env
+.env.local
+.env.*.local
 .env.production
+.env.development
 
-# backups
-/backups/*.json
+# backups - ignore entire folder to prevent committing any backup data
+/backups/
+*.backup
 
 # supabase local
 supabase/.temp/
 supabase/branches/
 supabase/.branches/
+supabase/.env*
+supabase/.env.keys
 
 # vercel
 .vercel
