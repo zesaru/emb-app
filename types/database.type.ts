@@ -1,4 +1,3 @@
-Connecting to localhost 54322
 export type Json =
   | string
   | number
@@ -8,31 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       attendances: {
@@ -127,6 +101,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "compensatorys_approved_by_compensated_fkey"
+            columns: ["approved_by_compensated"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compensatorys_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "compensatorys_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -212,6 +200,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "vacations_approvedby_fkey"
+            columns: ["approvedby"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vacations_user_id_fkey"
             columns: ["user_id"]
@@ -361,13 +356,8 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
 } as const
 
-A new version of Supabase CLI is available: v2.67.1 (currently installed v2.34.3)
-We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli

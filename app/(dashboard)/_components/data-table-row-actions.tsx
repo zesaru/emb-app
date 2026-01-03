@@ -21,10 +21,10 @@ export function DataTableRowActions({
       const data = row.original;
       const userEmail = data.user1?.email ?? data.users?.[0]?.email ?? '';
       const compensatoryInput = {
-        id: data.id,
+        id: data.id ?? '',
         user_id: data.user_id ?? '',
         email: userEmail || 'no-email',
-        hours: data.hours ?? 0,
+        hours: Number(data.hours ?? 0),
       };
 
       const response = await updateApproveRegister(compensatoryInput);

@@ -9,11 +9,11 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
     accessorKey: "event_date",
     header: "Fecha",
     cell: ({ row }) => {
-      const date = row.getValue("event_date");
+      const date = row.getValue("event_date") as string | null;
       if (date) {
         return <div className="text-gray-600 font-medium">{date.split('T')[0]}</div>;
       }
-      const compensatedDay = row.original.compensated_hours_day;
+      const compensatedDay = row.original.compensated_hours_day as string | null;
       if (compensatedDay) {
         return <div className="text-gray-600 font-medium">{compensatedDay.split('T')[0]}</div>;
       }
@@ -26,8 +26,8 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
     cell: ({ row }) => {
       const eventName = row.original.event_name;
       const tTimeStart = row.original.t_time_start;
-      const hours = row.original.hours ?? 0;
-      const compensatedHours = row.original.compensated_hours ?? 0;
+      const hours = Number(row.original.hours ?? 0);
+      const compensatedHours = Number(row.original.compensated_hours ?? 0);
 
       let description = "";
       if (hours > 0) {
@@ -50,7 +50,7 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
       </div>
     ),
     cell: ({ row }) => {
-      const hours: number = row.original.hours ?? 0;
+      const hours = Number(row.original.hours ?? 0);
       if (hours > 0) {
         return (
           <div className="text-green-600 font-semibold">
@@ -70,7 +70,7 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
       </div>
     ),
     cell: ({ row }) => {
-      const hours: number = row.original.compensated_hours ?? 0;
+      const hours = Number(row.original.compensated_hours ?? 0);
       if (hours > 0) {
         return (
           <div className="text-red-500 font-semibold">
@@ -92,8 +92,8 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
       let balance = 0;
       for (let i = 0; i <= rowIndex; i++) {
         const r = rows[i];
-        const entrada = r.original.hours ?? 0;
-        const salida = r.original.compensated_hours ?? 0;
+        const entrada = Number(r.original.hours ?? 0);
+        const salida = Number(r.original.compensated_hours ?? 0);
         balance += entrada - salida;
       }
 

@@ -23,11 +23,11 @@ export function DataTableRowActions({
       const userVacations = data.user1?.num_vacations ?? data.users?.[0]?.num_vacations ?? 0;
 
       const vacationInput = {
-        id: data.id,
-        user_id: data.id_user ?? '',
+        id: data.id ?? '',
+        user_id: data.user_id ?? '',
         email: userEmail || 'no-email',
         num_vacations: userVacations,
-        days: data.days ?? 0,
+        days: Number(data.days ?? 0),
       };
 
       const response = await updateApproveVacations(vacationInput);

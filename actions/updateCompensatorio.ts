@@ -42,7 +42,7 @@ export default async function UpdateCompensatorio(compensatory: CompensatorysWit
   try {
     uuidSchema.parse(compensatorio.id);
     // hours puede ser null, validar en ese caso
-    const hours = compensatorio.hours ?? 0;
+    const hours = Number(compensatorio.hours ?? 0);
     if (hours <= 0 || hours > 12) {
       return { success: false, error: "Horas deben estar entre 1 y 12" };
     }
@@ -56,8 +56,8 @@ export default async function UpdateCompensatorio(compensatory: CompensatorysWit
   }
 
   const approveby = user.id;
-  const hours = compensatorio.hours ?? 0;
-  const numCompensatorys = compensatorio.user1.num_compensatorys ?? 0;
+  const hours = Number(compensatorio.hours ?? 0);
+  const numCompensatorys = Number(compensatorio.user1.num_compensatorys ?? 0);
 
   try {
     // Actualizar compensatorio como aprobado

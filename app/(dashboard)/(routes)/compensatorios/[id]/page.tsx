@@ -43,12 +43,12 @@ export default async function CompensatoriosbyId({
 
   // Total de entradas (horas ganadas)
   const totalEntradas = sum
-    .map((event) => event.hours)
+    .map((event) => Number(event.hours))
     .reduce((total, hours) => total + hours, 0);
 
   // Total de salidas (horas usadas)
   const totalSalidas = sum
-    .map((event) => event.compensated_hours)
+    .map((event) => Number(event.compensated_hours))
     .reduce((total, hours) => total + hours, 0);
 
   return (
