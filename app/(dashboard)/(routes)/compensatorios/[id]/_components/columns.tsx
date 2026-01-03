@@ -2,33 +2,108 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { CompensatorysWithUser } from '@/types/collections';
-
+import { TrendingUp, TrendingDown } from 'lucide-react';
 
 export const columns: ColumnDef<CompensatorysWithUser>[] = [
   {
-    accessorKey: "event_name",
-    header: "Descripción",
-  },
-  {
     accessorKey: "event_date",
     header: "Fecha",
-  },
-  
-  {
-    accessorKey: "hours",
-    header: "Registradas/hrs",
     cell: ({ row }) => {
-      const hours:number = row.getValue("hours")
-      const ok:any = row.original.approve_request 
-      return <div ><span className={`font-medium ${ok ?  'bg-green-600 text-white p-1' : 'bg-green-400'}`}>{hours}</span></div>
+      const date = row.getValue("event_date");
+      if (date) {
+        return <div className="text-gray-600 font-medium">{date.split('T')[0]}</div>;
+      }
+      const compensatedDay = row.original.compensated_hours_day;
+      if (compensatedDay) {
+        return <div className="text-gray-600 font-medium">{compensatedDay.split('T')[0]}</div>;
+      }
+      return <div className="text-gray-400">-</div>;
     },
   },
   {
-    accessorKey:"compensated_hours",
-    header:"Horas compensadas",
+    accessorKey: "description",
+    header: "Descripción",
     cell: ({ row }) => {
-      const hours:number = row.getValue("compensated_hours") 
-      return hours > 0 ? <div className="font-medium">- {hours}</div> : <div className="font-medium "></div>
-    }
-  }
+      const eventName = row.original.event_name;
+      const tTimeStart = row.original.t_time_start;
+      const hours = row.original.hours ?? 0;
+      const compensatedHours = row.original.compensated_hours ?? 0;
+
+      let description = "";
+      if (hours > 0) {
+        description = eventName || (tTimeStart ? `Para compensar ${tTimeStart}` : "Horas trabajadas");
+      } else if (compensatedHours > 0) {
+        description = "Uso de compensatorio";
+      } else {
+        description = "Solicitud registrada";
+      }
+
+      return <div className="text-gray-800">{description}</div>;
+    },
+  },
+  {
+    id: "entrada",
+    header: () => (
+      <div className="flex items-center gap-1">
+        <TrendingUp className="h-4 w-4 text-green-600" />
+        <span>Entrada</span>
+      </div>
+    ),
+    cell: ({ row }) => {
+      const hours: number = row.original.hours ?? 0;
+      if (hours > 0) {
+        return (
+          <div className="text-green-600 font-semibold">
+            +{hours}
+          </div>
+        );
+      }
+      return <div className="text-gray-300">-</div>;
+    },
+  },
+  {
+    id: "salida",
+    header: () => (
+      <div className="flex items-center gap-1">
+        <TrendingDown className="h-4 w-4 text-red-500" />
+        <span>Salida</span>
+      </div>
+    ),
+    cell: ({ row }) => {
+      const hours: number = row.original.compensated_hours ?? 0;
+      if (hours > 0) {
+        return (
+          <div className="text-red-500 font-semibold">
+            -{hours}
+          </div>
+        );
+      }
+      return <div className="text-gray-300">-</div>;
+    },
+  },
+  {
+    id: "saldo",
+    header: "Saldo",
+    cell: ({ row, table }) => {
+      const { rows } = table.getRowModel();
+      const rowIndex = rows.findIndex(r => r.id === row.id);
+
+      // Calcular saldo acumulado hasta esta fila
+      let balance = 0;
+      for (let i = 0; i <= rowIndex; i++) {
+        const r = rows[i];
+        const entrada = r.original.hours ?? 0;
+        const salida = r.original.compensated_hours ?? 0;
+        balance += entrada - salida;
+      }
+
+      const balanceClass = balance >= 0 ? "text-gray-700" : "text-red-500";
+
+      return (
+        <div className={`font-semibold ${balanceClass}`}>
+          {balance}
+        </div>
+      );
+    },
+  },
 ]

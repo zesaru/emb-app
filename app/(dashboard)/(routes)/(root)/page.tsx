@@ -38,7 +38,7 @@ export default async function Index() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      {user[0].admin === "admin" ? (
+      {user[0]?.admin === "admin" ? (
         <div>
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsContent value="overview" className="space-y-4">

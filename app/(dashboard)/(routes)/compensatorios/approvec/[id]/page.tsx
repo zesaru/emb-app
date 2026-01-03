@@ -1,17 +1,13 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import CTable from "../_components/compensatory-table";
 import getsCompensatorioById from "@/actions/getCompensatorioById";
-import BtnAprobar from "../_components/btnAprobar";
+import { ApprovecHeader } from "./_components/approvec-header";
+import { UserInfoCard } from "./_components/user-info-card";
+import { ApprovalActions } from "./_components/approval-actions";
 
-export default async function Approvec({ params }: { params: { id: string } }) {
+export default async function Approvec({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const {
@@ -22,25 +18,26 @@ export default async function Approvec({ params }: { params: { id: string } }) {
     redirect("/login");
   }
 
-  const idcompensatory = params.id;
-  const compensatory = await getsCompensatorioById(idcompensatory);
+  const compensatory = await getsCompensatorioById(id);
 
   return (
     <div className="space-y-6 p-5">
-      <Card>
-        <CardHeader>
-          <CardTitle>Compensatorios</CardTitle>
-          <CardDescription>
-            APROBAR REGISTRO DE DÍAS COMPENSATORIOS
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* Header con breadcrumbs y estado */}
+      <ApprovecHeader compensatory={compensatory} />
+
+      {/* Tabla de detalles */}
+      <div className="rounded-md border bg-white">
+        <div className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Detalle del Compensatorio</h3>
           <CTable compensatory={compensatory} />
-        </CardContent>
-        <div className="flex justify-start px-8">
-          <BtnAprobar compensatory={compensatory}/>
         </div>
-      </Card>
+      </div>
+
+      {/* Grid con info de usuario y acciones */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <UserInfoCard compensatory={compensatory} />
+        <ApprovalActions compensatory={compensatory} />
+      </div>
     </div>
   );
 }

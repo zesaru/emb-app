@@ -1,21 +1,7 @@
 'use client'
 
-import { ToastContainer } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
+import { Toaster as SonnerToaster } from 'sonner'
 
 export default function ToasterProvider() {
-  return (
-    <ToastContainer
-      position="top-right"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="light"
-    />
-  )
+  return <SonnerToaster richColors position="top-right" />
 }

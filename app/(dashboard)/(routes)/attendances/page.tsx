@@ -26,7 +26,7 @@ export default async function Attendances() {
   return (
     <div className="flex flex-col">
       <div className="container mx-auto py-10">
-      { user[0].admin==='admin' ?
+      { user[0]?.admin==='admin' ?
         <DataTable columns={columns} data={attendances} />
         : <p>Me pareció ver un lindo gatito</p>
       }

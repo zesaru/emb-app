@@ -7,11 +7,11 @@ export const dynamic = 'force-dynamic'
 const getsCompensatorioswithUserById = async(id:string):Promise<CompensatorysWithUser[]> => {
     const supabase = await createClient();
 
+    const { data, error } = await supabase
+      .from('compensatorys')
+      .select('*, user1:users!compensatorys_user_id_fkey(*)')
+      .eq('user_id', id);
 
-    const { data, error } = await supabase.rpc("get_compensatorys_for_user", {
-      user_id: id,
-    });
-  
     if (error) {
       console.log(error.message);
     }
