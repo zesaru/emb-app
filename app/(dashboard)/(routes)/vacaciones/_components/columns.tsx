@@ -7,10 +7,10 @@ import Link from "next/link"
 
 export const columns: ColumnDef<VacationsWithUser>[] = [
   {
-    accessorKey: "user_id",
+    accessorKey: "id_user",
     header: "Ver",
     cell: ({ row }) => {
-      const userId = row.getValue("user_id") as string;
+      const userId = row.getValue("id_user") as string;
       return (
         <Link href={`/vacaciones/${userId}`} className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 text-gray-600">
           <Eye className="h-4 w-4" />

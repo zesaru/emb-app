@@ -24,7 +24,7 @@ export function DataTableRowActions({
 
       const vacationInput = {
         id: data.id ?? '',
-        user_id: data.user_id ?? '',
+        user_id: data.id_user ?? '',
         email: userEmail || 'no-email',
         num_vacations: userVacations,
         days: Number(data.days ?? 0),

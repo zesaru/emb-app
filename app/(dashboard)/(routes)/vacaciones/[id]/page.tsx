@@ -25,7 +25,7 @@ export default async function VacacionesById({
   }
 
   const vacations = await getVacationswithUserById(id);
-  const userId = vacations[0]?.user_id || id;
+  const userId = vacations[0]?.id_user || id;
   const user = await getUsersById(userId);
 
   // Ordenar por fecha de solicitud (más reciente primero)

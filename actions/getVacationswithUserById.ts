@@ -9,8 +9,8 @@ const getVacationswithUserById = async(id:string):Promise<VacationsWithUser[]> =
 
     const { data, error } = await supabase
       .from('vacations')
-      .select('*, user1:users!vacations_user_id_fkey(*)')
-      .eq('user_id', id)
+      .select('*, user1:users!vacations_id_user_fkey(*)')
+      .eq('id_user', id)
       .order('request_date', { ascending: false });
 
     if (error) {

@@ -168,10 +168,10 @@ export type Database = {
           days: string | null
           finish: string | null
           id: string | null
+          id_user: string | null
           period: string | null
           request_date: string | null
           start: string | null
-          user_id: string | null
         }
         Insert: {
           approve_request?: string | null
@@ -181,10 +181,10 @@ export type Database = {
           days?: string | null
           finish?: string | null
           id?: string | null
+          id_user?: string | null
           period?: string | null
           request_date?: string | null
           start?: string | null
-          user_id?: string | null
         }
         Update: {
           approve_request?: string | null
@@ -194,10 +194,10 @@ export type Database = {
           days?: string | null
           finish?: string | null
           id?: string | null
+          id_user?: string | null
           period?: string | null
           request_date?: string | null
           start?: string | null
-          user_id?: string | null
         }
         Relationships: [
           {
@@ -208,8 +208,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "vacations_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "vacations_id_user_fkey"
+            columns: ["id_user"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]

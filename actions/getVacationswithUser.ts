@@ -15,7 +15,7 @@ const getVacationsWithUser = async():Promise<VacationsWithUser[]> => {
 
     const { data, error } = await supabase
       .from('vacations')
-      .select('*, user1:users!vacations_user_id_fkey(*)')
+      .select('*, user1:users!vacations_id_user_fkey(*)')
       .gte('days',  0);
 
     if (error) {
