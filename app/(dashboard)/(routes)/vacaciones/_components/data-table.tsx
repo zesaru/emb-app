@@ -57,6 +57,10 @@ export function DataTable<TData, TValue>({
     },
   })
 
+  React.useEffect(() => {
+    console.log("Columnas disponibles:", table.getAllColumns().map(col => col.id));
+  }, [table]);
+
   return (
     <div className="p-6">
       <div className="flex items-center py-4">

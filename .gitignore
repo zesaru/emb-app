@@ -50,3 +50,4 @@ supabase/.env.keys
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.qodo
