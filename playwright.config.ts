@@ -14,21 +14,51 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
+    // Setup project - authenticates once and saves session state
     {
-      name: 'chromium',
+      name: 'setup',
+      testMatch: '**/auth.setup.ts',
+    },
+
+    // Tests running with authenticated admin session (no repeated logins!)
+    {
+      name: 'authenticated-admin',
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/admin.json',
+      },
+    },
+
+    // Tests running with authenticated user session
+    {
+      name: 'authenticated-user',
+      dependencies: ['setup'],
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/user.json',
+      },
+    },
+
+    // Tests without authentication (redirects, error handling, smoke tests)
+    {
+      name: 'unauthenticated',
+      testMatch: [
+        '**/smoke-test.spec.ts',
+        '**/auth.spec.ts',  // Tests that don't require pre-auth
+      ],
       use: { ...devices['Desktop Chrome'] },
     },
-    // Critical path tests run sequentially to avoid rate limiting
+
+    // Critical path tests run sequentially with auth
     {
       name: 'critical-path',
+      dependencies: ['setup'],
       testMatch: '**/critical-path.spec.ts',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    // Other tests can run in parallel with limited workers
-    {
-      name: 'parallel-tests',
-      testIgnore: '**/critical-path.spec.ts',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/admin.json',
+      },
     },
   ],
   webServer: {
