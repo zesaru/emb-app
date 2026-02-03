@@ -5,7 +5,7 @@
 import type { Page } from '@playwright/test'
 
 /**
- * Login helper con selectores correctos
+ * Login helper con selectores correctos y manejo de rate limiting
  */
 export async function login(
   page: Page,
@@ -18,6 +18,9 @@ export async function login(
   await page.goto('/login')
   await page.waitForLoadState('networkidle')
 
+  // Pequeña delay para evitar rate limiting cuando múltiples tests corren en paralelo
+  await page.waitForTimeout(Math.random() * 500 + 250) // 250-750ms random delay
+
   // Usar selectores correctos según el formulario real
   await page.fill('input[placeholder*="example"]', testEmail)
   await page.fill('input[type="password"]', testPassword)
@@ -25,6 +28,12 @@ export async function login(
 
   // Esperar navegación después del login
   await page.waitForLoadState('networkidle', { timeout: 15000 })
+
+  // Verificar que no haya error de rate limiting
+  const url = page.url()
+  if (url.includes('error') && url.includes('Too many attempts')) {
+    throw new Error('Rate limit exceeded: Too many login attempts')
+  }
 }
 
 /**

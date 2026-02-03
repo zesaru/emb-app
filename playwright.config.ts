@@ -5,7 +5,8 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Limit workers to avoid Supabase rate limiting during parallel tests
+  workers: process.env.CI ? 1 : 2,
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:3000',
@@ -15,6 +16,18 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Critical path tests run sequentially to avoid rate limiting
+    {
+      name: 'critical-path',
+      testMatch: '**/critical-path.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    // Other tests can run in parallel with limited workers
+    {
+      name: 'parallel-tests',
+      testIgnore: '**/critical-path.spec.ts',
       use: { ...devices['Desktop Chrome'] },
     },
   ],
