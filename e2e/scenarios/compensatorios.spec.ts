@@ -10,9 +10,9 @@ test.describe('Compensatorios', () => {
     const email = process.env.E2E_ADMIN_EMAIL || 'cdejesus@embperujapan.org'
     const password = process.env.E2E_ADMIN_PASSWORD || 'password123'
 
-    await page.fill('input[type="email"]', email)
+    await page.fill('input[placeholder*="example"]', email)
     await page.fill('input[type="password"]', password)
-    await page.click('button[type="submit"]')
+    await page.click('button:has-text("Sign In")')
 
     await page.waitForURL('/', { timeout: 10000 })
   }

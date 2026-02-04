@@ -3,20 +3,9 @@
  */
 
 import { test, expect } from '@playwright/test'
+import { login } from '../helpers'
 
 test.describe('Dashboard Principal', () => {
-  const login = async (page: any) => {
-    await page.goto('/login')
-    const email = process.env.E2E_ADMIN_EMAIL || 'cdejesus@embperujapan.org'
-    const password = process.env.E2E_ADMIN_PASSWORD || 'password123'
-
-    await page.fill('input[type="email"]', email)
-    await page.fill('input[type="password"]', password)
-    await page.click('button[type="submit"]')
-
-    await page.waitForURL('/', { timeout: 10000 })
-  }
-
   test.beforeEach(async ({ page }) => {
     await login(page)
   })
@@ -58,6 +47,7 @@ test.describe('Dashboard Principal', () => {
     const compensatoriosLink = page.locator('a[href="/compensatorios"]')
     await compensatoriosLink.click()
 
+    await page.waitForLoadState('networkidle', { timeout: 10000 })
     await page.waitForURL(/.*compensatorios.*/, { timeout: 5000 })
   })
 
@@ -67,6 +57,7 @@ test.describe('Dashboard Principal', () => {
     const vacacionesLink = page.locator('a[href="/vacaciones"]')
     await vacacionesLink.click()
 
+    await page.waitForLoadState('networkidle', { timeout: 10000 })
     await page.waitForURL(/.*vacaciones.*/, { timeout: 5000 })
   })
 

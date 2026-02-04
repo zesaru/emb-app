@@ -23,7 +23,7 @@ test.describe('Debug Login Flow', () => {
     await page.screenshot({ path: 'e2e/screenshots/02-form-filled.png' });
 
     // Submit
-    await page.click('button[type="submit"]');
+    await page.click('button:has-text("Sign In")');
 
     // Esperar navegación
     await page.waitForTimeout(3000);

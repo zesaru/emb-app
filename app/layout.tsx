@@ -2,8 +2,14 @@ import './globals.css'
 import ToasterProvider from '@/components/toaster-provider'
 
 export const metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   title: 'Emb-App',
-  description: 'app',
+  description: 'Employee Management System for the Peruvian Embassy in Japan',
+  openGraph: {
+    title: 'Emb-App',
+    description: 'Employee Management System for the Peruvian Embassy in Japan',
+    type: 'website',
+  },
 }
 
 // Iniciar el scheduler de backups solo en el servidor
