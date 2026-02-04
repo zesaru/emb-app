@@ -101,7 +101,8 @@ setup('authenticate as admin', async ({ page }) => {
       }
     } catch (error) {
       retries--
-      console.error(`❌ Error during authentication:`, error.message)
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      console.error(`❌ Error during authentication:`, errorMessage)
 
       if (retries > 0) {
         console.log(`⏳ Retrying in 10 seconds... (${retries} attempts remaining)`)
