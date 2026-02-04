@@ -1,6 +1,6 @@
 "use client";
 
-// Dynamic imports for bundle optimization (Vercel best practice)
+// Dynamic import for FullCalendar to reduce bundle size (Vercel best practice)
 import dynamic from 'next/dynamic';
 
 // Code-split FullCalendar to reduce initial bundle size
@@ -16,15 +16,9 @@ const FullCalendar = dynamic(
   }
 );
 
-const dayGridPlugin = dynamic(
-  () => import("@fullcalendar/daygrid").then(mod => mod.default),
-  { ssr: false }
-);
-
-const esLocale = dynamic(
-  () => import('@fullcalendar/core/locales/es').then(mod => mod.default),
-  { ssr: false }
-);
+// Static imports for plugins (they're small enough)
+import dayGridPlugin from "@fullcalendar/daygrid";
+import esLocale from '@fullcalendar/core/locales/es';
 
 export default function Calendar(vacations: any) {
 

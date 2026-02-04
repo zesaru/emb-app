@@ -1,9 +1,9 @@
-import { createClient } from "@/utils/supabase/server";
 import { cache } from "react";
+import { createClient } from "@/utils/supabase/server";
 
 import { CompensatorysWithUser } from "./../types/collections";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 // Use React.cache for per-request deduplication (Vercel best practice)
 export const getCompensatoriosHourNoapproved = cache(async():Promise<CompensatorysWithUser[]> => {
@@ -18,6 +18,7 @@ export const getCompensatoriosHourNoapproved = cache(async():Promise<Compensator
 
     const { data } = await supabase.rpc("list_hours_unapproved_compensatorys");
     return (data as any) || [];
-}
+});
 
+// Default export for compatibility
 export default getCompensatoriosHourNoapproved;

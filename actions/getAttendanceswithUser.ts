@@ -1,9 +1,9 @@
-import { createClient } from "@/utils/supabase/server";
 import { cache } from "react";
+import { createClient } from "@/utils/supabase/server";
 
 import { AttendancesWithUser } from "../types/collections";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 // Use React.cache for per-request deduplication (Vercel best practice)
 export const getAttendanceswithUser = cache(async() => {
@@ -23,6 +23,7 @@ export const getAttendanceswithUser = cache(async() => {
     }
 
     return (data as any) || [];
-}
+});
 
+// Default export for compatibility
 export default getAttendanceswithUser;

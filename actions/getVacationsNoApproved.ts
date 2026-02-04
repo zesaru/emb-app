@@ -1,9 +1,9 @@
-import { createClient } from "@/utils/supabase/server";
 import { cache } from "react";
+import { createClient } from "@/utils/supabase/server";
 
 import { VacationsWithUser } from "./../types/collections";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 // Use React.cache for per-request deduplication (Vercel best practice)
 export const getVacationsNoapproved = cache(async():Promise<VacationsWithUser[]> => {
@@ -18,6 +18,7 @@ export const getVacationsNoapproved = cache(async():Promise<VacationsWithUser[]>
 
     const { data } = await supabase.rpc("list_unapproved_vacations");
     return (data as any) || [];
-}
+});
 
+// Default export for compatibility
 export default getVacationsNoapproved;

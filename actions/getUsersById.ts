@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 
 import { UsersEntity } from "./../types/collections";
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 // Use React.cache for per-request deduplication (Vercel best practice)
 export const getUsersById = cache(async(id:string):Promise<UsersEntity[]> => {
@@ -25,6 +25,7 @@ export const getUsersById = cache(async(id:string):Promise<UsersEntity[]> => {
     }
 
     return (data as any) || [];
-}
+});
 
+// Default export for compatibility
 export default getUsersById;
