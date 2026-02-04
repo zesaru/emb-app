@@ -1,26 +1,61 @@
 import { defineConfig, devices } from '@playwright/test'
 
+/**
+ * Playwright Configuration for E2E Tests
+ * Optimized for Vercel CI/CD and local development
+ */
 export default defineConfig({
   testDir: './e2e/scenarios',
+
+  // CI-specific optimizations
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  // Limit workers to avoid Supabase rate limiting during parallel tests
-  workers: process.env.CI ? 1 : 2,
-  reporter: 'html',
-  use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+  workers: process.env.CI ? 4 : 2,
+
+  // Reporter configuration
+  reporter: [
+    ['html', { outputFolder: 'playwright-report', open: 'never' }],
+    ['json', { outputFile: 'playwright-report/results.json' }],
+    ['list'],
+  ],
+
+  // Test timeout configuration
+  timeout: 30 * 1000, // 30 seconds per test
+  expect: {
+    timeout: 10 * 1000, // 10 seconds per assertion
   },
+
+  use: {
+    // Base URL from environment or default to localhost
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
+
+    // Trace configuration
+    trace: 'on-first-retry',
+
+    // Screenshot configuration
+    screenshot: 'only-on-failure',
+
+    // Video recording (only in CI)
+    video: process.env.CI ? 'retain-on-failure' : 'off',
+
+    // Viewport size
+    viewport: { width: 1280, height: 720 },
+
+    // Ignore HTTPS errors in preview deployments
+    ignoreHTTPSErrors: true,
+  },
+
+  // Projects configuration for different test scenarios
   projects: [
     // Setup project - authenticates once and saves session state
     {
       name: 'setup',
       testMatch: '**/auth.setup.ts',
+      dependencies: [],
     },
 
-    // Tests running with authenticated admin session (no repeated logins!)
+    // Tests running with authenticated admin session
     {
       name: 'authenticated-admin',
       dependencies: ['setup'],
@@ -45,12 +80,14 @@ export default defineConfig({
       name: 'unauthenticated',
       testMatch: [
         '**/smoke-test.spec.ts',
-        '**/auth.spec.ts',  // Tests that don't require pre-auth
+        '**/auth.spec.ts',
       ],
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+      },
     },
 
-    // Critical path tests run sequentially with auth
+    // Critical path tests - run sequentially
     {
       name: 'critical-path',
       dependencies: ['setup'],
@@ -60,7 +97,20 @@ export default defineConfig({
         storageState: 'e2e/.auth/admin.json',
       },
     },
+
+    // Mobile viewport tests
+    {
+      name: 'mobile',
+      dependencies: ['setup'],
+      testMatch: '**/smoke-test.spec.ts',
+      use: {
+        ...devices['Pixel 5'],
+        storageState: 'e2e/.auth/admin.json',
+      },
+    },
   ],
+
+  // Web server configuration for local development
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
