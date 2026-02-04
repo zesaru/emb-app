@@ -28,13 +28,20 @@ export default async function Index() {
     redirect("/login");
   }
 
-  const user = await getUsersById(session.user.id);
-
-  const compensatorysnoapproved = await getsCompensatoriosNoApproved();
-  const compensatorysHournoapproved = await getCompensatoriosHourNoapproved();
-  const vacationsnoapproved = await getVacationsNoapproved();
-
-  const notApproved = await GetNotApproved();
+  // Parallel data fetching to eliminate waterfalls (Vercel best practice)
+  const [
+    user,
+    compensatorysnoapproved,
+    compensatorysHournoapproved,
+    vacationsnoapproved,
+    notApproved
+  ] = await Promise.all([
+    getUsersById(session.user.id),
+    getsCompensatoriosNoApproved(),
+    getCompensatoriosHourNoapproved(),
+    getVacationsNoapproved(),
+    GetNotApproved()
+  ]);
 
   return (
     <div className="w-full flex flex-col items-center">

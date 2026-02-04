@@ -1,10 +1,12 @@
+import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
 
 import { UsersEntity } from "./../types/collections";
 
 export const dynamic = 'force-dynamic'
 
-const getUsersById = async(id:string):Promise<UsersEntity[]> => {
+// Use React.cache for per-request deduplication (Vercel best practice)
+export const getUsersById = cache(async(id:string):Promise<UsersEntity[]> => {
     const supabase = await createClient();
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD

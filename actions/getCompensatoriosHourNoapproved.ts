@@ -1,10 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
+import { cache } from "react";
 
 import { CompensatorysWithUser } from "./../types/collections";
 
 export const dynamic = 'force-dynamic'
 
-const getCompensatoriosHourNoapproved = async():Promise<CompensatorysWithUser[]> => {
+// Use React.cache for per-request deduplication (Vercel best practice)
+export const getCompensatoriosHourNoapproved = cache(async():Promise<CompensatorysWithUser[]> => {
     const supabase = await createClient();
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD

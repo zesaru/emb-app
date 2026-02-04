@@ -1,10 +1,12 @@
 import { createClient } from "@/utils/supabase/server";
+import { cache } from "react";
 
 import { VacationsWithUser } from "./../types/collections";
 
 export const dynamic = 'force-dynamic'
 
-const getVacationsNoapproved = async():Promise<VacationsWithUser[]> => {
+// Use React.cache for per-request deduplication (Vercel best practice)
+export const getVacationsNoapproved = cache(async():Promise<VacationsWithUser[]> => {
     const supabase = await createClient();
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD

@@ -19,9 +19,11 @@ export default async function Attendances() {
     redirect("/login");
   }
   
-  const user = await getUsersById(session.user.id);  
-
-  const attendances = await getAttendanceswithUser();
+  // Parallel data fetching to eliminate waterfalls (Vercel best practice)
+  const [user, attendances] = await Promise.all([
+    getUsersById(session.user.id),
+    getAttendanceswithUser()
+  ]);
 
   return (
     <div className="flex flex-col">
