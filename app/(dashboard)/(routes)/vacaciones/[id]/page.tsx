@@ -17,10 +17,10 @@ export default async function VacacionesById({
   const supabase = await createClient();
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session === null) {
+  if (!user) {
     redirect("/login");
   }
 

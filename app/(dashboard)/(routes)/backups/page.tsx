@@ -11,10 +11,10 @@ export default async function BackupsPage() {
   const supabase = await createClient();
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session === null) {
+  if (!user) {
     redirect("/login");
   }
 
@@ -22,7 +22,7 @@ export default async function BackupsPage() {
   const { data: userData } = await supabase
     .from("users")
     .select("admin")
-    .eq("id", session.user.id)
+    .eq("id", user.id)
     .single();
 
   if (userData?.admin !== "admin") {

@@ -21,22 +21,22 @@ export default async function Index() {
   const supabase = await createClient();
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session === null) {
+  if (!user) {
     redirect("/login");
   }
 
   // Parallel data fetching to eliminate waterfalls (Vercel best practice)
   const [
-    user,
+    userData,
     compensatorysnoapproved,
     compensatorysHournoapproved,
     vacationsnoapproved,
     notApproved
   ] = await Promise.all([
-    getUsersById(session.user.id),
+    getUsersById(user.id),
     getsCompensatoriosNoApproved(),
     getCompensatoriosHourNoapproved(),
     getVacationsNoapproved(),
@@ -45,7 +45,7 @@ export default async function Index() {
 
   return (
     <div className="w-full flex flex-col items-center">
-      {user[0]?.admin === "admin" ? (
+      {userData[0]?.admin === "admin" ? (
         <div>
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsContent value="overview" className="space-y-4">
@@ -152,7 +152,7 @@ export default async function Index() {
         </div>
       ) : (
         <>
-          <Usertabs user={user[0]} />
+          <Usertabs user={userData[0]} />
         </>
       )}
     </div>
