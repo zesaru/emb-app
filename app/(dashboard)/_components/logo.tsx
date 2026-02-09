@@ -7,6 +7,8 @@ export const Logo = () => {
       width={130}
       alt="logo"
       src="/logo.svg"
+      loading="eager"
+      priority
     />
   )
 }

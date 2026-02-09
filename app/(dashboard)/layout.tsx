@@ -1,6 +1,8 @@
 import Navbar from "./_components/navbar";
 import Sidebar from "./_components/sidebar";
 
+export const dynamic = "force-dynamic";
+
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="h-full">

@@ -1,3 +1,5 @@
+"use client"
+
 import { MobileSidebar } from "./mobile-sidebar";
 import { UserNav } from "./user-nav";
 

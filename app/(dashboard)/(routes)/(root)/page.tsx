@@ -58,7 +58,7 @@ export default async function Index() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {notApproved[0].unapproved_count}
+                      {notApproved[0]?.unapproved_count ?? 0}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Cantidad de solicitudes por aprobar
@@ -73,7 +73,7 @@ export default async function Index() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {notApproved[0].final_approve_request_count}
+                      {notApproved[0]?.final_approve_request_count ?? 0}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Cantidad de solicitudes por aprobar

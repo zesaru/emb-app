@@ -26,7 +26,7 @@ export default async function CompensatoriosbyId({
 
   const compensatorys = await getsCompensatorioswithUserById(id);
   const userId = compensatorys[0]?.user_id || id;
-  const user = await getUsersById(userId);
+  const userData = await getUsersById(userId);
 
   // Ordenar por fecha (más antiguo primero para el estado de cuenta)
   const sortedCompensatorys = compensatorys.sort((a, b) => {
@@ -91,7 +91,7 @@ export default async function CompensatoriosbyId({
             </div>
             <div>
               <p className="text-sm text-gray-500 font-medium">Saldo Actual</p>
-              <p className="text-2xl font-bold text-gray-900">{user[0]?.num_compensatorys || "0"} <span className="text-base font-normal text-gray-500">hrs</span></p>
+              <p className="text-2xl font-bold text-gray-900">{userData[0]?.num_compensatorys || "0"} <span className="text-base font-normal text-gray-500">hrs</span></p>
             </div>
           </div>
         </div>
@@ -101,7 +101,7 @@ export default async function CompensatoriosbyId({
           <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
             <User className="h-5 w-5 text-gray-600" />
           </div>
-          <p className="text-lg font-medium text-gray-900">{user[0]?.name || "Usuario"}</p>
+          <p className="text-lg font-medium text-gray-900">{userData[0]?.name || "Usuario"}</p>
         </div>
 
         {/* Tabla de registros */}
