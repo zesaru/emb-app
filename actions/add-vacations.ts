@@ -4,6 +4,9 @@ import { createClient } from "@/utils/supabase/server";
 import { Resend } from 'resend';
 import { formatInTimeZone } from "date-fns-tz";
 import { vacationSchema } from "@/lib/validation/schemas";
+import { VacationRequestAdmin } from "@/components/email/templates/vacation/vacation-request-admin";
+import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import React from "react";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 /**
@@ -54,16 +57,21 @@ export const addVacation = async (data: any) => {
       p_id_user: user_id,
     });
 
-    const to = process.env.EMBPERUJAPAN_EMAIL;
+    const to = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
     if (result.statusText === 'OK' && result.data) {
       try {
         await resend.emails.send({
-          from: "Team <team@peruinjapan.com>",
-          to: `${to}`,
-          subject: `Solicitud de Vacaciones del usuario(a) ${result.data[0].users_name}`,
-          text: `El señor(a) ${result.data[0].users_name}
-          ha solicitado vacaciones desde el ${start} hasta el ${finish} sumando un total de ${data.days} día(s).
-          Por favor ingrese al siguiente enlace para aprobar la solicitud de vacaciones -> https://emb-app.vercel.app/`,
+          from: getFromEmail(),
+          to: to,
+          subject: `Nueva Solicitud de Vacaciones - ${result.data[0].users_name}`,
+          react: React.createElement(VacationRequestAdmin, {
+            userName: result.data[0].users_name,
+            userEmail: user.email || 'usuario@example.com',
+            startDate: data.start,
+            finishDate: data.finish,
+            days: data.days,
+            approvalUrl: buildUrl('/'),
+          }),
         })
         return { success: true }
       } catch (error) {

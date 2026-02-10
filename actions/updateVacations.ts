@@ -5,6 +5,9 @@ import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
 import { requireCurrentUserAdmin } from "@/lib/auth/admin-check";
 import { uuidSchema, positiveIntegerSchema } from "@/lib/validation/schemas";
+import { VacationApprovedUser } from "@/components/email/templates/vacation/vacation-approved-user";
+import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import React from "react";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -84,11 +87,26 @@ export default async function UpdateVacations(vacations: VacationInput) {
 
     // Enviar email de notificación
     try {
+      // Fetch vacation data to get dates
+      const { data: vacationData } = await supabase
+        .from("vacations")
+        .select("start, finish")
+        .eq("id", vacations.id)
+        .single();
+
       await resend.emails.send({
-        from: "Team <team@peruinjapan.com>",
+        from: getFromEmail(),
         to: vacations.email,
-        subject: `Aprobación de uso de saldo vacacional ${vacations.email}`,
-        text: `El siguiente email ha sido enviado desde la plataforma de vacaciones de la Embajada del Perú en Japón para informarle que, se ha aprobado su solicitud de vacaciones.`,
+        subject: `¡Tu Solicitud de Vacaciones Ha Sido Aprobada!`,
+        react: React.createElement(VacationApprovedUser, {
+          userName: vacations.email,
+          startDate: vacationData?.start || new Date().toISOString(),
+          finishDate: vacationData?.finish || new Date().toISOString(),
+          days: vacations.days,
+          approvedDate: new Date().toISOString(),
+          newVacationBalance: newVacationDays,
+          calendarUrl: buildUrl('/calendar'),
+        }),
       });
     } catch (emailError) {
       console.error("Error enviando email:", emailError);

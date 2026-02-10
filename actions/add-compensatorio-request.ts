@@ -5,6 +5,9 @@ import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
 import { formatInTimeZone } from 'date-fns-tz';
 import { compensatoryRequestSchema } from "@/lib/validation/schemas";
+import { CompensatoryUseRequestAdmin } from "@/components/email/templates/compensatory/compensatory-use-request-admin";
+import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import React from "react";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -42,13 +45,19 @@ export default async function UpdateCompensatorioResquest(compensatory: any) {
       p_compensated_hours_day: fecha,
       p_compensated_hours: compensatory.hours
     });
-    const email = process.env.EMBPERUJAPAN_EMAIL;
+    const email = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
     try {
       const data = await resend.emails.send({
-        from: "Team <team@peruinjapan.com>",
-        to: `${email}`,
-        subject: `Aprobación de Compensatorio del usuario(a) ${user.email}`,
-        text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón para informarle se ha registrado su solicitud de compensatorio.`,
+        from: getFromEmail(),
+        to: email,
+        subject: `Solicitud de Uso de Horas Compensatorias - ${user.email}`,
+        react: React.createElement(CompensatoryUseRequestAdmin, {
+          userName: user.email || 'Usuario',
+          userEmail: user.email || 'usuario@example.com',
+          hours: compensatory.hours,
+          reasonDate: compensatory.dob,
+          approvalUrl: buildUrl('/'),
+        }),
       });
 
       revalidatePath(`/compensatorios/request/`);

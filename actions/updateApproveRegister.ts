@@ -5,6 +5,9 @@ import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 import { requireCurrentUserAdmin } from "@/lib/auth/admin-check";
 import { uuidSchema, positiveIntegerSchema } from "@/lib/validation/schemas";
+import { CompensatoryApprovedUser } from "@/components/email/templates/compensatory/compensatory-approved-user";
+import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import React from "react";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -70,11 +73,28 @@ export default async function updateApproveRegister(compensatory: CompensatoryIn
 
     // Enviar email de notificación
     try {
+      // Fetch user data to get current compensatory hours
+      const { data: userData } = await supabase
+        .from("users")
+        .select("num_compensatorys")
+        .eq("id", compensatory.user_id)
+        .single();
+
+      const newTotalHours = userData?.num_compensatorys || 0;
+
       await resend.emails.send({
-        from: "Team <team@peruinjapan.com>",
+        from: getFromEmail(),
         to: compensatory.email,
-        subject: `Solicitud de horas por compensatorio ${compensatory.email}`,
-        text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón para informarle que, se ha aprobado su solicitud de registro de compensatorio.`,
+        subject: `¡Tu Solicitud Ha Sido Aprobada!`,
+        react: React.createElement(CompensatoryApprovedUser, {
+          userName: compensatory.email,
+          eventName: "Registro de horas",
+          hours: compensatory.hours,
+          eventDate: new Date().toISOString(),
+          approvedDate: new Date().toISOString(),
+          newTotalHours: newTotalHours,
+          dashboardUrl: buildUrl('/'),
+        }),
       });
     } catch (emailError) {
       console.error("Error enviando email:", emailError);

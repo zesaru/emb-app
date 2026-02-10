@@ -4,6 +4,9 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { Resend } from "resend";
 import { compensatoryRegisterApprovalSchema } from "@/lib/validation/schemas";
+import { CompensatoryUseApprovedUser } from "@/components/email/templates/compensatory/compensatory-use-approved-user";
+import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import React from "react";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -45,12 +48,28 @@ export default async function updateApproveRegisterHour(compensatory: any) {
     user_id: compensatory.user_id,
   });
 
+  // Fetch user's remaining hours
+  const { data: userData } = await supabase
+    .from("users")
+    .select("num_compensatorys")
+    .eq("id", compensatory.user_id)
+    .single();
+
+  const remainingHours = userData?.num_compensatorys || 0;
+
   try {
     await resend.emails.send({
-      from: "Team <team@peruinjapan.com>",
-      to: `${compensatory.email}`,
-      subject: `Aprobacion de descanso por compensatorio del usuario ${compensatory.email}`,
-      text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón para informarle que, se ha aprobado su solicitud de descanso por compensatorio.`,
+      from: getFromEmail(),
+      to: compensatory.email,
+      subject: `¡Tu Solicitud de Descanso Ha Sido Aprobada!`,
+      react: React.createElement(CompensatoryUseApprovedUser, {
+        userName: compensatory.email,
+        hours: compensatory.compensated_hours,
+        reasonDate: new Date().toISOString(),
+        approvedDate: new Date().toISOString(),
+        remainingHours: remainingHours,
+        dashboardUrl: buildUrl('/'),
+      }),
     });
     revalidatePath(`/`);
     return {

@@ -4,6 +4,9 @@ import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { Resend } from 'resend';
 import { compensatorySchema } from "@/lib/validation/schemas";
+import { CompensatoryRequestAdmin } from "@/components/email/templates/compensatory/compensatory-request-admin";
+import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import React from "react";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -49,15 +52,23 @@ export const addPost = async (formData: FormData) => {
       }
     ).select('*');
 
-    const email = process.env.EMBPERUJAPAN_EMAIL;
+    const email = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
 
     if (result.statusText === 'Created' && result.data) {
       try {
+        const compensatoryId = result.data[0]?.id;
         const data = await resend.emails.send({
-          from: "Team <team@peruinjapan.com>",
-          to: `${email}`,
-          subject: `Solicitud de aprobación de registro de horas del usuario(a) ${user.email}`,
-          text: `El siguiente email ha sido enviado desde la plataforma de compensatorios de la Embajada del Perú en Japón, ingrese al siguiente enlace para aprobar las solicitud de registro de horas https://emb-app.vercel.app/`,
+          from: getFromEmail(),
+          to: email,
+          subject: `Nueva Solicitud de Compensatorio - ${user.email}`,
+          react: React.createElement(CompensatoryRequestAdmin, {
+            userName: user.email || 'Usuario',
+            userEmail: user.email || 'usuario@example.com',
+            eventName: eventName as string,
+            hours: hours,
+            eventDate: eventDate as string,
+            approvalUrl: buildUrl(`/compensatorios/approvec/${compensatoryId}`),
+          }),
         })
         return { success: true, data }
       } catch (error) {

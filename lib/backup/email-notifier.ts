@@ -1,5 +1,11 @@
 import { Resend } from 'resend';
 import { BackupMetadata, BackupResult } from './backup-types';
+import { BackupSuccess } from '@/components/email/templates/system/backup-success';
+import { BackupFailure } from '@/components/email/templates/system/backup-failure';
+import { RestoreSuccess } from '@/components/email/templates/system/restore-success';
+import { RestoreFailure } from '@/components/email/templates/system/restore-failure';
+import { getFromEmail } from '@/components/email/utils/email-config';
+import React from "react";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,19 +22,14 @@ export const emailNotifier = {
 
     try {
       await resend.emails.send({
-        from: 'Team <team@peruinjapan.com>',
+        from: getFromEmail(),
         to,
         subject: `Backup Completado - ${result.metadata.filename}`,
-        text: `Se ha completado exitosamente un backup de la base de datos.
-
-Detalles:
-- ID: ${result.metadata.id}
-- Archivo: ${result.metadata.filename}
-- Fecha: ${result.metadata.createdAt.toISOString()}
-- Tamaño: ${(result.metadata.size / 1024).toFixed(2)} KB
-- Ubicación: ${result.metadata.storageLocation.join(', ')}
-- Duración: ${(result.duration / 1000).toFixed(2)} segundos
-- Tablas: ${result.metadata.tablesCount}`,
+        react: React.createElement(BackupSuccess, {
+          backupDate: result.metadata.createdAt.toISOString(),
+          backupSize: `${(result.metadata.size / 1024).toFixed(2)} KB`,
+          backupType: 'full',
+        }),
       });
     } catch (error) {
       console.error('Failed to send backup success email:', error);
@@ -45,18 +46,17 @@ Detalles:
 
     try {
       await resend.emails.send({
-        from: 'Team <team@peruinjapan.com>',
+        from: getFromEmail(),
         to,
         subject: 'Backup Fallido - EMB App',
-        text: `Ha fallado el proceso de backup de la base de datos.
-
-Error: ${error}
-Duración del intento: ${(duration / 1000).toFixed(2)} segundos
-
-Por favor revise los logs para más información.`,
+        react: React.createElement(BackupFailure, {
+          backupDate: new Date().toISOString(),
+          error: error,
+          backupType: 'full',
+        }),
       });
-    } catch (error) {
-      console.error('Failed to send backup failure email:', error);
+    } catch (emailError) {
+      console.error('Failed to send backup failure email:', emailError);
     }
   },
 
@@ -70,15 +70,14 @@ Por favor revise los logs para más información.`,
 
     try {
       await resend.emails.send({
-        from: 'Team <team@peruinjapan.com>',
+        from: getFromEmail(),
         to,
         subject: 'Restauración Completada - EMB App',
-        text: `Se ha completado exitosamente la restauración de la base de datos.
-
-Tablas afectadas:
-${tablesAffected.map(table => `- ${table}`).join('\n')}
-
-Fecha de restauración: ${new Date().toISOString()}`,
+        react: React.createElement(RestoreSuccess, {
+          restoreDate: new Date().toISOString(),
+          backupFile: 'backup-restored',
+          recordsRestored: tablesAffected.length,
+        }),
       });
     } catch (error) {
       console.error('Failed to send restore success email:', error);
@@ -95,17 +94,17 @@ Fecha de restauración: ${new Date().toISOString()}`,
 
     try {
       await resend.emails.send({
-        from: 'Team <team@peruinjapan.com>',
+        from: getFromEmail(),
         to,
         subject: 'Restauración Fallida - EMB App',
-        text: `Ha fallado el proceso de restauración de la base de datos.
-
-Error: ${error}
-
-Por favor revise los logs para más información.`,
+        react: React.createElement(RestoreFailure, {
+          restoreDate: new Date().toISOString(),
+          backupFile: 'backup-file',
+          error: error,
+        }),
       });
-    } catch (error) {
-      console.error('Failed to send restore failure email:', error);
+    } catch (emailError) {
+      console.error('Failed to send restore failure email:', emailError);
     }
   }
 };

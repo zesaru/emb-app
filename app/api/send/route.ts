@@ -1,9 +1,10 @@
-import { EmailTemplate } from '@/components/email-template';
+import { CompensatoryRequestAdmin } from '@/components/email/templates/compensatory/compensatory-request-admin';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@/utils/supabase/server';
 import { requireCurrentUserAdmin } from '@/lib/auth/admin-check';
 import { checkApiRateLimit } from '@/lib/rate-limit';
+import { getFromEmail } from '@/components/email/utils/email-config';
 import React from 'react';
 
 const resendInstance = new Resend(process.env.RESEND_API_KEY);
@@ -53,13 +54,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Enviar email
+    // Enviar email de prueba usando la nueva plantilla
     const data = await resendInstance.emails.send({
-      from: "Acme <onboarding@resend.dev>",
+      from: getFromEmail(),
       to: 'webdev@embassyofperuinjapan.org',
-      subject: 'Test email',
-      react: React.createElement(EmailTemplate, { firstname: 'Jhon' } as any),
-      text: '',
+      subject: 'Test email - Nueva Plantilla',
+      react: React.createElement(CompensatoryRequestAdmin, {
+        userName: 'Usuario de Prueba',
+        userEmail: 'test@example.com',
+        eventName: 'Evento de Prueba',
+        hours: 8,
+        eventDate: new Date().toISOString(),
+        approvalUrl: 'https://emb-app.vercel.app/',
+      }),
     });
 
     return NextResponse.json({
