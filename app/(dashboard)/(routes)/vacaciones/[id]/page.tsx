@@ -26,7 +26,7 @@ export default async function VacacionesById({
 
   const vacations = await getVacationswithUserById(id);
   const userId = vacations[0]?.id_user || id;
-  const user = await getUsersById(userId);
+  const userDetails = await getUsersById(userId);
 
   // Ordenar por fecha de solicitud (más reciente primero)
   const sortedVacations = vacations.sort((a, b) => {
@@ -92,7 +92,7 @@ export default async function VacacionesById({
             </div>
             <div>
               <p className="text-sm text-gray-500 font-medium">Saldo Vacacional</p>
-              <p className="text-2xl font-bold text-gray-900">{user[0]?.num_vacations || "0"} <span className="text-base font-normal text-gray-500">días</span></p>
+              <p className="text-2xl font-bold text-gray-900">{userDetails[0]?.num_vacations || "0"} <span className="text-base font-normal text-gray-500">días</span></p>
             </div>
           </div>
         </div>
@@ -102,7 +102,7 @@ export default async function VacacionesById({
           <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
             <User className="h-5 w-5 text-gray-600" />
           </div>
-          <p className="text-lg font-medium text-gray-900">{user[0]?.name || "Usuario"}</p>
+          <p className="text-lg font-medium text-gray-900">{userDetails[0]?.name || "Usuario"}</p>
         </div>
 
         {/* Tabla de registros */}
