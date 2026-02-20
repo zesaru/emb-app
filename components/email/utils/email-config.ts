@@ -68,8 +68,17 @@ function normalizeRecipients(recipients: string | string[] | undefined | null): 
 }
 
 function dedupeRecipients(recipients: string[]): string[] {
-  return [...new Set(recipients.map((email) => email.toLowerCase()))]
-    .map((email) => recipients.find((item) => item.toLowerCase() === email) as string);
+  const seen: Record<string, string> = {};
+  const deduped: string[] = [];
+
+  for (const recipient of recipients) {
+    const normalized = recipient.toLowerCase();
+    if (seen[normalized]) continue;
+    seen[normalized] = recipient;
+    deduped.push(recipient);
+  }
+
+  return deduped;
 }
 
 /**
