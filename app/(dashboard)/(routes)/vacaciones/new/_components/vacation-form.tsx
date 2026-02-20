@@ -28,6 +28,9 @@ import {
 import { addVacation } from "@/actions/add-vacations";
 import { toast } from "react-toastify";
 
+const getStartOfDay = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
 const formSchema = z.object({
   start: z.date({
     required_error: "La fecha es requerida.",
@@ -37,9 +40,27 @@ const formSchema = z.object({
   }),
   days: z.coerce.number({
     required_error: "La cantidad de día(s) es requerida.",
-  }).positive().int(),
-  
-  
+  }).int().min(1, "Debe solicitar al menos 1 día.").max(30, "Máximo 30 días."),
+}).superRefine(({ start, finish }, ctx) => {
+  const today = getStartOfDay(new Date());
+  const startDate = getStartOfDay(start);
+  const finishDate = getStartOfDay(finish);
+
+  if (startDate < today) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["start"],
+      message: "La fecha de inicio no puede ser en el pasado.",
+    });
+  }
+
+  if (finishDate < startDate) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["finish"],
+      message: "La fecha de término no puede ser anterior a la fecha de inicio.",
+    });
+  }
 });
 
 type VacationFormValues = z.infer<typeof formSchema>;
@@ -52,13 +73,34 @@ export function VacationNewForm() {
     defaultValues,
   });
 
-  const onSubmit =  async (data: VacationFormValues) => {
-    const response = await addVacation(data);
+  const today = getStartOfDay(new Date());
 
-    if (response?.success) {
-      toast("🦄 Su registro ha sido ingresado!", {
+  const onSubmit =  async (data: VacationFormValues) => {
+    try {
+      const response = await addVacation({
+        start: format(data.start, "yyyy-MM-dd"),
+        finish: format(data.finish, "yyyy-MM-dd"),
+        days: data.days,
+      });
+
+      if (response?.success) {
+        toast("Solicitud de vacaciones registrada correctamente.", {
+          position: "top-center",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        });
+        form.reset();
+        return;
+      }
+
+      toast(response?.error || "No se pudo registrar la solicitud de vacaciones.", {
         position: "top-center",
-        autoClose: 3000,
+        autoClose: 5000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -66,7 +108,17 @@ export function VacationNewForm() {
         progress: undefined,
         theme: "light",
       });
-      form.reset({ days: 0,  start: new Date(), finish: new Date() });
+    } catch {
+      toast("Ocurrió un error inesperado al registrar la solicitud.", {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
     }
   };  
 
@@ -83,6 +135,7 @@ export function VacationNewForm() {
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
+                      type="button"
                       className={cn(
                         "w-[240px] pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
@@ -102,6 +155,7 @@ export function VacationNewForm() {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
+                    disabled={(date) => getStartOfDay(date) < today}
                     locale={es}
                     initialFocus
                   />
@@ -123,6 +177,7 @@ export function VacationNewForm() {
                 <PopoverTrigger asChild>
                   <FormControl>
                     <Button
+                      type="button"
                       className={cn(
                         "w-[240px] pl-3 text-left font-normal",
                         !field.value && "text-muted-foreground"
@@ -142,6 +197,7 @@ export function VacationNewForm() {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
+                    disabled={(date) => getStartOfDay(date) < today}
                     locale={es}
                   />
                 </PopoverContent>
@@ -159,7 +215,7 @@ export function VacationNewForm() {
             <FormItem>
               <FormLabel>Cantidad de días</FormLabel>
               <FormControl>
-                <Input {...field} type="number" />
+                <Input {...field} type="number" min={1} max={30} />
               </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
@@ -167,7 +223,9 @@ export function VacationNewForm() {
           )}
         />
 
-        <Button type="submit">Guardar</Button>
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Guardando..." : "Guardar"}
+        </Button>
       </form>
     </Form>
   );

@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { requireCurrentUserAdmin } from "@/lib/auth/admin-check";
 import { uuidSchema, positiveIntegerSchema } from "@/lib/validation/schemas";
 import { VacationApprovedUser } from "@/components/email/templates/vacation/vacation-approved-user";
-import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import { getFromEmail, buildUrl, resolveEmailRecipients } from "@/components/email/utils/email-config";
 import React from "react";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -96,7 +96,7 @@ export default async function UpdateVacations(vacations: VacationInput) {
 
       await resend.emails.send({
         from: getFromEmail(),
-        to: vacations.email,
+        to: resolveEmailRecipients(vacations.email, vacations.email),
         subject: `¡Tu Solicitud de Vacaciones Ha Sido Aprobada!`,
         react: React.createElement(VacationApprovedUser, {
           userName: vacations.email,

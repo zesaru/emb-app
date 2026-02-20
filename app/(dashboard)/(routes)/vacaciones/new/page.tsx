@@ -12,8 +12,8 @@ export default function NewVacationPage() {
     <div className="space-y-6 p-5">
       <Card>
         <CardHeader>
-          <CardTitle>Vacaciones</CardTitle>
-          <CardDescription>SOLICITUD DE VACACIONES</CardDescription>
+          <CardTitle>Solicitar Vacaciones</CardTitle>
+          <CardDescription>Complete el período y la cantidad de días a solicitar.</CardDescription>
         </CardHeader>
         <CardContent>
           <VacationNewForm />

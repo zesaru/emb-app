@@ -51,6 +51,56 @@ export function getFromEmail() {
   return `${config.from.name} <${config.from.email}>`;
 }
 
+export function getSystemEmail(): string {
+  return process.env.EMBPERUJAPAN_EMAIL || 'sistema@embperujapan.org';
+}
+
+export function isEmailTestMode(): boolean {
+  return process.env.EMAIL_TEST_MODE === 'true';
+}
+
+function normalizeRecipients(recipients: string | string[] | undefined | null): string[] {
+  if (!recipients) return [];
+  const values = Array.isArray(recipients) ? recipients : [recipients];
+  return values
+    .map((email) => email.trim())
+    .filter((email) => email.length > 0);
+}
+
+function dedupeRecipients(recipients: string[]): string[] {
+  return [...new Set(recipients.map((email) => email.toLowerCase()))]
+    .map((email) => recipients.find((item) => item.toLowerCase() === email) as string);
+}
+
+/**
+ * Resolves recipients for normal and test email modes.
+ * In test mode, only the test user (or context user) and system email are used.
+ */
+export function resolveEmailRecipients(
+  recipients: string | string[],
+  contextUserEmail?: string | null
+): string | string[] {
+  const baseRecipients = dedupeRecipients(normalizeRecipients(recipients));
+
+  if (!isEmailTestMode()) {
+    if (baseRecipients.length <= 1) {
+      return baseRecipients[0] || '';
+    }
+    return baseRecipients;
+  }
+
+  const explicitTestUser = process.env.EMAIL_TEST_USER?.trim();
+  const targetUser = explicitTestUser || contextUserEmail?.trim() || '';
+  const testRecipients = dedupeRecipients(
+    normalizeRecipients([targetUser, getSystemEmail()])
+  );
+
+  if (testRecipients.length <= 1) {
+    return testRecipients[0] || '';
+  }
+  return testRecipients;
+}
+
 /**
  * Build an absolute URL for a given path
  */

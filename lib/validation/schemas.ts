@@ -33,8 +33,14 @@ export const timeSchema = z.string()
 
 export const vacationSchema = z.object({
   userId: uuidSchema.optional(),
-  start: z.string().min(1, 'Fecha de inicio es requerida'),
-  finish: z.string().min(1, 'Fecha de fin es requerida'),
+  start: z.coerce.date({
+    required_error: 'Fecha de inicio es requerida',
+    invalid_type_error: 'Fecha de inicio inválida',
+  }),
+  finish: z.coerce.date({
+    required_error: 'Fecha de fin es requerida',
+    invalid_type_error: 'Fecha de fin inválida',
+  }),
   days: positiveIntegerSchema.max(30, 'Máximo 30 días de vacaciones'),
 });
 

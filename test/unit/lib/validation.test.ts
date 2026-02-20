@@ -44,6 +44,16 @@ describe('vacationSchema', () => {
       expect(result.error.errors[0].message).toContain('30')
     }
   })
+
+  it('acepta fechas como objetos Date', () => {
+    const data = {
+      start: new Date('2025-01-01T00:00:00.000Z'),
+      finish: new Date('2025-01-05T00:00:00.000Z'),
+      days: 5,
+    }
+    const result = vacationSchema.safeParse(data)
+    expect(result.success).toBe(true)
+  })
 })
 
 describe('compensatorySchema', () => {
