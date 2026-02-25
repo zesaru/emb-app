@@ -4,6 +4,7 @@
 
 import { describe, it, expect } from 'vitest'
 import {
+  adminUserCreateSchema,
   vacationSchema,
   compensatorySchema,
   compensatoryRequestSchema,
@@ -139,6 +140,34 @@ describe('userUpdateSchema', () => {
       email: 'invalid-email',
     }
     const result = userUpdateSchema.safeParse(data)
+    expect(result.success).toBe(false)
+  })
+})
+
+describe('adminUserCreateSchema', () => {
+  it('valida creación por invitación', () => {
+    const data = {
+      email: 'admin@example.com',
+      name: 'Admin User',
+      role: 'admin',
+      provisioningMode: 'invite',
+      numVacations: 15,
+      numCompensatorys: 4,
+    }
+
+    const result = adminUserCreateSchema.safeParse(data)
+    expect(result.success).toBe(true)
+  })
+
+  it('requiere contraseña temporal cuando aplica', () => {
+    const data = {
+      email: 'user@example.com',
+      name: 'User Test',
+      role: 'user',
+      provisioningMode: 'temporary_password',
+    }
+
+    const result = adminUserCreateSchema.safeParse(data)
     expect(result.success).toBe(false)
   })
 })
