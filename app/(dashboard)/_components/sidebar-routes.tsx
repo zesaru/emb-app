@@ -1,6 +1,6 @@
 "use client";
 
-import { Compass, Layout, SmilePlus, Palmtree, LayoutList, CalendarDays, DatabaseBackup     } from "lucide-react";
+import { Compass, Layout, SmilePlus, Palmtree, LayoutList, CalendarDays, DatabaseBackup, Shield } from "lucide-react";
 
 import { SidebarItem } from "./sidebar-item";
 
@@ -54,16 +54,21 @@ const routes = [
     icon: DatabaseBackup,
     label: "Backups",
     href: "/backups",
-  }
+  },
+  {
+    icon: Shield,
+    label: "Admin Usuarios",
+    href: "/admin/users",
+    adminOnly: true,
+  },
 ];
 
-
-
-export const SidebarRoutes = () => {
+export const SidebarRoutes = ({ isAdmin = false }: { isAdmin?: boolean }) => {
+  const visibleRoutes = routes.filter((route) => !route.adminOnly || isAdmin);
 
   return (
     <div className="flex flex-col w-full">
-      {routes.map((route) => (
+      {visibleRoutes.map((route) => (
         <SidebarItem
           key={route.href}
           icon={route.icon}

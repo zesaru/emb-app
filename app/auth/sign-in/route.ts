@@ -62,6 +62,28 @@ export async function POST(request: Request) {
     );
   }
 
+  // Bloquear acceso a usuarios desactivados (baja lógica)
+  const { data: profile } = await supabase
+    .from("users")
+    .select("is_active")
+    .eq("id", (await supabase.auth.getUser()).data.user?.id ?? "")
+    .single();
+
+  const rawIsActive = (profile as { is_active?: string | boolean | null } | null)?.is_active;
+  const isActive = typeof rawIsActive === "boolean"
+    ? rawIsActive
+    : rawIsActive == null
+      ? true
+      : ["true", "1", "yes", "activo", "active"].includes(String(rawIsActive).toLowerCase());
+
+  if (!isActive) {
+    await supabase.auth.signOut();
+    return NextResponse.redirect(
+      `${requestUrl.origin}/login?error=${encodeURIComponent("Usuario inactivo. Contacta al administrador.")}`,
+      { status: 301 }
+    );
+  }
+
   // Login exitoso: resetear rate limit para esta IP
   resetRateLimit(ip);
 

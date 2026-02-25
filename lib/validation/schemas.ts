@@ -129,6 +129,57 @@ export const passwordUpdateSchema = z.object({
     .max(100, 'Máximo 100 caracteres'),
 });
 
+export const adminRoleSchema = z.enum(["admin", "user"]);
+
+export const adminUserProvisioningModeSchema = z.enum(["invite", "temporary_password"]);
+
+export const adminUserCreateSchema = z.object({
+  email: emailSchema,
+  name: z.string().min(1, "Nombre es requerido").max(100, "Máximo 100 caracteres"),
+  role: adminRoleSchema.default("user"),
+  provisioningMode: adminUserProvisioningModeSchema,
+  temporaryPassword: z.string().min(8, "Contraseña temporal debe tener al menos 8 caracteres").max(100).optional(),
+  numVacations: nonNegativeIntegerSchema.optional().default(0),
+  numCompensatorys: nonNegativeIntegerSchema.optional().default(0),
+}).superRefine((data, ctx) => {
+  if (data.provisioningMode === "temporary_password" && !data.temporaryPassword) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["temporaryPassword"],
+      message: "Contraseña temporal es requerida para este modo",
+    });
+  }
+});
+
+export const adminUserUpdateSchema = z.object({
+  id: uuidSchema,
+  name: z.string().min(1, 'Nombre es requerido').max(100, 'Máximo 100 caracteres').optional(),
+  role: adminRoleSchema.optional(),
+  numVacations: nonNegativeIntegerSchema.optional(),
+  numCompensatorys: nonNegativeIntegerSchema.optional(),
+});
+
+export const adminUserStatusSchema = z.object({
+  userId: uuidSchema,
+});
+
+export const adminUserPasswordResetLinkSchema = z.object({
+  userId: uuidSchema,
+});
+
+export const adminUserSetTemporaryPasswordSchema = z.object({
+  userId: uuidSchema,
+  password: z.string()
+    .min(8, 'Contraseña debe tener al menos 8 caracteres')
+    .max(100, 'Máximo 100 caracteres'),
+});
+
+export const adminUserListFiltersSchema = z.object({
+  search: z.string().max(120).optional(),
+  status: z.enum(["all", "active", "inactive"]).optional().default("all"),
+  role: z.enum(["all", "admin", "user"]).optional().default("all"),
+});
+
 // ============================================================================
 // HELPERS
 // ============================================================================

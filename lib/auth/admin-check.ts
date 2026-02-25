@@ -62,3 +62,52 @@ export async function requireCurrentUserAdmin(): Promise<void> {
 
   await requireAdmin(user.id);
 }
+
+/**
+ * Verifica que un usuario esté activo en la tabla public.users.
+ */
+export async function requireUserActive(userId: string): Promise<void> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("users")
+    .select("is_active")
+    .eq("id", userId)
+    .single();
+
+  if (error) {
+    throw new Error("Error verificando estado del usuario");
+  }
+
+  const rawStatus = (data as { is_active?: string | boolean | null } | null)?.is_active;
+  const isActive = typeof rawStatus === "boolean"
+    ? rawStatus
+    : rawStatus == null
+      ? true
+      : ["true", "1", "yes", "activo", "active"].includes(String(rawStatus).toLowerCase());
+
+  if (!isActive) {
+    throw new Error("Usuario inactivo");
+  }
+}
+
+/**
+ * Verifica que el usuario actual esté autenticado, activo y sea admin.
+ */
+export async function requireCurrentUserAdminAndActive(): Promise<string> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    throw new Error("No autenticado: Se requiere sesión activa");
+  }
+
+  await requireUserActive(user.id);
+  await requireAdmin(user.id);
+
+  return user.id;
+}
