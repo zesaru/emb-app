@@ -4,21 +4,28 @@ import { usePersonStore } from "@/store";
 import {useEffect} from "react";
 
 const Usertabs = ( {user}: any) => {
+    const safeUser = user ?? {
+      name: "Usuario",
+      email: "",
+      role: "user",
+      num_vacations: 0,
+      num_compensatorys: 0,
+    };
 
     const setUserName = usePersonStore ( state => state.setUserName );
 
     useEffect(() => {
-        setUserName(user.name);
-    }, [user]);
+        setUserName(safeUser.name ?? "Usuario");
+    }, [safeUser.name, setUserName]);
 
-    console.log(user);
+    console.log(safeUser);
     return (
     <div className="bg-slate-100  mt-[77px]  py-3 px-3">
       <section className="relative overflow-hidden">
         <div className="container">
           <div className="flex">
             <div className="w-full">
-              <h3 className="text-xl text-gray-800 mt-2">{user.name}</h3>
+              <h3 className="text-xl text-gray-800 mt-2">{safeUser.name}</h3>
               <p className="mt-1 font-medium mb-4">Welcome!</p>
             </div>
           </div>
@@ -33,10 +40,10 @@ const Usertabs = ( {user}: any) => {
                         {/* <img src="assets/images/avatars/img-8.jpg" className="img-fluid w-12 h-12 rounded me-3" alt="..." /> */}
                         <div className="grow">
                           <h4 className="tetx-lg text-gray-800 mb-1 mt-0 font-semibold">
-                            {user.name}
+                            {safeUser.name}
                           </h4>
                           <p className="text-gray-400 pb-0 text-sm mb-4 font-medium">
-                            {user.role}
+                            {safeUser.role}
                           </p>
                         </div>
                       </div>
@@ -61,7 +68,7 @@ const Usertabs = ( {user}: any) => {
                           <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
                           <polyline points="22,6 12,13 2,6" />
                         </svg>
-                        {user.email}
+                        {safeUser.email}
                       </a>
                     </div>
                     <div className="mb-2">
@@ -147,7 +154,7 @@ const Usertabs = ( {user}: any) => {
                   </div>
                   <div className="flex-grow-1">
                     <h3 className="text-xl text-gray-800">
-                      {user.num_vacations}
+                      {safeUser.num_vacations}
                     </h3>
                     <p className="mb-0">Vacaciones</p>
                   </div>
@@ -176,7 +183,7 @@ const Usertabs = ( {user}: any) => {
                   </div>
                   <div className="grow">
                     <h3 className="text-xl text-gray-800">
-                      {user.num_compensatorys}
+                      {safeUser.num_compensatorys}
                     </h3>
                     <p className="mb-0">Compensatorios</p>
                   </div>

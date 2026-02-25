@@ -43,9 +43,19 @@ export default async function Index() {
     GetNotApproved()
   ]);
 
+  const currentUserProfile = userData?.[0] ?? {
+    id: user.id,
+    email: user.email ?? "",
+    name: user.user_metadata?.name ?? user.email?.split("@")[0] ?? "Usuario",
+    role: "user",
+    admin: null,
+    num_vacations: 0,
+    num_compensatorys: 0,
+  };
+
   return (
     <div className="w-full flex flex-col items-center">
-      {userData[0]?.admin === "admin" ? (
+      {currentUserProfile?.admin === "admin" ? (
         <div>
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsContent value="overview" className="space-y-4">
@@ -152,7 +162,7 @@ export default async function Index() {
         </div>
       ) : (
         <>
-          <Usertabs user={userData[0]} />
+          <Usertabs user={currentUserProfile} />
         </>
       )}
     </div>
