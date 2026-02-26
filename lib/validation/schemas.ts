@@ -67,10 +67,42 @@ export const compensatorySchema = z.object({
 
 // Schema para solicitud de compensatorio (request)
 export const compensatoryRequestSchema = z.object({
-  dob: z.string().min(1, 'Fecha es requerida'),
-  time_start: z.string().min(1, 'Hora de inicio es requerida'),
-  time_finish: z.string().min(1, 'Hora de fin es requerida'),
-  hours: positiveIntegerSchema.max(12, 'Máximo 12 horas por día'),
+  dob: z.coerce.date({
+    required_error: 'Fecha es requerida',
+    invalid_type_error: 'Fecha inválida',
+  }),
+  time_start: timeSchema,
+  time_finish: timeSchema,
+  hours: z.coerce.number()
+    .int('Debe ser un número entero')
+    .positive('Debe ser mayor a 0')
+    .max(12, 'Máximo 12 horas por día'),
+}).superRefine((data, ctx) => {
+  const [startHour, startMinute] = data.time_start.split(':').map(Number);
+  const [finishHour, finishMinute] = data.time_finish.split(':').map(Number);
+
+  const startTotalMinutes = startHour * 60 + startMinute;
+  const finishTotalMinutes = finishHour * 60 + finishMinute;
+
+  if (finishTotalMinutes <= startTotalMinutes) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['time_finish'],
+      message: 'La hora de fin debe ser posterior a la hora de inicio',
+    });
+    return;
+  }
+
+  const durationMinutes = finishTotalMinutes - startTotalMinutes;
+  const requestedMinutes = data.hours * 60;
+
+  if (requestedMinutes > durationMinutes) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['hours'],
+      message: 'Las horas solicitadas exceden el rango horario seleccionado',
+    });
+  }
 });
 
 export const compensatoryUpdateSchema = z.object({

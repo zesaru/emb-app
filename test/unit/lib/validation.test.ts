@@ -106,12 +106,76 @@ describe('compensatoryRequestSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  it('acepta dob como Date por compatibilidad con el formulario', () => {
+    const data = {
+      dob: new Date('2025-01-20T00:00:00.000Z'),
+      time_start: '09:00',
+      time_finish: '18:00',
+      hours: 8,
+    }
+    const result = compensatoryRequestSchema.safeParse(data)
+    expect(result.success).toBe(true)
+  })
+
+  it('acepta hours como string por compatibilidad con input HTML', () => {
+    const data = {
+      dob: '2025-01-20',
+      time_start: '09:00',
+      time_finish: '18:00',
+      hours: '8',
+    }
+    const result = compensatoryRequestSchema.safeParse(data)
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.hours).toBe(8)
+    }
+  })
+
   it('requiere todos los campos', () => {
     const data = {
       hours: 8,
     }
     const result = compensatoryRequestSchema.safeParse(data)
     expect(result.success).toBe(false)
+  })
+
+  it('rechaza formato de hora inválido', () => {
+    const data = {
+      dob: '2025-01-20',
+      time_start: '9:00',
+      time_finish: '18:00',
+      hours: 8,
+    }
+    const result = compensatoryRequestSchema.safeParse(data)
+    expect(result.success).toBe(false)
+  })
+
+  it('rechaza cuando hora fin no es posterior a hora inicio', () => {
+    const data = {
+      dob: '2025-01-20',
+      time_start: '18:00',
+      time_finish: '09:00',
+      hours: 8,
+    }
+    const result = compensatoryRequestSchema.safeParse(data)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.errors.some((e) => e.path.includes('time_finish'))).toBe(true)
+    }
+  })
+
+  it('rechaza cuando las horas exceden el rango horario', () => {
+    const data = {
+      dob: '2025-01-20',
+      time_start: '09:00',
+      time_finish: '13:00',
+      hours: 8,
+    }
+    const result = compensatoryRequestSchema.safeParse(data)
+    expect(result.success).toBe(false)
+    if (!result.success) {
+      expect(result.error.errors.some((e) => e.path.includes('hours'))).toBe(true)
+    }
   })
 })
 

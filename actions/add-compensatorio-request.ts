@@ -6,8 +6,9 @@ import { revalidatePath } from "next/cache";
 import { formatInTimeZone } from 'date-fns-tz';
 import { compensatoryRequestSchema } from "@/lib/validation/schemas";
 import { CompensatoryUseRequestAdmin } from "@/components/email/templates/compensatory/compensatory-use-request-admin";
-import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import { getFromEmail, buildUrl, resolveEmailRecipients } from "@/components/email/utils/email-config";
 import React from "react";
+import { z } from "zod";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,60 +17,92 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  * @param compensatory - An object containing the compensatory request data.
  * @returns An object with a success flag indicating if the operation was successful and an error object if the operation failed.
  */
-export default async function UpdateCompensatorioResquest(compensatory: any) {
+type CompensatoryRequestInput = z.input<typeof compensatoryRequestSchema>;
+
+type CompensatoryRequestResult =
+  | { success: true; warning?: string }
+  | { success: false; error: string };
+
+export async function addCompensatorioRequest(
+  compensatory: CompensatoryRequestInput
+): Promise<CompensatoryRequestResult> {
   const supabase = await createClient();
 
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
   const useridrequest = user?.id;
 
-  if (!user) {
+  if (authError || !user) {
     return { success: false, error: "No autenticado" };
   }
 
+  let validated: {
+    dob: Date;
+    time_start: string;
+    time_finish: string;
+    hours: number;
+  };
+
   // Validar datos de entrada con Zod
   try {
-    compensatoryRequestSchema.parse(compensatory);
-  } catch (error: any) {
-    return { success: false, error: error.errors?.[0]?.message || "Datos inválidos" };
+    validated = compensatoryRequestSchema.parse(compensatory);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.errors?.[0]?.message || "Datos inválidos" };
+    }
+    return { success: false, error: "Datos inválidos" };
   }
 
-  const fecha = formatInTimeZone(compensatory.dob, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX');
+  const fecha = formatInTimeZone(validated.dob, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ssXXX');
 
   try {
-    await supabase.rpc("insert_compensatory_rest", {
+    const { error: rpcError } = await supabase.rpc("insert_compensatory_rest", {
       p_user_id: useridrequest,
-      p_t_time_start: compensatory.time_start,
-      p_t_time_finish: compensatory.time_finish,
+      p_t_time_start: validated.time_start,
+      p_t_time_finish: validated.time_finish,
       p_compensated_hours_day: fecha,
-      p_compensated_hours: compensatory.hours
+      p_compensated_hours: validated.hours
     });
+
+    if (rpcError) {
+      return { success: false, error: "Error procesando solicitud" };
+    }
+
     const email = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
+    const recipients = resolveEmailRecipients(email, user.email);
     try {
-      const data = await resend.emails.send({
+      await resend.emails.send({
         from: getFromEmail(),
-        to: email,
+        to: recipients,
         subject: `Solicitud de Uso de Horas Compensatorias - ${user.email}`,
         react: React.createElement(CompensatoryUseRequestAdmin, {
           userName: user.email || 'Usuario',
           userEmail: user.email || 'usuario@example.com',
-          hours: compensatory.hours,
-          reasonDate: compensatory.dob,
+          hours: validated.hours,
+          reasonDate: validated.dob.toISOString(),
           approvalUrl: buildUrl('/'),
         }),
       });
 
+      revalidatePath(`/compensatorios/`);
       revalidatePath(`/compensatorios/request/`);
       return {
         success: true,
       }
     } catch (error) {
-      // No exponer errores sensibles en logs
-      return { success: false, error: "Error enviando email" };
+      // La solicitud ya fue registrada; el correo puede reintentarse sin duplicar la solicitud.
+      revalidatePath(`/compensatorios/`);
+      revalidatePath(`/compensatorios/request/`);
+      return { success: true, warning: "Solicitud registrada, pero falló el envío de email" };
     }
   } catch (error) {
     return { success: false, error: "Error procesando solicitud" };
   }
 }
+
+// Backward-compatible alias while imports are migrated.
+export const UpdateCompensatorioResquest = addCompensatorioRequest;
+export default addCompensatorioRequest;
 
