@@ -9,8 +9,10 @@ import { countActiveAdmins, getUserById, requireAdminContext } from "./shared";
 type UpdateAdminUserInput = {
   id: string;
   name?: string;
+  position?: string;
   role?: "admin" | "user";
   hireDate?: string;
+  isDiplomatic?: boolean;
   numVacations?: number;
   numCompensatorys?: number;
 };
@@ -34,8 +36,10 @@ export async function updateAdminUser(input: UpdateAdminUserInput) {
 
     const payload = toUsersTableUpdate({
       name: data.name,
+      position: data.position,
       role: data.role,
       hireDate: data.hireDate,
+      isDiplomatic: data.isDiplomatic,
       numVacations: data.numVacations,
       numCompensatorys: data.numCompensatorys,
     });

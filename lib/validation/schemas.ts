@@ -166,10 +166,12 @@ export const adminUserProvisioningModeSchema = z.enum(["invite", "temporary_pass
 export const adminUserCreateSchema = z.object({
   email: emailSchema,
   name: z.string().min(1, "Nombre es requerido").max(100, "Maximo 100 caracteres"),
+  position: z.string().max(120, "Maximo 120 caracteres").optional(),
   role: adminRoleSchema.default("user"),
   provisioningMode: adminUserProvisioningModeSchema,
   temporaryPassword: z.string().min(8, "Contrasena temporal debe tener al menos 8 caracteres").max(100).optional(),
   hireDate: dateSchema.optional(),
+  isDiplomatic: z.boolean().optional().default(false),
   numVacations: nonNegativeIntegerSchema.optional().default(0),
   numCompensatorys: nonNegativeIntegerSchema.optional().default(0),
 }).superRefine((data, ctx) => {
@@ -185,8 +187,10 @@ export const adminUserCreateSchema = z.object({
 export const adminUserUpdateSchema = z.object({
   id: uuidSchema,
   name: z.string().min(1, "Nombre es requerido").max(100, "Maximo 100 caracteres").optional(),
+  position: z.string().max(120, "Maximo 120 caracteres").optional(),
   role: adminRoleSchema.optional(),
   hireDate: dateSchema.optional(),
+  isDiplomatic: z.boolean().optional(),
   numVacations: nonNegativeIntegerSchema.optional(),
   numCompensatorys: nonNegativeIntegerSchema.optional(),
 });

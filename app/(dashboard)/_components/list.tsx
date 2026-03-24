@@ -92,8 +92,9 @@ export default async function List() {
                   Directorio de empleados
                 </h2>
                 <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
-                  Gestiona informacion de personal, saldos vacacionales y horas
-                  compensatorias desde una vista mas limpia y ejecutiva.
+                  Gestiona informacion del personal activo no diplomatico, sus
+                  saldos vacacionales y horas compensatorias desde una vista
+                  mas limpia y ejecutiva.
                 </p>
               </div>
             </div>
@@ -252,7 +253,7 @@ export default async function List() {
                       <td className="px-6 py-4">
                         <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
                           <BriefcaseBusiness className="h-4 w-4 text-primary/70" />
-                          {user.role || "Sin cargo"}
+                          {user.position || "Sin cargo"}
                         </div>
                       </td>
 
@@ -319,9 +320,9 @@ export default async function List() {
                           No hay empleados para mostrar
                         </h3>
                         <p className="text-sm leading-6 text-muted-foreground">
-                          Cuando existan usuarios activos, esta vista mostrara
-                          el directorio con sus saldos de vacaciones y horas
-                          compensatorias.
+                          Cuando existan usuarios activos no diplomaticos, esta
+                          vista mostrara el directorio con sus saldos de
+                          vacaciones y horas compensatorias.
                         </p>
                       </div>
                     </td>
@@ -335,8 +336,8 @@ export default async function List() {
 
       <div className="flex flex-col gap-4 text-sm sm:flex-row sm:items-center sm:justify-between">
         <p className="text-muted-foreground">
-          Mostrando {totalUsers} de {totalUsers} empleado(s) activos en el
-          directorio.
+          Mostrando {totalUsers} de {totalUsers} empleado(s) activos no
+          diplomaticos en el directorio.
         </p>
 
         <div className="flex gap-2">

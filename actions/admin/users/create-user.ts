@@ -10,10 +10,12 @@ import { requireAdminContext } from "./shared";
 type CreateAdminUserInput = {
   email: string;
   name: string;
+  position?: string;
   role: "admin" | "user";
   provisioningMode: "invite" | "temporary_password";
   temporaryPassword?: string;
   hireDate?: string;
+  isDiplomatic?: boolean;
   numVacations?: number;
   numCompensatorys?: number;
 };
@@ -59,9 +61,11 @@ export async function createAdminUser(input: CreateAdminUserInput) {
       email: data.email,
       ...toUsersTableUpdate({
         name: data.name,
+        position: data.position,
         role: data.role,
         isActive: true,
         hireDate: data.hireDate,
+        isDiplomatic: data.isDiplomatic,
         numVacations: data.numVacations ?? 0,
         numCompensatorys: data.numCompensatorys ?? 0,
       }),

@@ -130,10 +130,12 @@ export type Database = {
           email: string | null
           hire_date: string | null
           id: string
+          is_diplomatic: boolean
           is_active: string | null
           name: string | null
           num_compensatorys: string | null
           num_vacations: string | null
+          position: string | null
           role: string | null
         }
         Insert: {
@@ -142,10 +144,12 @@ export type Database = {
           email?: string | null
           hire_date?: string | null
           id: string
+          is_diplomatic?: boolean
           is_active?: string | null
           name?: string | null
           num_compensatorys?: string | null
           num_vacations?: string | null
+          position?: string | null
           role?: string | null
         }
         Update: {
@@ -154,10 +158,12 @@ export type Database = {
           email?: string | null
           hire_date?: string | null
           id?: string
+          is_diplomatic?: boolean
           is_active?: string | null
           name?: string | null
           num_compensatorys?: string | null
           num_vacations?: string | null
+          position?: string | null
           role?: string | null
         }
         Relationships: []

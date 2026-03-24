@@ -30,7 +30,8 @@ export async function listAdminUsers(filters: Filters = {}) {
       const q = parsed.search.trim().toLowerCase();
       rows = rows.filter((row) =>
         row.email.toLowerCase().includes(q) ||
-        (row.name || "").toLowerCase().includes(q)
+        (row.name || "").toLowerCase().includes(q) ||
+        (row.position || "").toLowerCase().includes(q)
       );
     }
 

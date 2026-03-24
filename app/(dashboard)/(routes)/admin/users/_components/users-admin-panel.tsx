@@ -41,10 +41,12 @@ type MessageState = { type: "success" | "error"; text: string } | null;
 const emptyCreateForm = {
   email: "",
   name: "",
+  position: "",
   role: "user" as "admin" | "user",
   provisioningMode: "invite" as "invite" | "temporary_password",
   temporaryPassword: "",
   hireDate: "",
+  isDiplomatic: false,
   numVacations: "0",
   numCompensatorys: "0",
 };
@@ -81,7 +83,9 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     const q = search.trim().toLowerCase();
     if (q) {
       result = result.filter((u) =>
-        u.email.toLowerCase().includes(q) || (u.name || "").toLowerCase().includes(q)
+        u.email.toLowerCase().includes(q) ||
+        (u.name || "").toLowerCase().includes(q) ||
+        (u.position || "").toLowerCase().includes(q)
       );
     }
     if (statusFilter !== "all") {
@@ -117,10 +121,12 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
       const result = await createAdminUser({
         email: createForm.email,
         name: createForm.name,
+        position: createForm.position || undefined,
         role: createForm.role,
         provisioningMode: createForm.provisioningMode,
         temporaryPassword: createForm.provisioningMode === "temporary_password" ? createForm.temporaryPassword : undefined,
         hireDate: createForm.hireDate || undefined,
+        isDiplomatic: createForm.isDiplomatic,
         numVacations: Number(createForm.numVacations || "0"),
         numCompensatorys: Number(createForm.numCompensatorys || "0"),
       });
@@ -144,8 +150,10 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
 
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") || "");
+    const position = String(form.get("position") || "");
     const role = String(form.get("role") || "user") as "admin" | "user";
     const hireDate = String(form.get("hireDate") || "");
+    const isDiplomatic = form.get("isDiplomatic") === "on";
     const numVacations = Number(form.get("numVacations") || "0");
     const numCompensatorys = Number(form.get("numCompensatorys") || "0");
 
@@ -153,8 +161,10 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
       const result = await updateAdminUser({
         id: editingUser.id,
         name,
+        position: position || undefined,
         role,
         hireDate: hireDate || undefined,
+        isDiplomatic,
         numVacations,
         numCompensatorys,
       });
@@ -236,7 +246,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar por nombre o email"
+              placeholder="Buscar por nombre, email o cargo"
               className="md:col-span-2"
             />
             <select
@@ -273,11 +283,13 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
         <TableHeader>
           <TableRow>
             <TableHead>Usuario</TableHead>
+            <TableHead>Cargo</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Estado</TableHead>
             <TableHead>Vacaciones</TableHead>
             <TableHead>Compensatorios</TableHead>
             <TableHead>Ingreso</TableHead>
+            <TableHead>Diplomatico</TableHead>
             <TableHead className="min-w-[320px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -294,6 +306,11 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                 </Badge>
               </TableCell>
               <TableCell>
+                <div className="text-sm text-muted-foreground">
+                  {user.position || "Sin cargo"}
+                </div>
+              </TableCell>
+              <TableCell>
                 <Badge variant={user.isActive ? "secondary" : "outline"}>
                   {user.isActive ? "Activo" : "Inactivo"}
                 </Badge>
@@ -301,6 +318,11 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
               <TableCell>{user.numVacations}</TableCell>
               <TableCell>{user.numCompensatorys}</TableCell>
               <TableCell>{formatAdminDate(user.hireDate || user.createdAt)}</TableCell>
+              <TableCell>
+                <Badge variant={user.isDiplomatic ? "default" : "outline"}>
+                  {user.isDiplomatic ? "Si" : "No"}
+                </Badge>
+              </TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" size="sm" variant="outline" onClick={() => setEditingUser(user)} disabled={isPending}>
@@ -327,7 +349,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
           ))}
           {filteredUsers.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="text-center text-muted-foreground">
+              <TableCell colSpan={9} className="text-center text-muted-foreground">
                 No hay usuarios para los filtros seleccionados.
               </TableCell>
             </TableRow>
@@ -351,6 +373,11 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
               required
             />
             <Input
+              value={createForm.position}
+              onChange={(e) => setCreateForm((prev) => ({ ...prev, position: e.target.value }))}
+              placeholder="Cargo"
+            />
+            <Input
               type="email"
               value={createForm.email}
               onChange={(e) => setCreateForm((prev) => ({ ...prev, email: e.target.value }))}
@@ -362,6 +389,14 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
               value={createForm.hireDate}
               onChange={(e) => setCreateForm((prev) => ({ ...prev, hireDate: e.target.value }))}
             />
+            <label className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm">
+              <input
+                type="checkbox"
+                checked={createForm.isDiplomatic}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, isDiplomatic: e.target.checked }))}
+              />
+              Es diplomatico
+            </label>
             <div className="grid grid-cols-2 gap-3">
               <select
                 className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -428,12 +463,21 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
           {editingUser && (
             <form onSubmit={handleUpdate} className="space-y-3">
               <Input defaultValue={editingUser.name || ""} name="name" placeholder="Nombre" required />
+              <Input defaultValue={editingUser.position || ""} name="position" placeholder="Cargo" />
               <Input value={editingUser.email} disabled readOnly />
               <Input
                 name="hireDate"
                 type="date"
                 defaultValue={editingUser.hireDate || ""}
               />
+              <label className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm">
+                <input
+                  name="isDiplomatic"
+                  type="checkbox"
+                  defaultChecked={editingUser.isDiplomatic}
+                />
+                Es diplomatico
+              </label>
               <select
                 name="role"
                 defaultValue={editingUser.role}

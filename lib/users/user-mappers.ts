@@ -2,6 +2,7 @@ type RawUserRow = {
   id: string;
   email?: string | null;
   name?: string | null;
+  position?: string | null;
   role?: string | null;
   admin?: string | null;
   is_active?: string | boolean | null;
@@ -9,6 +10,7 @@ type RawUserRow = {
   num_compensatorys?: string | number | null;
   created_at?: string | null;
   hire_date?: string | null;
+  is_diplomatic?: boolean | string | null;
 };
 
 export type AdminUserListItem = {
@@ -16,10 +18,12 @@ export type AdminUserListItem = {
   email: string;
   name: string | null;
   role: "admin" | "user";
+  position: string | null;
   isActive: boolean;
   admin: "admin" | null;
   createdAt: string | null;
   hireDate: string | null;
+  isDiplomatic: boolean;
   numVacations: number;
   numCompensatorys: number;
 };
@@ -56,11 +60,13 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     id: row.id,
     email: row.email || "",
     name: row.name ?? null,
+    position: row.position ?? null,
     role,
     admin: role === "admin" ? "admin" : null,
     isActive: parseBooleanLike(row.is_active, true),
     createdAt: row.created_at ?? null,
     hireDate: row.hire_date ?? null,
+    isDiplomatic: parseBooleanLike(row.is_diplomatic, false),
     numVacations: parseNumberLike(row.num_vacations),
     numCompensatorys: parseNumberLike(row.num_compensatorys),
   };
@@ -69,8 +75,10 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
 export function toUsersTableUpdate(input: {
   name?: string | null;
   role?: "admin" | "user";
+  position?: string | null;
   isActive?: boolean;
   hireDate?: string | null;
+  isDiplomatic?: boolean;
   numVacations?: number;
   numCompensatorys?: number;
 }) {
@@ -81,10 +89,12 @@ export function toUsersTableUpdate(input: {
     payload.role = input.role;
     payload.admin = input.role === "admin" ? "admin" : null;
   }
+  if (input.position !== undefined) payload.position = input.position;
   if (input.isActive !== undefined) {
     payload.is_active = input.isActive;
   }
   if (input.hireDate !== undefined) payload.hire_date = input.hireDate;
+  if (input.isDiplomatic !== undefined) payload.is_diplomatic = input.isDiplomatic;
   if (input.numVacations !== undefined) payload.num_vacations = input.numVacations;
   if (input.numCompensatorys !== undefined) payload.num_compensatorys = input.numCompensatorys;
 
