@@ -17,22 +17,43 @@ module.exports = {
     },
     extend: {
       colors: {
+        surface: "hsl(var(--surface))",
+        "surface-bright": "hsl(var(--surface-bright))",
+        "surface-container": "hsl(var(--surface-container))",
+        "surface-container-low": "hsl(var(--surface-container-low))",
+        "surface-container-lowest": "hsl(var(--surface-container-lowest))",
+        "surface-glass": "hsl(var(--surface-glass))",
+        "surface-glass-foreground": "hsl(var(--surface-glass-foreground))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        outline: "hsl(var(--outline))",
+        "outline-variant": "hsl(var(--outline-variant))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          container: "hsl(var(--primary-container))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+          container: "hsl(var(--secondary-container))",
+          "container-foreground": "hsl(var(--secondary-container-foreground))",
+        },
+        tertiary: {
+          DEFAULT: "hsl(var(--tertiary))",
+          foreground: "hsl(var(--tertiary-foreground))",
+          container: "hsl(var(--tertiary-container))",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -55,6 +76,12 @@ module.exports = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        ambient: "0px 12px 32px hsl(var(--shadow-ambient) / 0.04)",
+      },
+      backdropBlur: {
+        glass: "20px",
       },
       keyframes: {
         "accordion-down": {

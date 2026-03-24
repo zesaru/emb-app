@@ -10,6 +10,7 @@ type UpdateAdminUserInput = {
   id: string;
   name?: string;
   role?: "admin" | "user";
+  hireDate?: string;
   numVacations?: number;
   numCompensatorys?: number;
 };
@@ -34,6 +35,7 @@ export async function updateAdminUser(input: UpdateAdminUserInput) {
     const payload = toUsersTableUpdate({
       name: data.name,
       role: data.role,
+      hireDate: data.hireDate,
       numVacations: data.numVacations,
       numCompensatorys: data.numCompensatorys,
     });

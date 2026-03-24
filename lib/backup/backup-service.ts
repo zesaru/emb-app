@@ -45,6 +45,7 @@ const TABLE_SCHEMAS: Record<string, TableSchema> = {
     columns: [
       { name: 'id', type: 'uuid', nullable: false },
       { name: 'created_at', type: 'timestamp with time zone', nullable: false },
+      { name: 'hire_date', type: 'date', nullable: true },
       { name: 'name', type: 'text', nullable: false },
       { name: 'email', type: 'text', nullable: false },
       { name: 'role', type: 'text', nullable: true },

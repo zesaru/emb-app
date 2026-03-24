@@ -8,6 +8,7 @@ type RawUserRow = {
   num_vacations?: string | number | null;
   num_compensatorys?: string | number | null;
   created_at?: string | null;
+  hire_date?: string | null;
 };
 
 export type AdminUserListItem = {
@@ -18,6 +19,7 @@ export type AdminUserListItem = {
   isActive: boolean;
   admin: "admin" | null;
   createdAt: string | null;
+  hireDate: string | null;
   numVacations: number;
   numCompensatorys: number;
 };
@@ -58,6 +60,7 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     admin: role === "admin" ? "admin" : null,
     isActive: parseBooleanLike(row.is_active, true),
     createdAt: row.created_at ?? null,
+    hireDate: row.hire_date ?? null,
     numVacations: parseNumberLike(row.num_vacations),
     numCompensatorys: parseNumberLike(row.num_compensatorys),
   };
@@ -67,6 +70,7 @@ export function toUsersTableUpdate(input: {
   name?: string | null;
   role?: "admin" | "user";
   isActive?: boolean;
+  hireDate?: string | null;
   numVacations?: number;
   numCompensatorys?: number;
 }) {
@@ -80,6 +84,7 @@ export function toUsersTableUpdate(input: {
   if (input.isActive !== undefined) {
     payload.is_active = input.isActive;
   }
+  if (input.hireDate !== undefined) payload.hire_date = input.hireDate;
   if (input.numVacations !== undefined) payload.num_vacations = input.numVacations;
   if (input.numCompensatorys !== undefined) payload.num_compensatorys = input.numCompensatorys;
 

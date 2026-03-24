@@ -44,9 +44,19 @@ const emptyCreateForm = {
   role: "user" as "admin" | "user",
   provisioningMode: "invite" as "invite" | "temporary_password",
   temporaryPassword: "",
+  hireDate: "",
   numVacations: "0",
   numCompensatorys: "0",
 };
+
+function formatAdminDate(value: string | null) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+
+  // Deterministic UTC formatting avoids SSR/CSR locale mismatches during hydration.
+  return `${date.getUTCDate()}/${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
+}
 
 export function UsersAdminPanel({ initialUsers, initialError }: Props) {
   const [users, setUsers] = useState(initialUsers);
@@ -110,6 +120,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
         role: createForm.role,
         provisioningMode: createForm.provisioningMode,
         temporaryPassword: createForm.provisioningMode === "temporary_password" ? createForm.temporaryPassword : undefined,
+        hireDate: createForm.hireDate || undefined,
         numVacations: Number(createForm.numVacations || "0"),
         numCompensatorys: Number(createForm.numCompensatorys || "0"),
       });
@@ -134,6 +145,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") || "");
     const role = String(form.get("role") || "user") as "admin" | "user";
+    const hireDate = String(form.get("hireDate") || "");
     const numVacations = Number(form.get("numVacations") || "0");
     const numCompensatorys = Number(form.get("numCompensatorys") || "0");
 
@@ -142,6 +154,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
         id: editingUser.id,
         name,
         role,
+        hireDate: hireDate || undefined,
         numVacations,
         numCompensatorys,
       });
@@ -264,7 +277,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
             <TableHead>Estado</TableHead>
             <TableHead>Vacaciones</TableHead>
             <TableHead>Compensatorios</TableHead>
-            <TableHead>Creado</TableHead>
+            <TableHead>Ingreso</TableHead>
             <TableHead className="min-w-[320px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -287,7 +300,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
               </TableCell>
               <TableCell>{user.numVacations}</TableCell>
               <TableCell>{user.numCompensatorys}</TableCell>
-              <TableCell>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "-"}</TableCell>
+              <TableCell>{formatAdminDate(user.hireDate || user.createdAt)}</TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" size="sm" variant="outline" onClick={() => setEditingUser(user)} disabled={isPending}>
@@ -343,6 +356,11 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
               onChange={(e) => setCreateForm((prev) => ({ ...prev, email: e.target.value }))}
               placeholder="Email"
               required
+            />
+            <Input
+              type="date"
+              value={createForm.hireDate}
+              onChange={(e) => setCreateForm((prev) => ({ ...prev, hireDate: e.target.value }))}
             />
             <div className="grid grid-cols-2 gap-3">
               <select
@@ -411,6 +429,11 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
             <form onSubmit={handleUpdate} className="space-y-3">
               <Input defaultValue={editingUser.name || ""} name="name" placeholder="Nombre" required />
               <Input value={editingUser.email} disabled readOnly />
+              <Input
+                name="hireDate"
+                type="date"
+                defaultValue={editingUser.hireDate || ""}
+              />
               <select
                 name="role"
                 defaultValue={editingUser.role}

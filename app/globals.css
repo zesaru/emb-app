@@ -4,33 +4,53 @@
  
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --surface: 210 14% 98%;
+    --surface-bright: 0 0% 100%;
+    --surface-container: 210 5% 93%;
+    --surface-container-low: 210 8% 96%;
+    --surface-container-lowest: 0 0% 100%;
+    --surface-glass: 0 0% 100%;
+    --surface-glass-foreground: 195 8% 11%;
+
+    --background: 210 14% 98%;
+    --foreground: 195 8% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 195 8% 11%;
  
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 195 8% 11%;
  
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 210 100% 28%;
+    --primary-foreground: 0 0% 100%;
+    --primary-container: 210 100% 36%;
  
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 23% 40%;
+    --secondary-foreground: 0 0% 100%;
+    --secondary-container: 211 97% 89%;
+    --secondary-container-foreground: 210 23% 40%;
+
+    --tertiary: 24 100% 24%;
+    --tertiary-foreground: 0 0% 100%;
+    --tertiary-container: 25 100% 31%;
  
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 8% 96%;
+    --muted-foreground: 220 10% 29%;
  
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 210 5% 93%;
+    --accent-foreground: 195 8% 11%;
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
+    --success: 148 55% 36%;
+    --success-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 227 17% 80%;
+    --input: 227 17% 80%;
+    --ring: 210 100% 28%;
+    --outline: 227 17% 80%;
+    --outline-variant: 227 17% 80%;
+    --shadow-ambient: 195 8% 11%;
  
     --radius: 0.5rem;
   }
@@ -72,5 +92,6 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   }
 }

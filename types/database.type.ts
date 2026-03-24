@@ -128,6 +128,7 @@ export type Database = {
           admin: string | null
           created_at: string | null
           email: string | null
+          hire_date: string | null
           id: string
           is_active: string | null
           name: string | null
@@ -139,6 +140,7 @@ export type Database = {
           admin?: string | null
           created_at?: string | null
           email?: string | null
+          hire_date?: string | null
           id: string
           is_active?: string | null
           name?: string | null
@@ -150,6 +152,7 @@ export type Database = {
           admin?: string | null
           created_at?: string | null
           email?: string | null
+          hire_date?: string | null
           id?: string
           is_active?: string | null
           name?: string | null

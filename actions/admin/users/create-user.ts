@@ -13,6 +13,7 @@ type CreateAdminUserInput = {
   role: "admin" | "user";
   provisioningMode: "invite" | "temporary_password";
   temporaryPassword?: string;
+  hireDate?: string;
   numVacations?: number;
   numCompensatorys?: number;
 };
@@ -60,6 +61,7 @@ export async function createAdminUser(input: CreateAdminUserInput) {
         name: data.name,
         role: data.role,
         isActive: true,
+        hireDate: data.hireDate,
         numVacations: data.numVacations ?? 0,
         numCompensatorys: data.numCompensatorys ?? 0,
       }),

@@ -15,11 +15,12 @@ const Report = async () => {
   }
     
   return (
-    <div className="flex flex-col">
-      <div className="container mx-auto py-10">
-        <List/>
+    <div className="min-h-screen bg-surface px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <List />
+      </div>
     </div>
-  </div>)
+  )
 }
 
 export default Report
