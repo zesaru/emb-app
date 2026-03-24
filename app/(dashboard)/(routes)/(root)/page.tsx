@@ -14,6 +14,7 @@ import GetNotApproved from "@/actions/getNotApproved";
 import getCompensatoriosHourNoapproved from "@/actions/getCompensatoriosHourNoapproved";
 import getVacationsNoapproved from "@/actions/getVacationsNoApproved";
 import getUsersById from "@/actions/getUsersById";
+import getAttendanceswithUser from "@/actions/getAttendanceswithUser";
 import Usertabs from "../../_components/usertabs";
 export const dynamic = "force-dynamic";
 
@@ -34,13 +35,15 @@ export default async function Index() {
     compensatorysnoapproved,
     compensatorysHournoapproved,
     vacationsnoapproved,
-    notApproved
+    notApproved,
+    attendances
   ] = await Promise.all([
     getUsersById(user.id),
     getsCompensatoriosNoApproved(),
     getCompensatoriosHourNoapproved(),
     getVacationsNoapproved(),
-    GetNotApproved()
+    GetNotApproved(),
+    getAttendanceswithUser()
   ]);
 
   const currentUserProfile = userData?.[0] ?? {
@@ -95,9 +98,11 @@ export default async function Index() {
                     <CardTitle className="text-sm font-medium">
                       Vacaciones
                     </CardTitle>
-                  </CardHeader>
+                    </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">7</div>
+                    <div className="text-2xl font-bold">
+                      {vacationsnoapproved.length}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       Solicitidudes de vacaciones por aprobar
                     </p>
@@ -122,8 +127,12 @@ export default async function Index() {
                     </svg>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">4</div>
-                    <p className="text-xs text-muted-foreground"></p>
+                    <div className="text-2xl font-bold">
+                      {attendances.length}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Cantidad de registros
+                    </p>
                   </CardContent>
                 </Card>
               </div>

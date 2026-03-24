@@ -12,13 +12,6 @@ export const metadata = {
   },
 }
 
-// Iniciar el scheduler de backups solo en el servidor
-if (typeof window === 'undefined' && process.env.BACKUP_ENABLED === 'true') {
-  import('@/lib/backup/scheduler').then(({ startBackupScheduler }) => {
-    startBackupScheduler();
-  });
-}
-
 export default function RootLayout({
   children,
 }: {
