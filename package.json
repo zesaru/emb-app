@@ -91,5 +91,13 @@
     "tailwindcss": "^3.4.0",
     "tsx": "^4.21.0",
     "vitest": "^4.0.18"
+  },
+  "pnpm": {
+    "overrides": {
+      "rollup": "4.60.0",
+      "flatted": "3.4.2",
+      "undici": "7.24.5",
+      "tar": "7.5.11"
+    }
   }
 }
