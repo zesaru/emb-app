@@ -54,6 +54,7 @@ supabase/.env.keys
 
 # local test artifacts
 /test-emails-output/
+MANUAL.md
 
 # typescript
 *.tsbuildinfo
