@@ -301,14 +301,14 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                 <div className="text-xs text-muted-foreground">{user.email}</div>
               </TableCell>
               <TableCell>
-                <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                  {user.role === "admin" ? "Admin" : "Usuario"}
-                </Badge>
-              </TableCell>
-              <TableCell>
                 <div className="text-sm text-muted-foreground">
                   {user.position || "Sin cargo"}
                 </div>
+              </TableCell>
+              <TableCell>
+                <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                  {user.role === "admin" ? "Admin" : "Usuario"}
+                </Badge>
               </TableCell>
               <TableCell>
                 <Badge variant={user.isActive ? "secondary" : "outline"}>
