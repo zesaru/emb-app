@@ -334,27 +334,6 @@ export default async function List() {
         </div>
       </section>
 
-      <div className="flex flex-col gap-4 text-sm sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-muted-foreground">
-          Mostrando {totalUsers} de {totalUsers} empleado(s) activos no
-          diplomaticos en el directorio.
-        </p>
-
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="rounded-xl border border-outline-variant/20 bg-surface-container-lowest px-4 py-2 font-medium text-foreground transition hover:bg-surface"
-          >
-            Anterior
-          </button>
-          <button
-            type="button"
-            className="rounded-xl bg-primary px-4 py-2 font-medium text-primary-foreground shadow-ambient transition hover:opacity-95"
-          >
-            Siguiente
-          </button>
-        </div>
-      </div>
     </div>
   );
 }
