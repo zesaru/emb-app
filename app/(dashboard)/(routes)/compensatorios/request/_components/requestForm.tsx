@@ -96,9 +96,10 @@ export default function RequestForm() {
                   <FormControl>
                     <Button
                       type="button"
+                      variant="outline"
                       disabled={isPending}
                       className={cn(
-                        "w-[240px] pl-3 text-left font-normal",
+                        "w-[240px] justify-start pl-3 text-left font-normal text-foreground",
                         !field.value && "text-muted-foreground"
                       )}
                     >

@@ -41,11 +41,6 @@ const routes = [
     href: "/calendar",
   },
   {
-    icon: SmilePlus,
-    label: "Asistencia",
-    href: "/attendances",
-  },
-  {
     icon: LayoutList,
     label: "Reporte",
     href: "/report",
