@@ -17,6 +17,7 @@ describe("normalizeUserRow", () => {
       weekly_days: "5",
       weekly_hours: "40",
       attendance_eligible: "true",
+      grant_mode: "manual",
     });
 
     expect(result.isActive).toBe(false);
@@ -25,6 +26,7 @@ describe("normalizeUserRow", () => {
     expect(result.weeklyDays).toBe(5);
     expect(result.weeklyHours).toBe(40);
     expect(result.attendanceEligible).toBe(true);
+    expect(result.grantMode).toBe("manual");
     expect(result.nextExpectedGrantDate).toBeNull();
     expect(result.role).toBe("user");
   });
@@ -50,6 +52,7 @@ describe("toUsersTableUpdate", () => {
       weeklyDays: 5,
       weeklyHours: 40,
       attendanceEligible: null,
+      grantMode: "manual",
       numVacations: 5,
       numCompensatorys: 2,
     });
@@ -61,6 +64,7 @@ describe("toUsersTableUpdate", () => {
       weekly_days: 5,
       weekly_hours: 40,
       attendance_eligible: null,
+      grant_mode: "manual",
       num_vacations: 5,
       num_compensatorys: 2,
     });

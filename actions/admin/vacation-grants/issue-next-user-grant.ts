@@ -31,6 +31,10 @@ export async function issueNextUserVacationGrant(input: IssueNextUserVacationGra
       return { success: false as const, error: "El usuario no tiene fecha de ingreso configurada" };
     }
 
+    if (user.grantMode === "manual") {
+      return { success: false as const, error: "Este usuario requiere emisión manual de grants" };
+    }
+
     const { data: latestGrant, error: latestGrantError } = await supabase
       .from("vacation_grants")
       .select("granted_on")

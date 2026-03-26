@@ -14,7 +14,10 @@ type RawUserRow = {
   weekly_days?: string | number | null;
   weekly_hours?: string | number | null;
   attendance_eligible?: boolean | string | null;
+  grant_mode?: string | null;
 };
+
+export type UserGrantMode = "automatic" | "manual";
 
 export type AdminUserListItem = {
   id: string;
@@ -30,6 +33,7 @@ export type AdminUserListItem = {
   weeklyDays: number | null;
   weeklyHours: number | null;
   attendanceEligible: boolean | null;
+  grantMode: UserGrantMode;
   nextExpectedGrantDate: string | null;
   numVacations: number;
   numCompensatorys: number;
@@ -75,6 +79,10 @@ function parseNullableBooleanLike(value: unknown) {
   return null;
 }
 
+function parseGrantMode(value: unknown): UserGrantMode {
+  return value === "manual" ? "manual" : "automatic";
+}
+
 export function normalizeUserRole(row: Pick<RawUserRow, "admin" | "role">): "admin" | "user" {
   if (row.admin === "admin") return "admin";
   if ((row.role || "").toLowerCase() === "admin") return "admin";
@@ -98,6 +106,7 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     weeklyDays: parseNullableNumberLike(row.weekly_days),
     weeklyHours: parseNullableNumberLike(row.weekly_hours),
     attendanceEligible: parseNullableBooleanLike(row.attendance_eligible),
+    grantMode: parseGrantMode(row.grant_mode),
     nextExpectedGrantDate: null,
     numVacations: parseNumberLike(row.num_vacations),
     numCompensatorys: parseNumberLike(row.num_compensatorys),
@@ -114,6 +123,7 @@ export function toUsersTableUpdate(input: {
   weeklyDays?: number | null;
   weeklyHours?: number | null;
   attendanceEligible?: boolean | null;
+  grantMode?: UserGrantMode;
   numVacations?: number;
   numCompensatorys?: number;
 }) {
@@ -133,6 +143,7 @@ export function toUsersTableUpdate(input: {
   if (input.weeklyDays !== undefined) payload.weekly_days = input.weeklyDays;
   if (input.weeklyHours !== undefined) payload.weekly_hours = input.weeklyHours;
   if (input.attendanceEligible !== undefined) payload.attendance_eligible = input.attendanceEligible;
+  if (input.grantMode !== undefined) payload.grant_mode = input.grantMode;
   if (input.numVacations !== undefined) payload.num_vacations = input.numVacations;
   if (input.numCompensatorys !== undefined) payload.num_compensatorys = input.numCompensatorys;
 

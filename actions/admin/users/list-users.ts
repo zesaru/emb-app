@@ -53,7 +53,9 @@ export async function listAdminUsers(filters: Filters = {}) {
     rows = rows.map((row) => ({
       ...row,
       nextExpectedGrantDate: row.hireDate
-        ? resolveJapanNextExpectedGrantDate(row.hireDate, latestGrantByUserId.get(row.id) ?? null, today)
+        ? row.grantMode === "manual"
+          ? null
+          : resolveJapanNextExpectedGrantDate(row.hireDate, latestGrantByUserId.get(row.id) ?? null, today)
         : null,
     }));
 

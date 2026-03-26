@@ -172,6 +172,7 @@ export const passwordUpdateSchema = z.object({
 });
 
 export const adminRoleSchema = z.enum(["admin", "user"]);
+export const userGrantModeSchema = z.enum(["automatic", "manual"]);
 
 export const adminUserProvisioningModeSchema = z.enum(["invite", "temporary_password"]);
 
@@ -187,6 +188,7 @@ export const adminUserCreateSchema = z.object({
   weeklyDays: weeklyDaysSchema.nullable().optional(),
   weeklyHours: weeklyHoursSchema.nullable().optional(),
   attendanceEligible: z.boolean().nullable().optional(),
+  grantMode: userGrantModeSchema.optional().default("automatic"),
   numVacations: nonNegativeIntegerSchema.optional().default(0),
   numCompensatorys: nonNegativeIntegerSchema.optional().default(0),
 }).superRefine((data, ctx) => {
@@ -209,6 +211,7 @@ export const adminUserUpdateSchema = z.object({
   weeklyDays: weeklyDaysSchema.nullable().optional(),
   weeklyHours: weeklyHoursSchema.nullable().optional(),
   attendanceEligible: z.boolean().nullable().optional(),
+  grantMode: userGrantModeSchema.optional(),
   numVacations: nonNegativeIntegerSchema.optional(),
   numCompensatorys: nonNegativeIntegerSchema.optional(),
 });

@@ -19,6 +19,7 @@ type CreateAdminUserInput = {
   weeklyDays?: number | null;
   weeklyHours?: number | null;
   attendanceEligible?: boolean | null;
+  grantMode?: "automatic" | "manual";
   numVacations?: number;
   numCompensatorys?: number;
 };
@@ -72,6 +73,7 @@ export async function createAdminUser(input: CreateAdminUserInput) {
         weeklyDays: data.weeklyDays,
         weeklyHours: data.weeklyHours,
         attendanceEligible: data.attendanceEligible,
+        grantMode: data.grantMode,
         numVacations: data.numVacations ?? 0,
         numCompensatorys: data.numCompensatorys ?? 0,
       }),
