@@ -27,6 +27,16 @@ Prepare the minimum schema and admin data needed for a safe cutover.
 
 A user profile can store the minimum work pattern required to decide whether the standard or proportional vacation table applies.
 
+### Production-Safe Migration Tasks
+
+- [ ] Confirm production backup exists before any schema deploy
+- [ ] Deploy additive schema only
+- [ ] Keep `num_vacations` unchanged during schema rollout
+- [ ] Validate that the app still works with users that have no grants yet
+- [ ] Prepare a separate idempotent backfill process
+- [ ] Validate backfill on local or staging using recent production-like data
+- [ ] Document rollback path that disables the new engine without deleting data
+
 ## Phase 2: Grant Engine MVP
 
 ### Goal
@@ -139,3 +149,13 @@ The next concrete engineering task should be:
   - [ ] `vacation_grants`
 
 This is the correct starting point for implementation.
+
+## Migration Execution Order
+
+- [ ] Step 1: deploy schema additions only
+- [ ] Step 2: deploy compatibility-mode application code
+- [ ] Step 3: complete missing admin profile data where needed
+- [ ] Step 4: run controlled backfill
+- [ ] Step 5: validate real-user samples
+- [ ] Step 6: activate grant consumption in approvals
+- [ ] Step 7: decide when `num_vacations` stops being the operational source of truth

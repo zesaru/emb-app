@@ -152,6 +152,123 @@ For current users:
 
 This avoids breaking the live system.
 
+### Production Migration Plan
+
+The production rollout must be additive and reversible.
+
+#### Phase A: Safe Schema Deploy
+
+Deploy only schema that does not destroy or rewrite current business data:
+
+- add `users.weekly_days`
+- add `users.weekly_hours`
+- add nullable `users.attendance_eligible`
+- create `vacation_grants`
+- create `vacation_grant_consumptions`
+
+Rules for this phase:
+
+- no `drop column`
+- no destructive rewrite of `users`
+- do not remove `num_vacations`
+- do not backfill inside the same migration that creates schema
+
+Expected result:
+
+- the old system keeps working
+- production data remains intact
+- the application can safely read both legacy and new structures
+
+#### Phase B: Application Deploy In Compatibility Mode
+
+After schema exists, deploy application code that:
+
+- can render users with or without grants
+- does not assume all users already have `weekly_days` or `weekly_hours`
+- keeps `num_vacations` visible as legacy balance during transition
+- can show the new grants UI without forcing the new balance model everywhere
+
+Expected result:
+
+- admins can start completing missing profile data
+- the new grants model is visible
+- no current user loses access or sees a broken balance
+
+#### Phase C: Controlled Backfill
+
+Run a separate backfill process after schema and code are stable.
+
+Backfill must:
+
+- read existing users and current balances
+- use a defined `cutover date`
+- create grants or initial adjustments without deleting current vacation records
+- be idempotent
+- record enough metadata to identify generated vs manual grants
+
+The backfill must not:
+
+- reset `num_vacations`
+- delete existing `vacations`
+- infer historic precision that the source data cannot support
+
+Recommended V1 rule:
+
+- keep historic data conservative
+- prefer `initial/manual` adjustments where the legal history cannot be reconstructed with confidence
+
+#### Phase D: Balance Activation
+
+Only after backfill review is complete, enable the new balance behavior in approvals:
+
+- approved vacations consume `vacation_grants`
+- usage is registered in `vacation_grant_consumptions`
+- legacy `num_vacations` remains as fallback until the team is confident in the new engine
+
+This phase should happen only after validating a sample of real users.
+
+### Pre-Production Checklist
+
+Before touching production:
+
+1. confirm a fresh production backup exists
+2. validate migrations on local or staging using a recent dump
+3. confirm row counts for:
+   - `users`
+   - `vacations`
+   - `compensatorys`
+   - `attendances`
+4. confirm the app still works when:
+   - a user has no grants
+   - a user has incomplete work-pattern fields
+   - a user remains on legacy balance only
+5. confirm the backfill script is idempotent on repeated runs
+
+### Post-Deploy Validation
+
+Immediately after deploy:
+
+1. verify new tables and columns exist
+2. verify no unexpected drop in row counts in legacy tables
+3. verify `/admin/users` still loads
+4. verify at least one real user can:
+   - open grants UI
+   - keep using the current vacation flow
+5. verify no real emails are emitted unintentionally during admin verification
+
+### Rollback Strategy
+
+Rollback should be application-first, not schema-first.
+
+If something goes wrong:
+
+- keep the additive schema in place
+- revert the application to legacy balance behavior
+- stop the backfill job
+- preserve any generated grants for audit instead of deleting them immediately
+
+This makes rollback safer because current production data is not being physically removed during the initial migration.
+
 ## Admin UX Requirements
 
 Admins should be able to:
