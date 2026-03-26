@@ -1,20 +1,17 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { Resend } from 'resend';
 import { revalidatePath } from "next/cache";
 import { formatInTimeZone } from "date-fns-tz";
 import { vacationSchema } from "@/lib/validation/schemas";
+import { sendOrCaptureEmail } from "@/lib/email/dev-email-outbox";
 import { VacationRequestAdmin } from "@/components/email/templates/vacation/vacation-request-admin";
 import {
-  getFromEmail,
   buildUrl,
   getSystemEmail,
   resolveEmailRecipients,
 } from "@/components/email/utils/email-config";
 import React from "react";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 interface AddVacationResponse {
   success: boolean;
@@ -116,10 +113,19 @@ export const addVacation = async (data: unknown): Promise<AddVacationResponse> =
     const userName = (insertedRows[0] as { users_name?: string })?.users_name || user.email || "Usuario";
 
     try {
-      await resend.emails.send({
-        from: getFromEmail(),
-        to: to,
+      await sendOrCaptureEmail({
+        to,
         subject: `Nueva Solicitud de Vacaciones - ${userName}`,
+        templateName: "VacationRequestAdmin",
+        triggeredByUserId: user.id,
+        payload: {
+          userName,
+          userEmail: user.email || 'usuario@example.com',
+          startDate: startDate.toISOString(),
+          finishDate: finishDate.toISOString(),
+          days,
+          approvalUrl: buildUrl('/'),
+        },
         react: React.createElement(VacationRequestAdmin, {
           userName,
           userEmail: user.email || 'usuario@example.com',

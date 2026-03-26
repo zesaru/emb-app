@@ -13,7 +13,7 @@ export default function SettingsAccountPage() {
       <Card>
         <CardHeader>
           <CardTitle>Compensatorios</CardTitle>
-          <CardDescription>SOLICITUD DE REGISTRO DE DÍAS COMPENSATORIOS</CardDescription>
+          <CardDescription>Solicitud de registro de días compensatorios</CardDescription>
         </CardHeader>
         <CardContent>
           <AccountForm />

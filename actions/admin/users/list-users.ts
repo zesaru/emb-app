@@ -2,6 +2,7 @@
 
 import { adminUserListFiltersSchema } from "@/lib/validation/schemas";
 import { normalizeUserRow } from "@/lib/users/user-mappers";
+import { resolveJapanUpcomingGrantDate } from "@/lib/vacations/japan-vacation-grants";
 import { requireAdminContext } from "./shared";
 
 type Filters = {
@@ -25,6 +26,34 @@ export async function listAdminUsers(filters: Filters = {}) {
     }
 
     let rows = (data || []).map((row) => normalizeUserRow(row as any));
+
+    const activeUserIds = rows.map((row) => row.id);
+    const latestGrantByUserId = new Map<string, string>();
+
+    if (activeUserIds.length > 0) {
+      const { data: grants, error: grantsError } = await supabase
+        .from("vacation_grants")
+        .select("user_id, granted_on")
+        .in("user_id", activeUserIds)
+        .order("granted_on", { ascending: false });
+
+      if (grantsError) {
+        console.error("listAdminUsers: failed to fetch vacation_grants", grantsError);
+      } else {
+        for (const grant of grants || []) {
+          if (!latestGrantByUserId.has(grant.user_id)) {
+            latestGrantByUserId.set(grant.user_id, grant.granted_on);
+          }
+        }
+      }
+    }
+
+    rows = rows.map((row) => ({
+      ...row,
+      nextExpectedGrantDate: row.hireDate
+        ? resolveJapanUpcomingGrantDate(row.hireDate, latestGrantByUserId.get(row.id) ?? null)
+        : null,
+    }));
 
     if (parsed.search) {
       const q = parsed.search.trim().toLowerCase();

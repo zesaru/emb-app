@@ -1,13 +1,23 @@
 "use client";
 
-import { Compass, Layout, SmilePlus, Palmtree, LayoutList, CalendarDays, DatabaseBackup, Shield, BookOpenText } from "lucide-react";
+import {
+  BookOpenText,
+  CalendarDays,
+  Compass,
+  DatabaseBackup,
+  Layout,
+  LayoutList,
+  Palmtree,
+  Shield,
+  SmilePlus,
+} from "lucide-react";
 
 import { SidebarItem } from "./sidebar-item";
 
 const routes = [
   {
     icon: Layout,
-    label: "Dashboard",
+    label: "Inicio",
     href: "/",
   },
   {
@@ -17,12 +27,12 @@ const routes = [
   },
   {
     icon: SmilePlus,
-    label: "Registrar Compensatorio",
+    label: "Registrar compensatorio",
     href: "/compensatorios/new",
   },
   {
     icon: SmilePlus,
-    label: "Solicitar Compensatorio",
+    label: "Solicitar compensatorio",
     href: "/compensatorios/request",
   },
   {
@@ -32,22 +42,22 @@ const routes = [
   },
   {
     icon: Palmtree,
-    label: "Solicitar Vacaciones",
+    label: "Solicitar vacaciones",
     href: "/vacaciones/new",
   },
   {
     icon: BookOpenText,
-    label: "Politica Vacaciones",
+    label: "Política de vacaciones",
     href: "/vacaciones/policy",
   },
   {
-    icon: CalendarDays ,
-    label: "Calendario Vacaciones",
+    icon: CalendarDays,
+    label: "Calendario de vacaciones",
     href: "/calendar",
   },
   {
     icon: LayoutList,
-    label: "Reporte",
+    label: "Reportes",
     href: "/report",
   },
   {
@@ -57,7 +67,7 @@ const routes = [
   },
   {
     icon: Shield,
-    label: "Admin Usuarios",
+    label: "Administración de usuarios",
     href: "/admin/users",
     adminOnly: true,
   },
@@ -67,7 +77,7 @@ export const SidebarRoutes = ({ isAdmin = false }: { isAdmin?: boolean }) => {
   const visibleRoutes = routes.filter((route) => !route.adminOnly || isAdmin);
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex w-full flex-col">
       {visibleRoutes.map((route) => (
         <SidebarItem
           key={route.href}
@@ -77,5 +87,5 @@ export const SidebarRoutes = ({ isAdmin = false }: { isAdmin?: boolean }) => {
         />
       ))}
     </div>
-  )
-}
+  );
+};

@@ -92,9 +92,9 @@ export default async function List() {
                   Directorio de empleados
                 </h2>
                 <p className="max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
-                  Gestiona informacion del personal activo no diplomatico, sus
+                  Gestiona información del personal activo no diplomático, sus
                   saldos vacacionales y horas compensatorias desde una vista
-                  mas limpia y ejecutiva.
+                  más limpia y ejecutiva.
                 </p>
               </div>
             </div>
@@ -155,7 +155,7 @@ export default async function List() {
                   {totalVacationDays}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Dias acumulados entre colaboradores activos.
+                  Días acumulados entre colaboradores activos.
                 </p>
               </div>
 
@@ -214,7 +214,7 @@ export default async function List() {
                     Estado
                   </th>
                   <th className="px-6 py-5 text-right text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Accion
+                    Acción
                   </th>
                 </tr>
               </thead>
@@ -264,7 +264,7 @@ export default async function List() {
                           />
                           <div>
                             <p className="text-sm font-semibold text-foreground">
-                              {vacationDays} dias
+                              {vacationDays} días
                             </p>
                             <p
                               className={`text-[11px] font-semibold uppercase tracking-[0.18em] ${vacationStatus.text}`}
@@ -320,8 +320,8 @@ export default async function List() {
                           No hay empleados para mostrar
                         </h3>
                         <p className="text-sm leading-6 text-muted-foreground">
-                          Cuando existan usuarios activos no diplomaticos, esta
-                          vista mostrara el directorio con sus saldos de
+                          Cuando existan usuarios activos no diplomáticos, esta
+                          vista mostrará el directorio con sus saldos de
                           vacaciones y horas compensatorias.
                         </p>
                       </div>

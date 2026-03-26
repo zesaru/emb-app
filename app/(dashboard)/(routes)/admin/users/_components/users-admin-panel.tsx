@@ -9,7 +9,17 @@ import reactivateAdminUser from "@/actions/admin/users/reactivate-user";
 import sendAdminUserPasswordResetLink from "@/actions/admin/users/send-password-reset-link";
 import setAdminUserTemporaryPassword from "@/actions/admin/users/set-temporary-password";
 import updateAdminUser from "@/actions/admin/users/update-user";
+import issueNextUserVacationGrant from "@/actions/admin/vacation-grants/issue-next-user-grant";
+import issueUserVacationGrant from "@/actions/admin/vacation-grants/issue-user-grant";
+import listUserVacationGrants from "@/actions/admin/vacation-grants/list-user-grants";
+import updateUserVacationGrant from "@/actions/admin/vacation-grants/update-user-grant";
 import type { AdminUserListItem } from "@/lib/users/user-mappers";
+import {
+  JAPAN_SERVICE_BANDS,
+  resolveJapanUpcomingGrantDate,
+  type JapanServiceBand,
+  type JapanVacationRuleType,
+} from "@/lib/vacations/japan-vacation-grants";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,6 +47,18 @@ type Props = {
 };
 
 type MessageState = { type: "success" | "error"; text: string } | null;
+type VacationGrantItem = {
+  id: string;
+  granted_on: string;
+  service_band: JapanServiceBand;
+  days_granted: number;
+  days_remaining: number;
+  expires_on: string;
+  rule_type: JapanVacationRuleType;
+  notes: string | null;
+};
+
+const GRANT_RULE_TYPE_OPTIONS = ["standard", "proportional", "manual"] as const;
 
 const emptyCreateForm = {
   email: "",
@@ -47,9 +69,30 @@ const emptyCreateForm = {
   temporaryPassword: "",
   hireDate: "",
   isDiplomatic: false,
+  weeklyDays: "",
+  weeklyHours: "",
+  attendanceEligible: "pending" as "pending" | "eligible" | "ineligible",
   numVacations: "0",
   numCompensatorys: "0",
 };
+
+function attendanceValueToForm(value: boolean | null) {
+  if (value === true) return "eligible";
+  if (value === false) return "ineligible";
+  return "pending";
+}
+
+function attendanceFormToValue(value: FormDataEntryValue | string) {
+  if (value === "eligible") return true;
+  if (value === "ineligible") return false;
+  return null;
+}
+
+function formatWorkPattern(user: AdminUserListItem) {
+  const days = user.weeklyDays == null ? "-" : `${user.weeklyDays}d`;
+  const hours = user.weeklyHours == null ? "-" : `${user.weeklyHours}h`;
+  return `${days} / ${hours}`;
+}
 
 function formatAdminDate(value: string | null) {
   if (!value) return "-";
@@ -68,7 +111,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
   const [isPending, startTransition] = useTransition();
 
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("active");
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "user">("all");
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -77,6 +120,12 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
   const [editingUser, setEditingUser] = useState<AdminUserListItem | null>(null);
   const [tempPasswordUser, setTempPasswordUser] = useState<AdminUserListItem | null>(null);
   const [tempPassword, setTempPassword] = useState("");
+  const [grantUser, setGrantUser] = useState<AdminUserListItem | null>(null);
+  const [grantDate, setGrantDate] = useState("");
+  const [grantNotes, setGrantNotes] = useState("");
+  const [grantHistory, setGrantHistory] = useState<VacationGrantItem[]>([]);
+  const [grantsLoading, setGrantsLoading] = useState(false);
+  const [editingGrant, setEditingGrant] = useState<VacationGrantItem | null>(null);
 
   const filteredUsers = useMemo(() => {
     let result = [...users];
@@ -94,6 +143,17 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     if (roleFilter !== "all") {
       result = result.filter((u) => u.role === roleFilter);
     }
+
+    result.sort((a, b) => {
+      if (a.isDiplomatic !== b.isDiplomatic) {
+        return Number(a.isDiplomatic) - Number(b.isDiplomatic);
+      }
+
+      const aName = (a.name || a.email).toLowerCase();
+      const bName = (b.name || b.email).toLowerCase();
+      return aName.localeCompare(bName, "es");
+    });
+
     return result;
   }, [roleFilter, search, statusFilter, users]);
 
@@ -113,6 +173,28 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
   const setSuccess = (text: string) => setMessage({ type: "success", text });
   const setError = (text: string) => setMessage({ type: "error", text });
 
+  const reloadGrantHistory = async (user: AdminUserListItem, grantIdToKeepEditing?: string | null) => {
+    const result = await listUserVacationGrants({ userId: user.id });
+    if (!result.success) {
+      setError(result.error);
+      return null;
+    }
+
+    const history = result.data as VacationGrantItem[];
+    setGrantHistory(history);
+    setGrantDate(
+      user.hireDate
+        ? resolveJapanUpcomingGrantDate(user.hireDate, history[0]?.granted_on ?? null)
+        : new Date().toISOString().slice(0, 10)
+    );
+
+    if (grantIdToKeepEditing) {
+      setEditingGrant(history.find((grant) => grant.id === grantIdToKeepEditing) ?? null);
+    }
+
+    return history;
+  };
+
   const handleCreate = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setMessage(null);
@@ -127,6 +209,9 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
         temporaryPassword: createForm.provisioningMode === "temporary_password" ? createForm.temporaryPassword : undefined,
         hireDate: createForm.hireDate || undefined,
         isDiplomatic: createForm.isDiplomatic,
+        weeklyDays: createForm.weeklyDays === "" ? null : Number(createForm.weeklyDays),
+        weeklyHours: createForm.weeklyHours === "" ? null : Number(createForm.weeklyHours),
+        attendanceEligible: attendanceFormToValue(createForm.attendanceEligible),
         numVacations: Number(createForm.numVacations || "0"),
         numCompensatorys: Number(createForm.numCompensatorys || "0"),
       });
@@ -154,6 +239,9 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     const role = String(form.get("role") || "user") as "admin" | "user";
     const hireDate = String(form.get("hireDate") || "");
     const isDiplomatic = form.get("isDiplomatic") === "on";
+    const weeklyDaysValue = String(form.get("weeklyDays") || "");
+    const weeklyHoursValue = String(form.get("weeklyHours") || "");
+    const attendanceEligible = attendanceFormToValue(String(form.get("attendanceEligible") || "pending"));
     const numVacations = Number(form.get("numVacations") || "0");
     const numCompensatorys = Number(form.get("numCompensatorys") || "0");
 
@@ -165,6 +253,9 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
         role,
         hireDate: hireDate || undefined,
         isDiplomatic,
+        weeklyDays: weeklyDaysValue === "" ? null : Number(weeklyDaysValue),
+        weeklyHours: weeklyHoursValue === "" ? null : Number(weeklyHoursValue),
+        attendanceEligible,
         numVacations,
         numCompensatorys,
       });
@@ -226,6 +317,106 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     });
   };
 
+  const openGrantDialog = (user: AdminUserListItem) => {
+    setGrantUser(user);
+    setGrantNotes("");
+    setEditingGrant(null);
+    setGrantHistory([]);
+    setGrantsLoading(true);
+    setGrantDate(
+      user.hireDate
+        ? resolveJapanUpcomingGrantDate(user.hireDate)
+        : new Date().toISOString().slice(0, 10)
+    );
+
+    startTransition(async () => {
+      await reloadGrantHistory(user);
+      setGrantsLoading(false);
+    });
+  };
+
+  const handleIssueGrant = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!grantUser) return;
+    setMessage(null);
+
+    startTransition(async () => {
+      const result = await issueUserVacationGrant({
+        userId: grantUser.id,
+        grantedOn: grantDate,
+        notes: grantNotes || undefined,
+      });
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      await reloadGrantHistory(grantUser);
+
+      setSuccess(result.message || "Grant emitido");
+      reloadUsers();
+    });
+  };
+
+  const handleIssueNextGrant = () => {
+    if (!grantUser) return;
+    setMessage(null);
+
+    startTransition(async () => {
+      const result = await issueNextUserVacationGrant({
+        userId: grantUser.id,
+        notes: grantNotes || undefined,
+      });
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      await reloadGrantHistory(grantUser);
+
+      setSuccess(result.message || "Siguiente grant emitido");
+      reloadUsers();
+    });
+  };
+
+  const handleUpdateGrant = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!grantUser || !editingGrant) return;
+    setMessage(null);
+
+    const form = new FormData(event.currentTarget);
+
+    startTransition(async () => {
+      const result = await updateUserVacationGrant({
+        id: editingGrant.id,
+        userId: grantUser.id,
+        grantedOn: String(form.get("grantedOn") || ""),
+        serviceBand: String(form.get("serviceBand") || "") as JapanServiceBand,
+        daysGranted: Number(form.get("daysGranted") || "0"),
+        daysRemaining: Number(form.get("daysRemaining") || "0"),
+        expiresOn: String(form.get("expiresOn") || ""),
+        ruleType: String(form.get("ruleType") || "") as JapanVacationRuleType,
+        notes: String(form.get("notes") || "").trim() || null,
+      });
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      await reloadGrantHistory(grantUser, editingGrant.id);
+      setSuccess(result.message || "Grant actualizado");
+      reloadUsers();
+    });
+  };
+
+  const handleOpenGrantsFromEditor = (user: AdminUserListItem) => {
+    setEditingUser(null);
+    openGrantDialog(user);
+  };
+
   return (
     <div className="space-y-4">
       {message && (
@@ -279,83 +470,88 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
         </CardContent>
       </Card>
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Usuario</TableHead>
-            <TableHead>Cargo</TableHead>
-            <TableHead>Rol</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Vacaciones</TableHead>
-            <TableHead>Compensatorios</TableHead>
-            <TableHead>Ingreso</TableHead>
-            <TableHead>Diplomatico</TableHead>
-            <TableHead className="min-w-[320px]">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredUsers.map((user) => (
-            <TableRow key={user.id}>
-              <TableCell>
-                <div className="font-medium">{user.name || "Sin nombre"}</div>
-                <div className="text-xs text-muted-foreground">{user.email}</div>
-              </TableCell>
-              <TableCell>
-                <div className="text-sm text-muted-foreground">
-                  {user.position || "Sin cargo"}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                  {user.role === "admin" ? "Admin" : "Usuario"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant={user.isActive ? "secondary" : "outline"}>
-                  {user.isActive ? "Activo" : "Inactivo"}
-                </Badge>
-              </TableCell>
-              <TableCell>{user.numVacations}</TableCell>
-              <TableCell>{user.numCompensatorys}</TableCell>
-              <TableCell>{formatAdminDate(user.hireDate || user.createdAt)}</TableCell>
-              <TableCell>
-                <Badge variant={user.isDiplomatic ? "default" : "outline"}>
-                  {user.isDiplomatic ? "Si" : "No"}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-2">
-                  <Button type="button" size="sm" variant="outline" onClick={() => setEditingUser(user)} disabled={isPending}>
-                    Editar
-                  </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={() => handleResetLink(user.id)} disabled={isPending}>
-                    Enviar reset
-                  </Button>
-                  <Button type="button" size="sm" variant="outline" onClick={() => setTempPasswordUser(user)} disabled={isPending}>
-                    Password temporal
-                  </Button>
-                  {user.isActive ? (
-                    <Button type="button" size="sm" variant="destructive" onClick={() => handleDeactivate(user.id)} disabled={isPending}>
-                      Desactivar
-                    </Button>
-                  ) : (
-                    <Button type="button" size="sm" onClick={() => handleReactivate(user.id)} disabled={isPending}>
-                      Reactivar
-                    </Button>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-          {filteredUsers.length === 0 && (
+      <div className="w-full overflow-x-auto rounded-md border">
+        <Table className="min-w-[1380px]">
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={9} className="text-center text-muted-foreground">
-                No hay usuarios para los filtros seleccionados.
-              </TableCell>
+              <TableHead>Usuario</TableHead>
+              <TableHead>Cargo</TableHead>
+              <TableHead>Rol</TableHead>
+              <TableHead>Estado</TableHead>
+              <TableHead>Jornada</TableHead>
+              <TableHead>Asistencia 80%</TableHead>
+              <TableHead>Proximo grant</TableHead>
+              <TableHead>Vacaciones</TableHead>
+              <TableHead>Compensatorios</TableHead>
+              <TableHead>Ingreso</TableHead>
+              <TableHead>Diplomatico</TableHead>
+              <TableHead className="min-w-[180px]">Acciones</TableHead>
             </TableRow>
-          )}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredUsers.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <div className="font-medium">{user.name || "Sin nombre"}</div>
+                  <div className="text-xs text-muted-foreground">{user.email}</div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-sm text-muted-foreground">
+                    {user.position || "Sin cargo"}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                    {user.role === "admin" ? "Admin" : "Usuario"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={user.isActive ? "secondary" : "outline"}>
+                    {user.isActive ? "Activo" : "Inactivo"}
+                  </Badge>
+                </TableCell>
+                <TableCell>{formatWorkPattern(user)}</TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      user.attendanceEligible == null
+                        ? "outline"
+                        : user.attendanceEligible
+                          ? "secondary"
+                          : "destructive"
+                    }
+                  >
+                    {user.attendanceEligible == null ? "Pendiente" : user.attendanceEligible ? "Elegible" : "No elegible"}
+                  </Badge>
+                </TableCell>
+                <TableCell>{formatAdminDate(user.nextExpectedGrantDate)}</TableCell>
+                <TableCell>{user.numVacations}</TableCell>
+                <TableCell>{user.numCompensatorys}</TableCell>
+                <TableCell>{formatAdminDate(user.hireDate || user.createdAt)}</TableCell>
+                <TableCell>
+                  <Badge variant={user.isDiplomatic ? "default" : "outline"}>
+                    {user.isDiplomatic ? "Si" : "No"}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" size="sm" variant="outline" onClick={() => setEditingUser(user)} disabled={isPending}>
+                      Editar
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {filteredUsers.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={12} className="text-center text-muted-foreground">
+                  No hay usuarios para los filtros seleccionados.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
@@ -395,8 +591,39 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                 checked={createForm.isDiplomatic}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, isDiplomatic: e.target.checked }))}
               />
-              Es diplomatico
+              Es diplomático
             </label>
+            <div className="grid grid-cols-3 gap-3">
+              <Input
+                type="number"
+                min={1}
+                max={7}
+                value={createForm.weeklyDays}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, weeklyDays: e.target.value }))}
+                placeholder="Días/semana"
+              />
+              <Input
+                type="number"
+                min={0}
+                max={168}
+                step="0.5"
+                value={createForm.weeklyHours}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, weeklyHours: e.target.value }))}
+                placeholder="Horas/semana"
+              />
+              <select
+                className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                value={createForm.attendanceEligible}
+                onChange={(e) => setCreateForm((prev) => ({
+                  ...prev,
+                  attendanceEligible: e.target.value as "pending" | "eligible" | "ineligible",
+                }))}
+              >
+                <option value="pending">80% pendiente</option>
+                <option value="eligible">80% elegible</option>
+                <option value="ineligible">80% no elegible</option>
+              </select>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <select
                 className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -470,13 +697,41 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                 type="date"
                 defaultValue={editingUser.hireDate || ""}
               />
+              <div className="grid grid-cols-3 gap-3">
+                <Input
+                  name="weeklyDays"
+                  type="number"
+                  min={1}
+                  max={7}
+                  defaultValue={editingUser.weeklyDays ?? ""}
+                  placeholder="Días/semana"
+                />
+                <Input
+                  name="weeklyHours"
+                  type="number"
+                  min={0}
+                  max={168}
+                  step="0.5"
+                  defaultValue={editingUser.weeklyHours ?? ""}
+                  placeholder="Horas/semana"
+                />
+                <select
+                  name="attendanceEligible"
+                  defaultValue={attendanceValueToForm(editingUser.attendanceEligible)}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="pending">80% pendiente</option>
+                  <option value="eligible">80% elegible</option>
+                  <option value="ineligible">80% no elegible</option>
+                </select>
+              </div>
               <label className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm">
                 <input
                   name="isDiplomatic"
                   type="checkbox"
                   defaultChecked={editingUser.isDiplomatic}
                 />
-                Es diplomatico
+                Es diplomático
               </label>
               <select
                 name="role"
@@ -501,6 +756,58 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                   defaultValue={editingUser.numCompensatorys}
                   placeholder="Compensatorios"
                 />
+              </div>
+              <div className="rounded-md border border-input p-3">
+                <div className="mb-3">
+                  <div className="text-sm font-medium">Acciones administrativas</div>
+                  <div className="text-xs text-muted-foreground">
+                    Estas acciones afectan acceso y credenciales del usuario.
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleOpenGrantsFromEditor(editingUser)}
+                    disabled={isPending}
+                  >
+                    Gestionar grants
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => handleResetLink(editingUser.id)}
+                    disabled={isPending}
+                  >
+                    Enviar enlace de reset
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setTempPasswordUser(editingUser)}
+                    disabled={isPending}
+                  >
+                    Asignar contraseña temporal
+                  </Button>
+                  {editingUser.isActive ? (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      onClick={() => handleDeactivate(editingUser.id)}
+                      disabled={isPending}
+                    >
+                      Desactivar usuario
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={() => handleReactivate(editingUser.id)}
+                      disabled={isPending}
+                    >
+                      Reactivar usuario
+                    </Button>
+                  )}
+                </div>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setEditingUser(null)} disabled={isPending}>
@@ -542,6 +849,204 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                 </Button>
               </DialogFooter>
             </form>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!grantUser} onOpenChange={(open) => {
+        if (!open) {
+          setGrantUser(null);
+          setEditingGrant(null);
+        }
+      }}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Grants de vacaciones</DialogTitle>
+            <DialogDescription>
+              Emite un grant manual para el usuario y revisa el historial registrado por el nuevo motor.
+            </DialogDescription>
+          </DialogHeader>
+          {grantUser && (
+            <div className="space-y-4">
+              <div className="grid gap-2 rounded-md border p-3 text-sm md:grid-cols-4">
+                <div>
+                  <div className="text-muted-foreground">Usuario</div>
+                  <div className="font-medium">{grantUser.name || grantUser.email}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Ingreso</div>
+                  <div className="font-medium">{formatAdminDate(grantUser.hireDate)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Jornada</div>
+                  <div className="font-medium">{formatWorkPattern(grantUser)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">Asistencia 80%</div>
+                  <div className="font-medium">
+                    {grantUser.attendanceEligible == null ? "Pendiente" : grantUser.attendanceEligible ? "Elegible" : "No elegible"}
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleIssueGrant} className="space-y-3 rounded-md border p-3">
+                <div className="grid gap-3 md:grid-cols-[180px_1fr]">
+                  <Input
+                    type="date"
+                    value={grantDate}
+                    onChange={(e) => setGrantDate(e.target.value)}
+                    required
+                  />
+                  <Input
+                    value={grantNotes}
+                    onChange={(e) => setGrantNotes(e.target.value)}
+                    placeholder="Notas administrativas del grant"
+                  />
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={handleIssueNextGrant} disabled={isPending}>
+                    {isPending ? "Calculando..." : "Emitir siguiente"}
+                  </Button>
+                  <Button type="submit" disabled={isPending || !grantDate}>
+                    {isPending ? "Emitiendo..." : "Emitir grant"}
+                  </Button>
+                </DialogFooter>
+              </form>
+
+              {editingGrant && (
+                <form key={editingGrant.id} onSubmit={handleUpdateGrant} className="space-y-3 rounded-md border p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-medium">Editar grant</div>
+                      <div className="text-xs text-muted-foreground">
+                        Ajusta fecha, saldo, expiracion, regla o notas del grant seleccionado.
+                      </div>
+                    </div>
+                    <Button type="button" variant="ghost" onClick={() => setEditingGrant(null)} disabled={isPending}>
+                      Cerrar editor
+                    </Button>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Input
+                      name="grantedOn"
+                      type="date"
+                      defaultValue={editingGrant.granted_on}
+                      required
+                    />
+                    <select
+                      name="serviceBand"
+                      defaultValue={editingGrant.service_band}
+                      className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      {JAPAN_SERVICE_BANDS.map((band) => (
+                        <option key={band} value={band}>
+                          {band}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      name="ruleType"
+                      defaultValue={editingGrant.rule_type}
+                      className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                    >
+                      {GRANT_RULE_TYPE_OPTIONS.map((ruleType) => (
+                        <option key={ruleType} value={ruleType}>
+                          {ruleType}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <Input
+                      name="daysGranted"
+                      type="number"
+                      min={0}
+                      defaultValue={editingGrant.days_granted}
+                      required
+                    />
+                    <Input
+                      name="daysRemaining"
+                      type="number"
+                      min={0}
+                      defaultValue={editingGrant.days_remaining}
+                      required
+                    />
+                    <Input
+                      name="expiresOn"
+                      type="date"
+                      defaultValue={editingGrant.expires_on}
+                      required
+                    />
+                  </div>
+                  <Input
+                    name="notes"
+                    defaultValue={editingGrant.notes ?? ""}
+                    placeholder="Notas administrativas del grant"
+                  />
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setEditingGrant(null)} disabled={isPending}>
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={isPending}>
+                      {isPending ? "Guardando..." : "Guardar cambios"}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              )}
+
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Grant</TableHead>
+                      <TableHead>Tramo</TableHead>
+                      <TableHead>Regla</TableHead>
+                      <TableHead>Otorgado</TableHead>
+                      <TableHead>Disponible</TableHead>
+                      <TableHead>Expira</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {grantsLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground">
+                          Cargando grants...
+                        </TableCell>
+                      </TableRow>
+                    ) : grantHistory.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground">
+                          No hay grants registrados para este usuario.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      grantHistory.map((grant) => (
+                        <TableRow key={grant.id}>
+                          <TableCell>{formatAdminDate(grant.granted_on)}</TableCell>
+                          <TableCell>{grant.service_band}</TableCell>
+                          <TableCell>{grant.rule_type}</TableCell>
+                          <TableCell>{grant.days_granted}</TableCell>
+                          <TableCell>{grant.days_remaining}</TableCell>
+                          <TableCell>{formatAdminDate(grant.expires_on)}</TableCell>
+                          <TableCell>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={editingGrant?.id === grant.id ? "default" : "outline"}
+                              onClick={() => setEditingGrant(grant)}
+                              disabled={isPending}
+                            >
+                              Editar
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>

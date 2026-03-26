@@ -32,6 +32,7 @@ vi.mock('@/components/email/utils/email-config', () => ({
   getFromEmail: vi.fn(() => 'EMB <noreply@example.com>'),
   buildUrl: vi.fn((path: string) => `https://emb-app.vercel.app${path}`),
   getSystemEmail: vi.fn(() => 'sistema@embperujapan.org'),
+  isEmailDeliveryEnabled: vi.fn(() => true),
   resolveEmailRecipients: resolveEmailRecipientsMock,
 }))
 

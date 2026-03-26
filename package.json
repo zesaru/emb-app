@@ -13,6 +13,7 @@
     "backup:restore-full": "tsx scripts/restore-full.ts",
     "backup:to-sql": "tsx scripts/backup-to-sql.ts",
     "backup:restore-local": "tsx scripts/restore-to-local.ts",
+    "vacation:backfill:japan": "tsx scripts/backfill-japan-vacation-grants.ts",
     "dev:all": "pnpm run supabase:start && pnpm run dev",
     "supabase:start": "npx supabase start",
     "supabase:stop": "npx supabase stop",

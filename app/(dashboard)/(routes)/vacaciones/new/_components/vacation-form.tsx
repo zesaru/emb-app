@@ -3,10 +3,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { toast } from "react-toastify";
 
-import { cn } from "@/lib/utils";
+import { addVacation } from "@/actions/add-vacations";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,49 +21,53 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { es } from 'date-fns/locale'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { addVacation } from "@/actions/add-vacations";
-import { toast } from "react-toastify";
+import { cn } from "@/lib/utils";
 
 const getStartOfDay = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-const formSchema = z.object({
-  start: z.date({
-    required_error: "La fecha es requerida.",
-  }),
-  finish: z.date({
-    required_error: "La fecha es requerida.",
-  }),
-  days: z.coerce.number({
-    required_error: "La cantidad de día(s) es requerida.",
-  }).int().min(1, "Debe solicitar al menos 1 día.").max(30, "Máximo 30 días."),
-}).superRefine(({ start, finish }, ctx) => {
-  const today = getStartOfDay(new Date());
-  const startDate = getStartOfDay(start);
-  const finishDate = getStartOfDay(finish);
+const formSchema = z
+  .object({
+    start: z.date({
+      required_error: "La fecha es requerida.",
+    }),
+    finish: z.date({
+      required_error: "La fecha es requerida.",
+    }),
+    days: z.coerce
+      .number({
+        required_error: "La cantidad de día(s) es requerida.",
+      })
+      .int()
+      .min(1, "Debe solicitar al menos 1 día.")
+      .max(30, "Máximo 30 días."),
+  })
+  .superRefine(({ start, finish }, ctx) => {
+    const today = getStartOfDay(new Date());
+    const startDate = getStartOfDay(start);
+    const finishDate = getStartOfDay(finish);
 
-  if (startDate < today) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["start"],
-      message: "La fecha de inicio no puede ser en el pasado.",
-    });
-  }
+    if (startDate < today) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["start"],
+        message: "La fecha de inicio no puede ser en el pasado.",
+      });
+    }
 
-  if (finishDate < startDate) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ["finish"],
-      message: "La fecha de término no puede ser anterior a la fecha de inicio.",
-    });
-  }
-});
+    if (finishDate < startDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["finish"],
+        message: "La fecha de término no puede ser anterior a la fecha de inicio.",
+      });
+    }
+  });
 
 type VacationFormValues = z.infer<typeof formSchema>;
 
@@ -75,7 +81,7 @@ export function VacationNewForm() {
 
   const today = getStartOfDay(new Date());
 
-  const onSubmit =  async (data: VacationFormValues) => {
+  const onSubmit = async (data: VacationFormValues) => {
     try {
       const response = await addVacation({
         start: format(data.start, "yyyy-MM-dd"),
@@ -120,7 +126,7 @@ export function VacationNewForm() {
         theme: "light",
       });
     }
-  };  
+  };
 
   return (
     <Form {...form}>
@@ -139,11 +145,11 @@ export function VacationNewForm() {
                       variant="outline"
                       className={cn(
                         "w-[240px] justify-start pl-3 text-left font-normal text-foreground",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP")
+                        format(field.value, "PPP", { locale: es })
                       ) : (
                         <span>Seleccione una fecha</span>
                       )}
@@ -162,7 +168,7 @@ export function VacationNewForm() {
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription></FormDescription>
+              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
@@ -173,7 +179,7 @@ export function VacationNewForm() {
           name="finish"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel>Fecha de termino</FormLabel>
+              <FormLabel>Fecha de término</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -182,11 +188,11 @@ export function VacationNewForm() {
                       variant="outline"
                       className={cn(
                         "w-[240px] justify-start pl-3 text-left font-normal text-foreground",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
                       {field.value ? (
-                        format(field.value, "PPP")
+                        format(field.value, "PPP", { locale: es })
                       ) : (
                         <span>Seleccione una fecha</span>
                       )}
@@ -204,7 +210,7 @@ export function VacationNewForm() {
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription></FormDescription>
+              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
@@ -219,7 +225,7 @@ export function VacationNewForm() {
               <FormControl>
                 <Input {...field} type="number" min={1} max={30} />
               </FormControl>
-              <FormDescription></FormDescription>
+              <FormDescription />
               <FormMessage />
             </FormItem>
           )}

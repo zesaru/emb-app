@@ -3,13 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon } from "@radix-ui/react-icons";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { es } from 'date-fns/locale'
 import type { z } from "zod";
+import { toast } from "react-toastify";
 
-import { cn } from "@/lib/utils";
-import { compensatoryRequestSchema } from "@/lib/validation/schemas";
+import addCompensatorioRequest from "@/actions/add-compensatorio-request";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -22,15 +22,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
-import { toast } from "react-toastify";
-import addCompensatorioRequest from "@/actions/add-compensatorio-request";
+import { compensatoryRequestSchema } from "@/lib/validation/schemas";
+import { cn } from "@/lib/utils";
 
 type RequestFormValues = z.infer<typeof compensatoryRequestSchema>;
 
@@ -55,7 +53,8 @@ export default function RequestForm() {
             theme: "light",
           });
         }
-        toast("🦄 Su solicitud ha sido registrada", {
+
+        toast("Su solicitud ha sido registrada.", {
           position: "top-right",
           autoClose: 3000,
           hideProgressBar: false,
@@ -65,6 +64,7 @@ export default function RequestForm() {
           progress: undefined,
           theme: "light",
         });
+
         form.reset({
           hours: 0,
           time_start: "",
@@ -74,7 +74,7 @@ export default function RequestForm() {
         return;
       }
 
-      toast.error(response?.error || "No se pudo registrar la solicitud", {
+      toast.error(response?.error || "No se pudo registrar la solicitud.", {
         position: "top-right",
         autoClose: 4000,
         theme: "light",
@@ -100,7 +100,7 @@ export default function RequestForm() {
                       disabled={isPending}
                       className={cn(
                         "w-[240px] justify-start pl-3 text-left font-normal text-foreground",
-                        !field.value && "text-muted-foreground"
+                        !field.value && "text-muted-foreground",
                       )}
                     >
                       {field.value ? (
@@ -118,15 +118,12 @@ export default function RequestForm() {
                     selected={field.value}
                     onSelect={field.onChange}
                     disabled={isPending}
-                    // disabled={(date) =>
-                    //   date < new Date() 
-                    // }
                     locale={es}
                     initialFocus
                   />
                 </PopoverContent>
               </Popover>
-              <FormDescription></FormDescription>
+              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
@@ -146,11 +143,11 @@ export default function RequestForm() {
                   step={1}
                   inputMode="numeric"
                   disabled={isPending}
-                  placeholder="ej.... 8"
+                  placeholder="Ej. 8"
                   {...field}
                 />
               </FormControl>
-              <FormDescription></FormDescription>
+              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
@@ -163,9 +160,9 @@ export default function RequestForm() {
             <FormItem>
               <FormLabel>Hora de inicio</FormLabel>
               <FormControl>
-                <Input type="time" placeholder="ej.... 8" disabled={isPending} {...field} />
+                <Input type="time" disabled={isPending} {...field} />
               </FormControl>
-              <FormDescription></FormDescription>
+              <FormDescription />
               <FormMessage />
             </FormItem>
           )}
@@ -178,9 +175,9 @@ export default function RequestForm() {
             <FormItem>
               <FormLabel>Hora de finalización</FormLabel>
               <FormControl>
-                <Input type="time" placeholder="ej.... 8" disabled={isPending} {...field} />
+                <Input type="time" disabled={isPending} {...field} />
               </FormControl>
-              <FormDescription></FormDescription>
+              <FormDescription />
               <FormMessage />
             </FormItem>
           )}

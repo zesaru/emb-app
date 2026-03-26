@@ -50,6 +50,9 @@ describe("createAdminUser", () => {
       name: "Nuevo Usuario",
       role: "admin",
       provisioningMode: "invite",
+      weeklyDays: 5,
+      weeklyHours: 40,
+      attendanceEligible: true,
       numVacations: 5,
       numCompensatorys: 2,
     });
@@ -65,6 +68,9 @@ describe("createAdminUser", () => {
       role: "admin",
       admin: "admin",
       is_active: true,
+      weekly_days: 5,
+      weekly_hours: 40,
+      attendance_eligible: true,
       num_vacations: 5,
       num_compensatorys: 2,
     });

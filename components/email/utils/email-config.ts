@@ -59,6 +59,19 @@ export function isEmailTestMode(): boolean {
   return process.env.EMAIL_TEST_MODE === 'true';
 }
 
+export function isEmailDeliveryEnabled(): boolean {
+  const explicitFlag = process.env.EMAIL_DELIVERY_ENABLED?.trim().toLowerCase();
+
+  if (explicitFlag === 'true') return true;
+  if (explicitFlag === 'false') return false;
+
+  if (process.env.NODE_ENV === 'test') return true;
+  if (process.env.NODE_ENV !== 'production') return false;
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return false;
+
+  return true;
+}
+
 function normalizeRecipients(recipients: string | string[] | undefined | null): string[] {
   if (!recipients) return [];
   const values = Array.isArray(recipients) ? recipients : [recipients];

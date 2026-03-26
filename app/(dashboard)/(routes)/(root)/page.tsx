@@ -66,7 +66,7 @@ export default async function Index() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Registro de compensatorios
+                      Solicitudes de compensatorios
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -81,7 +81,7 @@ export default async function Index() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Horas de ausencias por aprobar
+                      Descansos compensatorios por aprobar
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -96,7 +96,7 @@ export default async function Index() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Vacaciones
+                      Solicitudes de vacaciones
                     </CardTitle>
                     </CardHeader>
                   <CardContent>
@@ -104,14 +104,14 @@ export default async function Index() {
                       {vacationsnoapproved.length}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Solicitidudes de vacaciones por aprobar
+                      Cantidad de solicitudes por aprobar
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Tardanzas
+                      Registros de asistencia
                     </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -131,7 +131,7 @@ export default async function Index() {
                       {attendances.length}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Cantidad de registros
+                      Total de registros
                     </p>
                   </CardContent>
                 </Card>
@@ -141,7 +141,7 @@ export default async function Index() {
           <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
             <div className="flex items-center justify-between">
               <h2 className="text-m font-bold tracking-tight">
-                Aprobar registros de compensatorios
+                Aprobar solicitudes de compensatorios
               </h2>
             </div>
             <DataTable columns={columns} data={compensatorysnoapproved} />
@@ -150,7 +150,7 @@ export default async function Index() {
           <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
             <div className="flex items-center justify-between">
               <h2 className="text-m font-bold tracking-tight">
-                Aprobar horas de descanso por compensatorios
+                Aprobar descansos por compensatorios
               </h2>
             </div>
             <DataTableHour
@@ -161,7 +161,9 @@ export default async function Index() {
 
           <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
             <div className="flex items-center justify-between">
-              <h2 className="text-m font-bold tracking-tight">Vacaciones</h2>
+              <h2 className="text-m font-bold tracking-tight">
+                Aprobar solicitudes de vacaciones
+              </h2>
             </div>
             <DataTableVacations
               columns={columnVacations}

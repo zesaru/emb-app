@@ -14,11 +14,18 @@ describe("normalizeUserRow", () => {
       num_vacations: "10",
       num_compensatorys: "3",
       created_at: "2026-02-25T10:00:00.000Z",
+      weekly_days: "5",
+      weekly_hours: "40",
+      attendance_eligible: "true",
     });
 
     expect(result.isActive).toBe(false);
     expect(result.numVacations).toBe(10);
     expect(result.numCompensatorys).toBe(3);
+    expect(result.weeklyDays).toBe(5);
+    expect(result.weeklyHours).toBe(40);
+    expect(result.attendanceEligible).toBe(true);
+    expect(result.nextExpectedGrantDate).toBeNull();
     expect(result.role).toBe("user");
   });
 
@@ -40,6 +47,9 @@ describe("toUsersTableUpdate", () => {
     const payload = toUsersTableUpdate({
       role: "admin",
       isActive: false,
+      weeklyDays: 5,
+      weeklyHours: 40,
+      attendanceEligible: null,
       numVacations: 5,
       numCompensatorys: 2,
     });
@@ -48,6 +58,9 @@ describe("toUsersTableUpdate", () => {
       role: "admin",
       admin: "admin",
       is_active: false,
+      weekly_days: 5,
+      weekly_hours: 40,
+      attendance_eligible: null,
       num_vacations: 5,
       num_compensatorys: 2,
     });

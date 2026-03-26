@@ -1,16 +1,14 @@
 'use server';
 
 import { createClient } from "@/utils/supabase/server";
-import { Resend } from "resend";
 import { revalidatePath } from "next/cache";
 import { formatInTimeZone } from 'date-fns-tz';
 import { compensatoryRequestSchema } from "@/lib/validation/schemas";
+import { sendOrCaptureEmail } from "@/lib/email/dev-email-outbox";
 import { CompensatoryUseRequestAdmin } from "@/components/email/templates/compensatory/compensatory-use-request-admin";
-import { getFromEmail, buildUrl, resolveEmailRecipients } from "@/components/email/utils/email-config";
+import { buildUrl, resolveEmailRecipients } from "@/components/email/utils/email-config";
 import React from "react";
 import { z } from "zod";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Insert a new compensatory request into the database and send an email notification.
@@ -72,13 +70,27 @@ export async function addCompensatorioRequest(
 
     const email = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
     const recipients = resolveEmailRecipients(email, user.email);
+    const { data: userProfile } = await supabase
+      .from("users")
+      .select("name")
+      .eq("id", user.id)
+      .single();
+    const userName = userProfile?.name?.trim() || user.email || "Usuario";
     try {
-      await resend.emails.send({
-        from: getFromEmail(),
+      await sendOrCaptureEmail({
         to: recipients,
-        subject: `Solicitud de Uso de Horas Compensatorias - ${user.email}`,
+        subject: `Solicitud de Uso de Horas Compensatorias - ${userName}`,
+        templateName: "CompensatoryUseRequestAdmin",
+        triggeredByUserId: user.id,
+        payload: {
+          userName,
+          userEmail: user.email || 'usuario@example.com',
+          hours: validated.hours,
+          reasonDate: validated.dob.toISOString(),
+          approvalUrl: buildUrl('/'),
+        },
         react: React.createElement(CompensatoryUseRequestAdmin, {
-          userName: user.email || 'Usuario',
+          userName,
           userEmail: user.email || 'usuario@example.com',
           hours: validated.hours,
           reasonDate: validated.dob.toISOString(),

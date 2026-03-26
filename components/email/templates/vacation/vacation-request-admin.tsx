@@ -3,15 +3,15 @@
  * Sent when an employee submits a vacation request
  */
 
-import { Text } from '@react-email/components';
-import * as React from 'react';
-import EmailLayout from '../../base/email-layout';
-import { EmailButton } from '../../base/email-button';
-import { EmailCard } from '../../base/email-card';
-import { EmailHeading } from '../../base/email-text';
-import { EmailLabel } from '../../base/email-text';
-import { EmailBadge } from '../../base/email-badge';
-import { formatDateRange, formatDays } from '../../utils/formatters';
+import { Text } from "@react-email/components";
+import * as React from "react";
+
+import EmailLayout from "../../base/email-layout";
+import { EmailButton } from "../../base/email-button";
+import { EmailCard } from "../../base/email-card";
+import { EmailHeading, EmailLabel } from "../../base/email-text";
+import { EmailBadge } from "../../base/email-badge";
+import { formatDateRange, formatDays } from "../../utils/formatters";
 
 interface VacationRequestAdminProps {
   userName: string;
@@ -22,14 +22,19 @@ interface VacationRequestAdminProps {
   approvalUrl: string;
 }
 
-export const VacationRequestAdmin: React.FC<
-  Readonly<VacationRequestAdminProps>
-> = ({ userName, userEmail, startDate, finishDate, days, approvalUrl }) => {
+export const VacationRequestAdmin: React.FC<Readonly<VacationRequestAdminProps>> = ({
+  userName,
+  userEmail,
+  startDate,
+  finishDate,
+  days,
+  approvalUrl,
+}) => {
   return (
-    <EmailLayout previewText="Nueva Solicitud de Vacaciones">
-      <EmailHeading level={1}>Nueva Solicitud de Vacaciones</EmailHeading>
+    <EmailLayout previewText="Nueva solicitud de vacaciones">
+      <EmailHeading level={1}>Nueva solicitud de vacaciones</EmailHeading>
 
-      <Text style={{ ...textStyle, marginBottom: '16px' }}>
+      <Text style={{ ...textStyle, marginBottom: "16px" }}>
         Hola,
       </Text>
 
@@ -56,7 +61,7 @@ export const VacationRequestAdmin: React.FC<
         Por favor, revise la solicitud y apruébela si corresponde.
       </Text>
 
-      <EmailButton href={approvalUrl}>Aprobar Solicitud de Vacaciones</EmailButton>
+      <EmailButton href={approvalUrl}>Aprobar solicitud de vacaciones</EmailButton>
     </EmailLayout>
   );
 };
@@ -64,15 +69,15 @@ export const VacationRequestAdmin: React.FC<
 export default VacationRequestAdmin;
 
 const textStyle = {
-  color: '#333333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  margin: '12px 0',
+  color: "#333333",
+  fontSize: "16px",
+  lineHeight: "26px",
+  margin: "12px 0",
 };
 
 const valueText = {
-  color: '#333333',
-  fontSize: '14px',
-  lineHeight: '24px',
-  margin: '8px 0',
+  color: "#333333",
+  fontSize: "14px",
+  lineHeight: "24px",
+  margin: "8px 0",
 };
