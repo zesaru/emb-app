@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import { summarizeVacationGrantBalance } from "@/lib/vacations/grant-balance";
-import { resolveJapanUpcomingGrantDate } from "@/lib/vacations/japan-vacation-grants";
+import { resolveJapanNextExpectedGrantDate } from "@/lib/vacations/japan-vacation-grants";
 
 export const dynamic = "force-dynamic";
 
@@ -47,11 +47,12 @@ const getUserVacationGrantSummary = async (userId: string): Promise<UserVacation
 
   const summary = summarizeVacationGrantBalance((grants as any) || []);
   const latestGrant = grants?.[0];
+  const today = new Date().toISOString().slice(0, 10);
 
   return {
     ...summary,
     nextExpectedGrantDate: userRow.hire_date
-      ? resolveJapanUpcomingGrantDate(userRow.hire_date, latestGrant?.granted_on ?? null)
+      ? resolveJapanNextExpectedGrantDate(userRow.hire_date, latestGrant?.granted_on ?? null, today)
       : null,
   };
 };

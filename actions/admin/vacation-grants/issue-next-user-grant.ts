@@ -3,7 +3,7 @@
 import { requireAdminContext } from "@/actions/admin/users/shared";
 import { normalizeUserRow } from "@/lib/users/user-mappers";
 import { adminVacationGrantListSchema } from "@/lib/validation/schemas";
-import { resolveJapanUpcomingGrantDate } from "@/lib/vacations/japan-vacation-grants";
+import { resolveJapanNextExpectedGrantDate } from "@/lib/vacations/japan-vacation-grants";
 import issueUserVacationGrant from "./issue-user-grant";
 
 type IssueNextUserVacationGrantInput = {
@@ -43,7 +43,11 @@ export async function issueNextUserVacationGrant(input: IssueNextUserVacationGra
       return { success: false as const, error: "No se pudo calcular el siguiente grant" };
     }
 
-    const grantedOn = resolveJapanUpcomingGrantDate(user.hireDate, latestGrant?.granted_on ?? null);
+    const grantedOn = resolveJapanNextExpectedGrantDate(
+      user.hireDate,
+      latestGrant?.granted_on ?? null,
+      new Date().toISOString().slice(0, 10),
+    );
 
     return issueUserVacationGrant({
       userId: data.userId,

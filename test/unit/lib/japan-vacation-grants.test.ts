@@ -5,6 +5,7 @@ import {
   determineJapanVacationRuleType,
   getJapanGrantedDays,
   getJapanNextGrantDate,
+  resolveJapanNextExpectedGrantDate,
   resolveJapanUpcomingGrantDate,
   resolveJapanServiceBand,
 } from "@/lib/vacations/japan-vacation-grants";
@@ -157,5 +158,15 @@ describe("resolveJapanUpcomingGrantDate", () => {
 
   it("usa el ultimo grant emitido para calcular el siguiente", () => {
     expect(resolveJapanUpcomingGrantDate("2025-09-16", "2026-03-16")).toBe("2027-03-16");
+  });
+});
+
+describe("resolveJapanNextExpectedGrantDate", () => {
+  it("busca el siguiente hito futuro si no existen grants historicos", () => {
+    expect(resolveJapanNextExpectedGrantDate("2024-07-01", null, "2026-03-26")).toBe("2027-01-01");
+  });
+
+  it("mantiene el siguiente grant desde el ultimo grant emitido", () => {
+    expect(resolveJapanNextExpectedGrantDate("2025-09-16", "2026-03-16", "2026-03-26")).toBe("2027-03-16");
   });
 });

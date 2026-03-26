@@ -166,6 +166,32 @@ export function resolveJapanUpcomingGrantDate(hireDate: string, latestGrantedOn?
   return getJapanNextGrantDate(hireDate, latestGrantedOn);
 }
 
+export function resolveJapanNextExpectedGrantDate(
+  hireDate: string,
+  latestGrantedOn?: string | null,
+  referenceDate?: string | null,
+) {
+  if (latestGrantedOn) {
+    return getJapanNextGrantDate(hireDate, latestGrantedOn);
+  }
+
+  const reference = referenceDate ? parseIsoDate(referenceDate) : new Date();
+
+  for (const entry of SERVICE_BAND_MONTHS) {
+    const milestone = addUtcMonths(parseIsoDate(hireDate), entry.months);
+    if (milestone >= reference) {
+      return formatIsoDate(milestone);
+    }
+  }
+
+  let nextAnnualGrant = addUtcMonths(parseIsoDate(hireDate), 78);
+  while (nextAnnualGrant < reference) {
+    nextAnnualGrant = addUtcMonths(nextAnnualGrant, 12);
+  }
+
+  return formatIsoDate(nextAnnualGrant);
+}
+
 export function determineJapanVacationRuleType(input: {
   weeklyDays?: number | null;
   weeklyHours?: number | null;

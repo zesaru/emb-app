@@ -16,7 +16,7 @@ import updateUserVacationGrant from "@/actions/admin/vacation-grants/update-user
 import type { AdminUserListItem } from "@/lib/users/user-mappers";
 import {
   JAPAN_SERVICE_BANDS,
-  resolveJapanUpcomingGrantDate,
+  resolveJapanNextExpectedGrantDate,
   type JapanServiceBand,
   type JapanVacationRuleType,
 } from "@/lib/vacations/japan-vacation-grants";
@@ -184,7 +184,11 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     setGrantHistory(history);
     setGrantDate(
       user.hireDate
-        ? resolveJapanUpcomingGrantDate(user.hireDate, history[0]?.granted_on ?? null)
+        ? resolveJapanNextExpectedGrantDate(
+            user.hireDate,
+            history[0]?.granted_on ?? null,
+            new Date().toISOString().slice(0, 10),
+          )
         : new Date().toISOString().slice(0, 10)
     );
 
@@ -325,7 +329,11 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     setGrantsLoading(true);
     setGrantDate(
       user.hireDate
-        ? resolveJapanUpcomingGrantDate(user.hireDate)
+        ? resolveJapanNextExpectedGrantDate(
+            user.hireDate,
+            null,
+            new Date().toISOString().slice(0, 10),
+          )
         : new Date().toISOString().slice(0, 10)
     );
 

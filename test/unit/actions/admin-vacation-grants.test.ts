@@ -126,6 +126,9 @@ describe("Admin Vacation Grants Actions", () => {
   });
 
   it("calcula y delega la emision del siguiente grant", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-26T00:00:00.000Z"));
+
     const issueUserVacationGrantMock = vi.fn().mockResolvedValue({
       success: true,
       message: "Grant de vacaciones creado",
@@ -193,6 +196,8 @@ describe("Admin Vacation Grants Actions", () => {
       grantedOn: "2025-07-01",
       notes: null,
     });
+
+    vi.useRealTimers();
   });
 
   it("actualiza un grant existente del usuario", async () => {

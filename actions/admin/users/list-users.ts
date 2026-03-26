@@ -2,7 +2,7 @@
 
 import { adminUserListFiltersSchema } from "@/lib/validation/schemas";
 import { normalizeUserRow } from "@/lib/users/user-mappers";
-import { resolveJapanUpcomingGrantDate } from "@/lib/vacations/japan-vacation-grants";
+import { resolveJapanNextExpectedGrantDate } from "@/lib/vacations/japan-vacation-grants";
 import { requireAdminContext } from "./shared";
 
 type Filters = {
@@ -48,10 +48,12 @@ export async function listAdminUsers(filters: Filters = {}) {
       }
     }
 
+    const today = new Date().toISOString().slice(0, 10);
+
     rows = rows.map((row) => ({
       ...row,
       nextExpectedGrantDate: row.hireDate
-        ? resolveJapanUpcomingGrantDate(row.hireDate, latestGrantByUserId.get(row.id) ?? null)
+        ? resolveJapanNextExpectedGrantDate(row.hireDate, latestGrantByUserId.get(row.id) ?? null, today)
         : null,
     }));
 
