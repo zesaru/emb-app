@@ -166,6 +166,10 @@ describe("resolveJapanNextExpectedGrantDate", () => {
     expect(resolveJapanNextExpectedGrantDate("2024-07-01", null, "2026-03-26")).toBe("2027-01-01");
   });
 
+  it("mantiene la cadencia anual desde el primer grant a los 6 meses", () => {
+    expect(resolveJapanNextExpectedGrantDate("2013-04-01", null, "2026-03-26")).toBe("2026-10-01");
+  });
+
   it("mantiene el siguiente grant desde el ultimo grant emitido", () => {
     expect(resolveJapanNextExpectedGrantDate("2025-09-16", "2026-03-16", "2026-03-26")).toBe("2027-03-16");
   });

@@ -144,18 +144,7 @@ export function resolveJapanServiceBand(hireDate: string, grantedOn: string): Ja
 }
 
 export function getJapanNextGrantDate(hireDate: string, grantedOn: string) {
-  const currentBand = resolveJapanServiceBand(hireDate, grantedOn);
-  if (!currentBand) return formatIsoDate(addUtcMonths(parseIsoDate(hireDate), 6));
-
-  if (currentBand === "6_years_6_months_plus") {
-    return formatIsoDate(addUtcMonths(parseIsoDate(grantedOn), 12));
-  }
-
-  const currentIndex = SERVICE_BAND_MONTHS.findIndex((entry) => entry.band === currentBand);
-  const nextBand = SERVICE_BAND_MONTHS[currentIndex + 1];
-  if (!nextBand) return formatIsoDate(addUtcMonths(parseIsoDate(grantedOn), 12));
-
-  return formatIsoDate(addUtcMonths(parseIsoDate(hireDate), nextBand.months));
+  return formatIsoDate(addUtcMonths(parseIsoDate(grantedOn), 12));
 }
 
 export function resolveJapanUpcomingGrantDate(hireDate: string, latestGrantedOn?: string | null) {
@@ -171,25 +160,20 @@ export function resolveJapanNextExpectedGrantDate(
   latestGrantedOn?: string | null,
   referenceDate?: string | null,
 ) {
+  const firstGrantDate = parseIsoDate(formatIsoDate(addUtcMonths(parseIsoDate(hireDate), 6)));
+
   if (latestGrantedOn) {
     return getJapanNextGrantDate(hireDate, latestGrantedOn);
   }
 
   const reference = referenceDate ? parseIsoDate(referenceDate) : new Date();
+  let nextGrant = firstGrantDate;
 
-  for (const entry of SERVICE_BAND_MONTHS) {
-    const milestone = addUtcMonths(parseIsoDate(hireDate), entry.months);
-    if (milestone >= reference) {
-      return formatIsoDate(milestone);
-    }
+  while (nextGrant < reference) {
+    nextGrant = addUtcMonths(nextGrant, 12);
   }
 
-  let nextAnnualGrant = addUtcMonths(parseIsoDate(hireDate), 78);
-  while (nextAnnualGrant < reference) {
-    nextAnnualGrant = addUtcMonths(nextAnnualGrant, 12);
-  }
-
-  return formatIsoDate(nextAnnualGrant);
+  return formatIsoDate(nextGrant);
 }
 
 export function determineJapanVacationRuleType(input: {
