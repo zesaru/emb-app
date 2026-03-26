@@ -84,6 +84,13 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!accessToken || !refreshToken) {
+    return NextResponse.redirect(
+      `${requestUrl.origin}/login?error=${encodeURIComponent("No se recibieron tokens de sesión válidos.")}`,
+      { status: 303 },
+    );
+  }
+
   const { error: sessionError } = await supabase.auth.setSession({
     access_token: accessToken,
     refresh_token: refreshToken,

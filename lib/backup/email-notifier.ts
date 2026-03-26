@@ -43,7 +43,7 @@ export const emailNotifier = {
     }
   },
 
-  async notifyBackupFailure(error: string): Promise<void> {
+  async notifyBackupFailure(error: string, duration?: number): Promise<void> {
     const to = process.env.EMBPERUJAPAN_EMAIL;
     if (!to) {
       console.warn("No email configured for backup notifications");
@@ -60,6 +60,7 @@ export const emailNotifier = {
             backupDate: new Date().toISOString(),
             error,
             backupType: "full",
+            duration,
           },
           react: React.createElement(BackupFailure, {
             backupDate: new Date().toISOString(),
