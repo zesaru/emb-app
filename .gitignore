@@ -26,6 +26,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .codex-dev-*.log
+.dev-stdout.log
+.dev-stderr.log
 
 # local env files - NEVER commit actual env files with keys
 .env
@@ -45,6 +47,9 @@ supabase/branches/
 supabase/.branches/
 supabase/.env*
 supabase/.env.keys
+supabase/local-public-data.sql
+supabase/migrations_backup
+supabase/legacy_migrations_backup/
 
 # vercel
 .vercel
