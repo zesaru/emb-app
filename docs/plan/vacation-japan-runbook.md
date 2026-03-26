@@ -170,6 +170,81 @@ For V1:
 - generate future-ready grant records
 - use manual or initial adjustment notes where historic precision is uncertain
 
+### Staging commands
+
+Dry-run first:
+
+```bash
+DATABASE_URL="postgresql://<staging-connection>" pnpm vacation:backfill:japan --cutover-date=YYYY-MM-DD
+```
+
+If the output looks correct, apply:
+
+```bash
+DATABASE_URL="postgresql://<staging-connection>" pnpm vacation:backfill:japan --cutover-date=YYYY-MM-DD --apply
+```
+
+### Production commands
+
+Only after staging validation succeeds:
+
+Dry-run:
+
+```bash
+DATABASE_URL="postgresql://<production-connection>" pnpm vacation:backfill:japan --cutover-date=YYYY-MM-DD
+```
+
+Apply:
+
+```bash
+DATABASE_URL="postgresql://<production-connection>" pnpm vacation:backfill:japan --cutover-date=YYYY-MM-DD --apply
+```
+
+### SQL before running apply
+
+Confirm there is no previous cutover batch with the same date:
+
+```sql
+select
+  count(*) as existing_cutover_grants
+from public.vacation_grants
+where notes = '[cutover:YYYY-MM-DD] Initial manual grant from legacy num_vacations';
+```
+
+Inspect candidate users:
+
+```sql
+select
+  id,
+  name,
+  email,
+  hire_date,
+  weekly_days,
+  weekly_hours,
+  attendance_eligible,
+  num_vacations,
+  is_active
+from public.users
+where is_active is distinct from false
+order by coalesce(name, email, id::text);
+```
+
+Check current grants before inserting anything:
+
+```sql
+select
+  user_id,
+  granted_on,
+  service_band,
+  days_granted,
+  days_remaining,
+  expires_on,
+  rule_type,
+  notes
+from public.vacation_grants
+order by created_at desc nulls last, granted_on desc;
+```
+
 ### Minimum validations after backfill
 
 ```sql
@@ -191,6 +266,37 @@ select
   count(distinct user_id) as users_with_grants
 from public.vacation_grants;
 ```
+
+```sql
+select
+  count(*) as cutover_grants,
+  count(distinct user_id) as cutover_users,
+  sum(days_granted) as cutover_days,
+  sum(days_remaining) as cutover_remaining
+from public.vacation_grants
+where notes = '[cutover:YYYY-MM-DD] Initial manual grant from legacy num_vacations';
+```
+
+```sql
+select
+  user_id,
+  notes,
+  count(*) as duplicate_count
+from public.vacation_grants
+where notes = '[cutover:YYYY-MM-DD] Initial manual grant from legacy num_vacations'
+group by user_id, notes
+having count(*) > 1;
+```
+
+### Expected apply output
+
+The script should:
+
+- report `DRY-RUN` in non-apply mode
+- report `APPLY` only when `--apply` is present
+- insert only users with `hire_date` and `num_vacations > 0`
+- skip users already backfilled for the same cutover marker
+- leave `num_vacations` unchanged
 
 ### Sample review checklist
 
@@ -261,6 +367,20 @@ select count(*) from public.users where attendance_eligible is null;
 - stop backfill job
 - disable grant-based behavior in app
 - inspect generated grants before deleting anything
+- if revert is required, only delete rows with the exact cutover marker used in that run
+
+Rollback helper SQL for a single cutover batch:
+
+```sql
+delete from public.vacation_grants
+where notes = '[cutover:YYYY-MM-DD] Initial manual grant from legacy num_vacations';
+```
+
+Use that only if:
+
+- the batch was confirmed incorrect
+- grant consumption was not yet activated for those records
+- the release owner approved deleting that exact cutover batch
 
 ### If approval consumption behaves incorrectly
 

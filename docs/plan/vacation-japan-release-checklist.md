@@ -102,6 +102,17 @@ Deploy code that can read the new structures without requiring them to be fully 
 
 Generate initial structured grant data without deleting current business data.
 
+### Execution Order
+
+Run the backfill in this order:
+
+1. staging dry-run
+2. staging apply
+3. staging SQL validation
+4. production dry-run
+5. production apply
+6. production SQL validation
+
 ### Backfill Rules
 
 - use a defined `cutover date`
@@ -130,6 +141,66 @@ Suggested guard:
 - unique logical key by `user_id + granted_on + service_band`
 - or explicit `notes` / metadata that marks generated cutover records
 
+### Execution Commands
+
+Dry-run:
+
+```bash
+DATABASE_URL="postgresql://..." pnpm vacation:backfill:japan --cutover-date=YYYY-MM-DD
+```
+
+Apply:
+
+```bash
+DATABASE_URL="postgresql://..." pnpm vacation:backfill:japan --cutover-date=YYYY-MM-DD --apply
+```
+
+### SQL Before Backfill
+
+Use these queries before both staging and production apply runs.
+
+Check target users:
+
+```sql
+select
+  id,
+  name,
+  email,
+  hire_date,
+  weekly_days,
+  weekly_hours,
+  attendance_eligible,
+  num_vacations,
+  is_active
+from public.users
+where is_active is distinct from false
+order by coalesce(name, email, id::text);
+```
+
+Check existing grants:
+
+```sql
+select
+  user_id,
+  granted_on,
+  service_band,
+  days_granted,
+  days_remaining,
+  rule_type,
+  notes
+from public.vacation_grants
+order by created_at desc nulls last, granted_on desc;
+```
+
+Check whether the selected cutover marker already exists:
+
+```sql
+select
+  count(*) as cutover_grants
+from public.vacation_grants
+where notes = '[cutover:YYYY-MM-DD] Initial manual grant from legacy num_vacations';
+```
+
 ### Backfill Validation
 
 - [ ] sample at least 5 real users
@@ -152,6 +223,41 @@ select
   rule_type
 from public.vacation_grants
 order by user_id, granted_on desc;
+```
+
+Summary query:
+
+```sql
+select
+  count(*) as total_grants,
+  count(distinct user_id) as users_with_grants,
+  sum(days_granted) as total_days_granted,
+  sum(days_remaining) as total_days_remaining
+from public.vacation_grants;
+```
+
+Cutover-only summary:
+
+```sql
+select
+  count(*) as cutover_grants,
+  count(distinct user_id) as cutover_users,
+  sum(days_granted) as cutover_days
+from public.vacation_grants
+where notes = '[cutover:YYYY-MM-DD] Initial manual grant from legacy num_vacations';
+```
+
+Duplicate detection for the same cutover:
+
+```sql
+select
+  user_id,
+  notes,
+  count(*) as duplicate_count
+from public.vacation_grants
+where notes = '[cutover:YYYY-MM-DD] Initial manual grant from legacy num_vacations'
+group by user_id, notes
+having count(*) > 1;
 ```
 
 ## Activation Of Real Consumption
