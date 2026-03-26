@@ -1,14 +1,13 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
+import React from "react";
 import { revalidatePath } from "next/cache";
-import { Resend } from "resend";
+
+import { sendOrCaptureEmail } from "@/lib/email/dev-email-outbox";
 import { compensatoryRegisterApprovalSchema } from "@/lib/validation/schemas";
 import { CompensatoryUseApprovedUser } from "@/components/email/templates/compensatory/compensatory-use-approved-user";
-import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
-import React from "react";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { buildUrl } from "@/components/email/utils/email-config";
+import { createClient } from "@/utils/supabase/server";
 
 export default async function updateApproveRegisterHour(compensatory: any) {
   const supabase = await createClient();
@@ -16,13 +15,12 @@ export default async function updateApproveRegisterHour(compensatory: any) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  const approved_by = user?.id;
+  const approvedBy = user?.id;
 
-  if (user === null) {
+  if (!user) {
     return { success: false, error: "No autenticado" };
   }
 
-  // Validar datos de entrada con Zod
   try {
     compensatoryRegisterApprovalSchema.parse({
       id: compensatory.id,
@@ -38,7 +36,7 @@ export default async function updateApproveRegisterHour(compensatory: any) {
     .from("compensatorys")
     .update({
       final_approve_request: true,
-      approved_by_compensated: approved_by,
+      approved_by_compensated: approvedBy,
     })
     .eq("id", compensatory.id)
     .select("*");
@@ -48,35 +46,44 @@ export default async function updateApproveRegisterHour(compensatory: any) {
     user_id: compensatory.user_id,
   });
 
-  // Fetch user's remaining hours
   const { data: userData } = await supabase
     .from("users")
-    .select("num_compensatorys")
+    .select("name, num_compensatorys")
     .eq("id", compensatory.user_id)
     .single();
 
   const remainingHours = userData?.num_compensatorys || 0;
+  const userName = userData?.name?.trim() || compensatory.email;
 
   try {
-    await resend.emails.send({
-      from: getFromEmail(),
+    await sendOrCaptureEmail({
       to: compensatory.email,
-      subject: `¡Tu Solicitud de Descanso Ha Sido Aprobada!`,
-      react: React.createElement(CompensatoryUseApprovedUser, {
-        userName: compensatory.email,
+      subject: "Tu solicitud de descanso ha sido aprobada",
+      templateName: "CompensatoryUseApprovedUser",
+      triggeredByUserId: user.id,
+      payload: {
+        userName,
         hours: compensatory.compensated_hours,
         reasonDate: new Date().toISOString(),
         approvedDate: new Date().toISOString(),
-        remainingHours: remainingHours,
-        dashboardUrl: buildUrl('/'),
+        remainingHours,
+        dashboardUrl: buildUrl("/"),
+      },
+      react: React.createElement(CompensatoryUseApprovedUser, {
+        userName,
+        hours: compensatory.compensated_hours,
+        reasonDate: new Date().toISOString(),
+        approvedDate: new Date().toISOString(),
+        remainingHours,
+        dashboardUrl: buildUrl("/"),
       }),
     });
+
     revalidatePath(`/`);
     return {
       success: true,
     };
-  } catch (error) {
-    // No exponer errores sensibles
+  } catch {
     return { success: true };
   }
 }

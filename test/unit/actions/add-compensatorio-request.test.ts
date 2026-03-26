@@ -26,10 +26,29 @@ vi.mock("resend", () => ({
 vi.mock("@/components/email/utils/email-config", () => ({
   getFromEmail: vi.fn(() => "EMB <noreply@example.com>"),
   buildUrl: vi.fn((path: string) => `http://localhost:3003${path}`),
+  isEmailDeliveryEnabled: vi.fn(() => true),
   resolveEmailRecipients: (...args: any[]) => resolveEmailRecipientsMock(...args),
 }));
 
 describe("add-compensatorio-request", () => {
+  const buildUsersFromMock = () =>
+    vi.fn((table: string) => {
+      if (table === "users") {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              single: vi.fn().mockResolvedValue({
+                data: { name: "Cesar Murillo" },
+                error: null,
+              }),
+            })),
+          })),
+        };
+      }
+
+      throw new Error(`unexpected table ${table}`);
+    });
+
   beforeEach(() => {
     vi.clearAllMocks();
     sendEmailMock.mockResolvedValue({ id: "mail-1" });
@@ -84,6 +103,7 @@ describe("add-compensatorio-request", () => {
         }),
       },
       rpc: rpcMock,
+      from: buildUsersFromMock(),
     } as any);
 
     const action = (await import("@/actions/add-compensatorio-request")).default;
@@ -123,6 +143,7 @@ describe("add-compensatorio-request", () => {
         }),
       },
       rpc: rpcMock,
+      from: buildUsersFromMock(),
     } as any);
 
     const action = (await import("@/actions/add-compensatorio-request")).default;
@@ -207,6 +228,7 @@ describe("add-compensatorio-request", () => {
         }),
       },
       rpc: rpcMock,
+      from: buildUsersFromMock(),
     } as any);
 
     const action = (await import("@/actions/add-compensatorio-request")).default;

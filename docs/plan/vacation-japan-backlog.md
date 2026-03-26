@@ -14,14 +14,14 @@ Prepare the minimum schema and admin data needed for a safe cutover.
 
 - [ ] Add `weekly_days` to `public.users`
 - [ ] Add `weekly_hours` to `public.users`
-- [ ] Add optional `vacation_rule_type` to `public.users`
+- [ ] Add optional `attendance_eligible` to `public.users`
 - [ ] Create `public.vacation_grants`
 - [ ] Define a `cutover date` for the new leave engine
 - [ ] Decide whether `num_vacations` remains temporary legacy data
 - [ ] Add admin UI fields for:
   - [ ] weekly working days
   - [ ] weekly working hours
-  - [ ] optional rule override
+  - [ ] attendance eligibility override
 
 ### Deliverable
 
@@ -135,7 +135,7 @@ The next concrete engineering task should be:
 - [ ] Create migrations for:
   - [ ] `users.weekly_days`
   - [ ] `users.weekly_hours`
-  - [ ] `users.vacation_rule_type` (optional)
+  - [ ] `users.attendance_eligible` (optional)
   - [ ] `vacation_grants`
 
 This is the correct starting point for implementation.

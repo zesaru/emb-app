@@ -1,12 +1,12 @@
 export const metadata = {
-  title: 'EmbApp',
-  description: 'EmbApp',
-}
+  title: "Emb-App",
+  description: "Sistema de gestión de personal para la Embajada del Perú en Japón",
+};
 
 export default function LoginLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>
+  return <>{children}</>;
 }

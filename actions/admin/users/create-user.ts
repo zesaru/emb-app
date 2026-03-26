@@ -16,6 +16,9 @@ type CreateAdminUserInput = {
   temporaryPassword?: string;
   hireDate?: string;
   isDiplomatic?: boolean;
+  weeklyDays?: number | null;
+  weeklyHours?: number | null;
+  attendanceEligible?: boolean | null;
   numVacations?: number;
   numCompensatorys?: number;
 };
@@ -66,6 +69,9 @@ export async function createAdminUser(input: CreateAdminUserInput) {
         isActive: true,
         hireDate: data.hireDate,
         isDiplomatic: data.isDiplomatic,
+        weeklyDays: data.weeklyDays,
+        weeklyHours: data.weeklyHours,
+        attendanceEligible: data.attendanceEligible,
         numVacations: data.numVacations ?? 0,
         numCompensatorys: data.numCompensatorys ?? 0,
       }),

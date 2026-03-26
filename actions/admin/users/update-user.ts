@@ -13,6 +13,9 @@ type UpdateAdminUserInput = {
   role?: "admin" | "user";
   hireDate?: string;
   isDiplomatic?: boolean;
+  weeklyDays?: number | null;
+  weeklyHours?: number | null;
+  attendanceEligible?: boolean | null;
   numVacations?: number;
   numCompensatorys?: number;
 };
@@ -40,6 +43,9 @@ export async function updateAdminUser(input: UpdateAdminUserInput) {
       role: data.role,
       hireDate: data.hireDate,
       isDiplomatic: data.isDiplomatic,
+      weeklyDays: data.weeklyDays,
+      weeklyHours: data.weeklyHours,
+      attendanceEligible: data.attendanceEligible,
       numVacations: data.numVacations,
       numCompensatorys: data.numCompensatorys,
     });

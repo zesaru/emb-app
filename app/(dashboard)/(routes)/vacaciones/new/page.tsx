@@ -17,12 +17,12 @@ export default function NewVacationPage() {
         <CardHeader>
           <CardTitle>Solicitar Vacaciones</CardTitle>
           <CardDescription>
-            Complete el periodo y la cantidad de dias a solicitar.
+            Complete el período y la cantidad de días a solicitar.
           </CardDescription>
           <div>
             <Button asChild variant="link" className="h-auto px-0 text-sm">
               <Link href="/vacaciones/policy">
-                Ver politica de vacaciones en Japon
+                Ver política de vacaciones en Japón
               </Link>
             </Button>
           </div>

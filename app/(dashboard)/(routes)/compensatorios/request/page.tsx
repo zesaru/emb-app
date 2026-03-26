@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import RequestForm from './_components/requestForm';
+import RequestForm from "./_components/requestForm";
 import {
   Card,
   CardContent,
@@ -15,10 +15,10 @@ export default function RequestPage() {
       <Card>
         <CardHeader>
           <CardTitle>Compensatorios</CardTitle>
-          <CardDescription>SOLICITUD HORAS DE COMPENSATORIOS</CardDescription>
+          <CardDescription>Solicitud de horas compensatorias</CardDescription>
         </CardHeader>
         <CardContent>
-         <RequestForm/>
+          <RequestForm />
         </CardContent>
       </Card>
     </div>

@@ -2,13 +2,11 @@
 
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
-import { Resend } from 'resend';
 import { compensatorySchema } from "@/lib/validation/schemas";
+import { sendOrCaptureEmail } from "@/lib/email/dev-email-outbox";
 import { CompensatoryRequestAdmin } from "@/components/email/templates/compensatory/compensatory-request-admin";
-import { getFromEmail, buildUrl } from "@/components/email/utils/email-config";
+import { buildUrl } from "@/components/email/utils/email-config";
 import React from "react";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const addPost = async (formData: FormData) => {
   const eventName = formData.get("event_name");
@@ -53,23 +51,38 @@ export const addPost = async (formData: FormData) => {
     ).select('*');
 
     const email = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
+    const { data: userProfile } = await supabase
+      .from("users")
+      .select("name")
+      .eq("id", user.id)
+      .single();
+    const userName = userProfile?.name?.trim() || user.email || "Usuario";
 
     if (result.statusText === 'Created' && result.data) {
       try {
         const compensatoryId = result.data[0]?.id;
-        const data = await resend.emails.send({
-          from: getFromEmail(),
+        const data = await sendOrCaptureEmail({
           to: email,
-          subject: `Nueva Solicitud de Compensatorio - ${user.email}`,
+          subject: `Nueva Solicitud de Compensatorio - ${userName}`,
+          templateName: "CompensatoryRequestAdmin",
+          triggeredByUserId: user.id,
+          payload: {
+            userName,
+            userEmail: user.email || 'usuario@example.com',
+            eventName: eventName as string,
+            hours: hours,
+            eventDate: eventDate as string,
+            approvalUrl: buildUrl(`/compensatorios/approvec/${compensatoryId}`),
+          },
           react: React.createElement(CompensatoryRequestAdmin, {
-            userName: user.email || 'Usuario',
+            userName,
             userEmail: user.email || 'usuario@example.com',
             eventName: eventName as string,
             hours: hours,
             eventDate: eventDate as string,
             approvalUrl: buildUrl(`/compensatorios/approvec/${compensatoryId}`),
           }),
-        })
+        });
         return { success: true, data }
       } catch (error) {
         // No exponer errores sensibles

@@ -3,16 +3,15 @@
  * Sent when admin approves a compensatory hours registration
  */
 
-import { Text } from '@react-email/components';
-import * as React from 'react';
-import EmailLayout from '../../base/email-layout';
-import { EmailButton } from '../../base/email-button';
-import { EmailCard } from '../../base/email-card';
-import { EmailHeading } from '../../base/email-text';
-import { EmailLabel } from '../../base/email-text';
-import { EmailBadge } from '../../base/email-badge';
-import { formatDate, formatHours, formatDateTime } from '../../utils/formatters';
-import { buildUrl } from '../../utils/email-config';
+import { Text } from "@react-email/components";
+import * as React from "react";
+
+import EmailLayout from "../../base/email-layout";
+import { EmailButton } from "../../base/email-button";
+import { EmailCard } from "../../base/email-card";
+import { EmailHeading, EmailLabel } from "../../base/email-text";
+import { EmailBadge } from "../../base/email-badge";
+import { formatDate, formatHours, formatDateTime } from "../../utils/formatters";
 
 interface CompensatoryApprovedUserProps {
   userName: string;
@@ -24,9 +23,7 @@ interface CompensatoryApprovedUserProps {
   dashboardUrl: string;
 }
 
-export const CompensatoryApprovedUser: React.FC<
-  Readonly<CompensatoryApprovedUserProps>
-> = ({
+export const CompensatoryApprovedUser: React.FC<Readonly<CompensatoryApprovedUserProps>> = ({
   userName,
   eventName,
   hours,
@@ -36,8 +33,8 @@ export const CompensatoryApprovedUser: React.FC<
   dashboardUrl,
 }) => {
   return (
-    <EmailLayout previewText="¡Tu Solicitud Ha Sido Aprobada!">
-      <EmailHeading level={1}>¡Tu Solicitud Ha Sido Aprobada!</EmailHeading>
+    <EmailLayout previewText="¡Tu solicitud ha sido aprobada!">
+      <EmailHeading level={1}>¡Tu solicitud ha sido aprobada!</EmailHeading>
 
       <Text style={greetingStyle}>Hola, {userName},</Text>
 
@@ -55,8 +52,8 @@ export const CompensatoryApprovedUser: React.FC<
         <EmailLabel>Horas registradas</EmailLabel>
         <EmailBadge variant="success">+{formatHours(hours)}</EmailBadge>
 
-        <Text style={{ ...valueText, marginTop: '16px' }}>
-          <strong>Estado:</strong>{' '}
+        <Text style={{ ...valueText, marginTop: "16px" }}>
+          <strong>Estado:</strong>{" "}
           <span style={successTextInline}>Aprobado</span>
         </Text>
 
@@ -82,45 +79,45 @@ export const CompensatoryApprovedUser: React.FC<
 export default CompensatoryApprovedUser;
 
 const greetingStyle = {
-  color: '#333333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  margin: '12px 0',
+  color: "#333333",
+  fontSize: "16px",
+  lineHeight: "26px",
+  margin: "12px 0",
 };
 
 const textStyle = {
-  color: '#333333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  margin: '12px 0',
+  color: "#333333",
+  fontSize: "16px",
+  lineHeight: "26px",
+  margin: "12px 0",
 };
 
 const valueText = {
-  color: '#333333',
-  fontSize: '14px',
-  lineHeight: '24px',
-  margin: '8px 0',
+  color: "#333333",
+  fontSize: "14px",
+  lineHeight: "24px",
+  margin: "8px 0",
 };
 
 const successTextInline = {
-  color: '#065f46',
-  fontWeight: 'bold',
+  color: "#065f46",
+  fontWeight: "bold",
 };
 
 const highlightText = {
-  color: '#1c1c1c',
-  fontSize: '16px',
-  lineHeight: '24px',
-  margin: '16px 0 8px 0',
-  padding: '12px',
-  backgroundColor: '#f0f9ff',
-  borderRadius: '6px',
-  textAlign: 'center' as const,
+  color: "#1c1c1c",
+  fontSize: "16px",
+  lineHeight: "24px",
+  margin: "16px 0 8px 0",
+  padding: "12px",
+  backgroundColor: "#f0f9ff",
+  borderRadius: "6px",
+  textAlign: "center" as const,
 };
 
 const smallText = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '20px',
-  margin: '8px 0',
+  color: "#8898aa",
+  fontSize: "12px",
+  lineHeight: "20px",
+  margin: "8px 0",
 };

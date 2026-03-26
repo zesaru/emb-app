@@ -65,7 +65,7 @@ export function DataTableRowActions({
         } else if (response?.error) {
           toast.error(`Error: ${response.error}`)
         } else {
-          toast.error("No se pudo completar la aprobacion.")
+          toast.error("No se pudo completar la aprobación.")
         }
       } finally {
         setIsApproving?.(false)

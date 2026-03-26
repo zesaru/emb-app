@@ -75,10 +75,7 @@ Extend `users` with:
 - `hire_date`
 - `weekly_days`
 - `weekly_hours`
-- `vacation_rule_type` optional:
-  - `standard`
-  - `proportional`
-  - `manual`
+- `attendance_eligible` optional manual flag for the `80%` attendance rule
 
 Create a new table:
 

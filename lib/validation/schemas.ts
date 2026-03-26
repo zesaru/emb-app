@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Esquemas de validacion Zod para la aplicacion.
+ * Esquemas de validación Zod para la aplicación.
  * Usar estos schemas para validar datos de entrada en Server Actions.
  */
 
@@ -9,23 +9,32 @@ import { z } from "zod";
 // VALIDADORES COMUNES
 // ============================================================================
 
-export const uuidSchema = z.string().uuid("ID UUID invalido");
+export const uuidSchema = z.string().uuid("ID UUID inválido");
 
-export const emailSchema = z.string().email("Email invalido");
+export const emailSchema = z.string().email("Email inválido");
 
 export const positiveIntegerSchema = z.number()
-  .int("Debe ser un numero entero")
+  .int("Debe ser un número entero")
   .positive("Debe ser mayor a 0");
 
 export const nonNegativeIntegerSchema = z.number()
-  .int("Debe ser un numero entero")
+  .int("Debe ser un número entero")
   .min(0, "Debe ser mayor o igual a 0");
 
+export const weeklyDaysSchema = z.number()
+  .int("Días semanales debe ser un número entero")
+  .min(1, "Días semanales debe ser al menos 1")
+  .max(7, "Días semanales no puede exceder 7");
+
+export const weeklyHoursSchema = z.number()
+  .min(0, "Horas semanales debe ser mayor o igual a 0")
+  .max(168, "Horas semanales no puede exceder 168");
+
 export const dateSchema = z.string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha invalido (debe ser YYYY-MM-DD)");
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (debe ser YYYY-MM-DD)");
 
 export const timeSchema = z.string()
-  .regex(/^\d{2}:\d{2}$/, "Formato de hora invalido (debe ser HH:MM)");
+  .regex(/^\d{2}:\d{2}$/, "Formato de hora inválido (debe ser HH:MM)");
 
 // ============================================================================
 // VACACIONES
@@ -35,13 +44,13 @@ export const vacationSchema = z.object({
   userId: uuidSchema.optional(),
   start: z.coerce.date({
     required_error: "Fecha de inicio es requerida",
-    invalid_type_error: "Fecha de inicio invalida",
+    invalid_type_error: "Fecha de inicio inválida",
   }),
   finish: z.coerce.date({
     required_error: "Fecha de fin es requerida",
-    invalid_type_error: "Fecha de fin invalida",
+    invalid_type_error: "Fecha de fin inválida",
   }),
-  days: positiveIntegerSchema.max(30, "Maximo 30 dias de vacaciones"),
+  days: positiveIntegerSchema.max(30, "Máximo 30 días de vacaciones"),
 });
 
 export const vacationUpdateSchema = z.object({
@@ -58,9 +67,9 @@ export const vacationUpdateSchema = z.object({
 
 export const compensatorySchema = z.object({
   userId: uuidSchema.optional(),
-  eventName: z.string().min(1, "Nombre del evento es requerido").max(200, "Maximo 200 caracteres"),
+  eventName: z.string().min(1, "Nombre del evento es requerido").max(200, "Máximo 200 caracteres"),
   eventDate: z.string().min(1, "Fecha del evento es requerida"),
-  hours: positiveIntegerSchema.max(12, "Maximo 12 horas por dia"),
+  hours: positiveIntegerSchema.max(12, "Máximo 12 horas por día"),
   tTimeStart: timeSchema.optional(),
   tTimeFinish: timeSchema.optional(),
 });
@@ -68,14 +77,14 @@ export const compensatorySchema = z.object({
 export const compensatoryRequestSchema = z.object({
   dob: z.coerce.date({
     required_error: "Fecha es requerida",
-    invalid_type_error: "Fecha invalida",
+    invalid_type_error: "Fecha inválida",
   }),
   time_start: timeSchema,
   time_finish: timeSchema,
   hours: z.coerce.number()
-    .int("Debe ser un numero entero")
+    .int("Debe ser un número entero")
     .positive("Debe ser mayor a 0")
-    .max(12, "Maximo 12 horas por dia"),
+    .max(12, "Máximo 12 horas por día"),
 }).superRefine((data, ctx) => {
   const [startHour, startMinute] = data.time_start.split(":").map(Number);
   const [finishHour, finishMinute] = data.time_finish.split(":").map(Number);
@@ -109,7 +118,7 @@ export const compensatoryUpdateSchema = z.object({
   approveRequest: z.boolean().optional(),
   approvedBy: uuidSchema.optional(),
   approvedDate: z.string().optional(),
-  compensatedHours: nonNegativeIntegerSchema.max(12, "Maximo 12 horas compensadas"),
+  compensatedHours: nonNegativeIntegerSchema.max(12, "Máximo 12 horas compensadas"),
   compensatedHoursDay: z.string().optional(),
   approvedByCompensated: uuidSchema.optional(),
   finalApproveRequest: z.boolean().optional(),
@@ -119,7 +128,7 @@ export const compensatoryRegisterApprovalSchema = z.object({
   id: uuidSchema,
   user_id: uuidSchema,
   email: emailSchema,
-  compensated_hours: positiveIntegerSchema.max(12, "Maximo 12 horas"),
+  compensated_hours: positiveIntegerSchema.max(12, "Máximo 12 horas"),
 });
 
 // ============================================================================
@@ -145,18 +154,21 @@ export const attendanceUpdateSchema = z.object({
 
 export const userUpdateSchema = z.object({
   id: uuidSchema,
-  name: z.string().min(1, "Nombre es requerido").max(100, "Maximo 100 caracteres").optional(),
+  name: z.string().min(1, "Nombre es requerido").max(100, "Máximo 100 caracteres").optional(),
   email: emailSchema.optional(),
   role: z.string().optional(),
   numVacations: nonNegativeIntegerSchema.optional(),
   numCompensatorys: nonNegativeIntegerSchema.optional(),
   isActive: z.boolean().optional(),
+  weeklyDays: weeklyDaysSchema.nullable().optional(),
+  weeklyHours: weeklyHoursSchema.nullable().optional(),
+  attendanceEligible: z.boolean().nullable().optional(),
 });
 
 export const passwordUpdateSchema = z.object({
   password: z.string()
-    .min(6, "Contrasena debe tener al menos 6 caracteres")
-    .max(100, "Maximo 100 caracteres"),
+    .min(6, "Contraseña debe tener al menos 6 caracteres")
+    .max(100, "Máximo 100 caracteres"),
 });
 
 export const adminRoleSchema = z.enum(["admin", "user"]);
@@ -165,13 +177,16 @@ export const adminUserProvisioningModeSchema = z.enum(["invite", "temporary_pass
 
 export const adminUserCreateSchema = z.object({
   email: emailSchema,
-  name: z.string().min(1, "Nombre es requerido").max(100, "Maximo 100 caracteres"),
-  position: z.string().max(120, "Maximo 120 caracteres").optional(),
+  name: z.string().min(1, "Nombre es requerido").max(100, "Máximo 100 caracteres"),
+  position: z.string().max(120, "Máximo 120 caracteres").optional(),
   role: adminRoleSchema.default("user"),
   provisioningMode: adminUserProvisioningModeSchema,
-  temporaryPassword: z.string().min(8, "Contrasena temporal debe tener al menos 8 caracteres").max(100).optional(),
+  temporaryPassword: z.string().min(8, "Contraseña temporal debe tener al menos 8 caracteres").max(100).optional(),
   hireDate: dateSchema.optional(),
   isDiplomatic: z.boolean().optional().default(false),
+  weeklyDays: weeklyDaysSchema.nullable().optional(),
+  weeklyHours: weeklyHoursSchema.nullable().optional(),
+  attendanceEligible: z.boolean().nullable().optional(),
   numVacations: nonNegativeIntegerSchema.optional().default(0),
   numCompensatorys: nonNegativeIntegerSchema.optional().default(0),
 }).superRefine((data, ctx) => {
@@ -179,18 +194,21 @@ export const adminUserCreateSchema = z.object({
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["temporaryPassword"],
-      message: "Contrasena temporal es requerida para este modo",
+      message: "Contraseña temporal es requerida para este modo",
     });
   }
 });
 
 export const adminUserUpdateSchema = z.object({
   id: uuidSchema,
-  name: z.string().min(1, "Nombre es requerido").max(100, "Maximo 100 caracteres").optional(),
-  position: z.string().max(120, "Maximo 120 caracteres").optional(),
+  name: z.string().min(1, "Nombre es requerido").max(100, "Máximo 100 caracteres").optional(),
+  position: z.string().max(120, "Máximo 120 caracteres").optional(),
   role: adminRoleSchema.optional(),
   hireDate: dateSchema.optional(),
   isDiplomatic: z.boolean().optional(),
+  weeklyDays: weeklyDaysSchema.nullable().optional(),
+  weeklyHours: weeklyHoursSchema.nullable().optional(),
+  attendanceEligible: z.boolean().nullable().optional(),
   numVacations: nonNegativeIntegerSchema.optional(),
   numCompensatorys: nonNegativeIntegerSchema.optional(),
 });
@@ -206,14 +224,52 @@ export const adminUserPasswordResetLinkSchema = z.object({
 export const adminUserSetTemporaryPasswordSchema = z.object({
   userId: uuidSchema,
   password: z.string()
-    .min(8, "Contrasena debe tener al menos 8 caracteres")
-    .max(100, "Maximo 100 caracteres"),
+    .min(8, "Contraseña debe tener al menos 8 caracteres")
+    .max(100, "Máximo 100 caracteres"),
 });
 
 export const adminUserListFiltersSchema = z.object({
   search: z.string().max(120).optional(),
   status: z.enum(["all", "active", "inactive"]).optional().default("all"),
   role: z.enum(["all", "admin", "user"]).optional().default("all"),
+});
+
+export const adminVacationGrantCreateSchema = z.object({
+  userId: uuidSchema,
+  grantedOn: dateSchema,
+  notes: z.string().max(500, "Máximo 500 caracteres").nullable().optional(),
+});
+
+export const adminVacationGrantListSchema = z.object({
+  userId: uuidSchema,
+});
+
+export const adminVacationGrantUpdateSchema = z.object({
+  id: uuidSchema,
+  userId: uuidSchema,
+  grantedOn: dateSchema,
+  serviceBand: z.enum([
+    "6_months",
+    "1_year_6_months",
+    "2_years_6_months",
+    "3_years_6_months",
+    "4_years_6_months",
+    "5_years_6_months",
+    "6_years_6_months_plus",
+  ]),
+  daysGranted: nonNegativeIntegerSchema,
+  daysRemaining: nonNegativeIntegerSchema,
+  expiresOn: dateSchema,
+  ruleType: z.enum(["standard", "proportional", "manual"]),
+  notes: z.string().max(500, "Máximo 500 caracteres").nullable().optional(),
+}).superRefine((data, ctx) => {
+  if (data.daysRemaining > data.daysGranted) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["daysRemaining"],
+      message: "Días disponibles no puede exceder días otorgados",
+    });
+  }
 });
 
 // ============================================================================

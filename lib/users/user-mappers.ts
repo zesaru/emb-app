@@ -11,6 +11,9 @@ type RawUserRow = {
   created_at?: string | null;
   hire_date?: string | null;
   is_diplomatic?: boolean | string | null;
+  weekly_days?: string | number | null;
+  weekly_hours?: string | number | null;
+  attendance_eligible?: boolean | string | null;
 };
 
 export type AdminUserListItem = {
@@ -24,6 +27,10 @@ export type AdminUserListItem = {
   createdAt: string | null;
   hireDate: string | null;
   isDiplomatic: boolean;
+  weeklyDays: number | null;
+  weeklyHours: number | null;
+  attendanceEligible: boolean | null;
+  nextExpectedGrantDate: string | null;
   numVacations: number;
   numCompensatorys: number;
 };
@@ -47,6 +54,27 @@ function parseNumberLike(value: unknown) {
   return 0;
 }
 
+function parseNullableNumberLike(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function parseNullableBooleanLike(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (["true", "1", "yes", "y", "si", "eligible"].includes(normalized)) return true;
+    if (["false", "0", "no", "n", "ineligible"].includes(normalized)) return false;
+  }
+  return null;
+}
+
 export function normalizeUserRole(row: Pick<RawUserRow, "admin" | "role">): "admin" | "user" {
   if (row.admin === "admin") return "admin";
   if ((row.role || "").toLowerCase() === "admin") return "admin";
@@ -67,6 +95,10 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     createdAt: row.created_at ?? null,
     hireDate: row.hire_date ?? null,
     isDiplomatic: parseBooleanLike(row.is_diplomatic, false),
+    weeklyDays: parseNullableNumberLike(row.weekly_days),
+    weeklyHours: parseNullableNumberLike(row.weekly_hours),
+    attendanceEligible: parseNullableBooleanLike(row.attendance_eligible),
+    nextExpectedGrantDate: null,
     numVacations: parseNumberLike(row.num_vacations),
     numCompensatorys: parseNumberLike(row.num_compensatorys),
   };
@@ -79,6 +111,9 @@ export function toUsersTableUpdate(input: {
   isActive?: boolean;
   hireDate?: string | null;
   isDiplomatic?: boolean;
+  weeklyDays?: number | null;
+  weeklyHours?: number | null;
+  attendanceEligible?: boolean | null;
   numVacations?: number;
   numCompensatorys?: number;
 }) {
@@ -95,6 +130,9 @@ export function toUsersTableUpdate(input: {
   }
   if (input.hireDate !== undefined) payload.hire_date = input.hireDate;
   if (input.isDiplomatic !== undefined) payload.is_diplomatic = input.isDiplomatic;
+  if (input.weeklyDays !== undefined) payload.weekly_days = input.weeklyDays;
+  if (input.weeklyHours !== undefined) payload.weekly_hours = input.weeklyHours;
+  if (input.attendanceEligible !== undefined) payload.attendance_eligible = input.attendanceEligible;
   if (input.numVacations !== undefined) payload.num_vacations = input.numVacations;
   if (input.numCompensatorys !== undefined) payload.num_compensatorys = input.numCompensatorys;
 

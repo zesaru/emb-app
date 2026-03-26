@@ -5,20 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const fullTimeBands = [
-  ["6 meses", "10 dias"],
-  ["1 ano y 6 meses", "11 dias"],
-  ["2 anos y 6 meses", "12 dias"],
-  ["3 anos y 6 meses", "14 dias"],
-  ["4 anos y 6 meses", "16 dias"],
-  ["5 anos y 6 meses", "18 dias"],
-  ["6 anos y 6 meses o mas", "20 dias"],
+  ["6 meses", "10 días"],
+  ["1 año y 6 meses", "11 días"],
+  ["2 años y 6 meses", "12 días"],
+  ["3 años y 6 meses", "14 días"],
+  ["4 años y 6 meses", "16 días"],
+  ["5 años y 6 meses", "18 días"],
+  ["6 años y 6 meses o más", "20 días"],
 ];
 
 const proportionalBands = [
-  ["4 dias por semana", "7 dias al inicio"],
-  ["3 dias por semana", "5 dias al inicio"],
-  ["2 dias por semana", "3 dias al inicio"],
-  ["1 dia por semana", "1 dia al inicio"],
+  ["4 días por semana", "7 días al inicio"],
+  ["3 días por semana", "5 días al inicio"],
+  ["2 días por semana", "3 días al inicio"],
+  ["1 día por semana", "1 día al inicio"],
 ];
 
 export default function VacationPolicyPage() {
@@ -32,12 +32,12 @@ export default function VacationPolicyPage() {
           </div>
           <div>
             <CardTitle className="text-3xl [font-family:Manrope,Inter,ui-sans-serif,sans-serif]">
-              Politica de Vacaciones en Japon
+              Política de Vacaciones en Japón
             </CardTitle>
             <CardDescription className="mt-2 max-w-3xl text-sm leading-6">
-              Esta pagina resume la regla legal base y como emb-app la usa como
+              Esta página resume la regla legal base y cómo emb-app la usa como
               referencia para calcular vacaciones, especialmente para
-              diplomaticos y administradores que necesitan entender el criterio
+              diplomáticos y administradores que necesitan entender el criterio
               del sistema.
             </CardDescription>
           </div>
@@ -71,11 +71,11 @@ export default function VacationPolicyPage() {
           <CardContent className="space-y-4 text-sm leading-6 text-muted-foreground">
             <ul className="list-disc space-y-2 pl-5">
               <li>Ha trabajado de forma continua durante 6 meses desde su fecha de ingreso.</li>
-              <li>Ha asistido al menos al 80% de sus dias laborales programados.</li>
+              <li>Ha asistido al menos al 80% de sus días laborales programados.</li>
             </ul>
             <p>
-              A partir de ese momento, los dias aumentan conforme a la
-              antiguedad. Para jornadas parciales, la ley usa una tabla
+              A partir de ese momento, los días aumentan conforme a la
+              antigüedad. Para jornadas parciales, la ley usa una tabla
               proporcional.
             </p>
           </CardContent>
@@ -85,13 +85,13 @@ export default function VacationPolicyPage() {
           <CardHeader>
             <CardTitle>2. Nota operativa en emb-app</CardTitle>
             <CardDescription>
-              Como queremos empezar simple, este sera el criterio funcional base.
+              Como queremos empezar simple, este será el criterio funcional base.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm leading-6 text-muted-foreground">
             <p>emb-app toma en cuenta la fecha de ingreso registrada.</p>
             <p>La jornada aplicable debe distinguir entre esquema regular y proporcional.</p>
-            <p>Los casos historicos o especiales pueden requerir ajuste administrativo manual.</p>
+            <p>Los casos históricos o especiales pueden requerir ajuste administrativo manual.</p>
           </CardContent>
         </Card>
       </div>
@@ -101,8 +101,8 @@ export default function VacationPolicyPage() {
           <CardHeader>
             <CardTitle>3. Tabla base para jornada regular</CardTitle>
             <CardDescription>
-              Referencia para personas que trabajan 5 dias o mas por semana, o
-              30 horas o mas por semana.
+              Referencia para personas que trabajan 5 días o más por semana, o
+              30 horas o más por semana.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -110,8 +110,8 @@ export default function VacationPolicyPage() {
               <table className="w-full text-left text-sm">
                 <thead className="bg-surface-container-low text-foreground">
                   <tr>
-                    <th className="px-4 py-3 font-medium">Antiguedad</th>
-                    <th className="px-4 py-3 font-medium">Dias</th>
+                    <th className="px-4 py-3 font-medium">Antigüedad</th>
+                    <th className="px-4 py-3 font-medium">Días</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -131,8 +131,8 @@ export default function VacationPolicyPage() {
           <CardHeader>
             <CardTitle>4. Tiempo parcial</CardTitle>
             <CardDescription>
-              Cuando la persona trabaja menos dias por semana, aplica una
-              asignacion proporcional.
+              Cuando la persona trabaja menos días por semana, aplica una
+              asignación proporcional.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -155,7 +155,7 @@ export default function VacationPolicyPage() {
               </table>
             </div>
             <p className="text-sm leading-6 text-muted-foreground">
-              Ejemplo: si una persona inicio trabajando 3 dias por semana, no
+              Ejemplo: si una persona inició trabajando 3 días por semana, no
               necesariamente corresponde aplicar desde el primer ciclo la tabla
               completa de jornada regular.
             </p>
@@ -173,10 +173,10 @@ export default function VacationPolicyPage() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm leading-6 text-muted-foreground">
           <p>La asistencia efectiva puede influir en el derecho legal final.</p>
-          <p>Los dias otorgados no permanecen vigentes indefinidamente.</p>
+          <p>Los días otorgados no permanecen vigentes indefinidamente.</p>
           <p>
             Cambios de jornada, historiales incompletos o casos excepcionales
-            pueden requerir revision manual por administracion.
+            pueden requerir revisión manual por administración.
           </p>
         </CardContent>
       </Card>
