@@ -35,9 +35,6 @@ describe("UpdateVacations", () => {
   });
 
   it("consume vacation_grants cuando hay saldo suficiente", async () => {
-    const vacationUpdateSelectMock = vi.fn().mockResolvedValue({ error: null });
-    const grantUpdateSelectMock = vi.fn().mockResolvedValue({ error: null });
-    const consumptionInsertSelectMock = vi.fn().mockResolvedValue({ error: null });
     const vacationSingleMock = vi.fn().mockResolvedValue({
       data: { start: "2026-04-01", finish: "2026-04-03" },
       error: null,
@@ -46,55 +43,14 @@ describe("UpdateVacations", () => {
       data: { name: "Cesar Murillo" },
       error: null,
     });
+    const rpcMock = vi.fn().mockResolvedValue({
+      data: [{ used_grant_balance: true, remaining_balance: 7 }],
+      error: null,
+    });
 
     const fromMock = vi.fn((table: string) => {
-      if (table === "vacation_grants") {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              gt: vi.fn(() => ({
-                order: vi.fn(() => ({
-                  order: vi.fn().mockResolvedValue({
-                    data: [
-                      {
-                        id: "grant-1",
-                        granted_on: "2026-03-16",
-                        expires_on: "2028-03-16",
-                        days_remaining: 10,
-                      },
-                    ],
-                    error: null,
-                  }),
-                })),
-              })),
-            })),
-            single: vacationSingleMock,
-          })),
-          update: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                select: grantUpdateSelectMock,
-              })),
-            })),
-          })),
-        };
-      }
-
-      if (table === "vacation_grant_consumptions") {
-        return {
-          insert: vi.fn(() => ({
-            select: consumptionInsertSelectMock,
-          })),
-        };
-      }
-
       if (table === "vacations") {
         return {
-          update: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              select: vacationUpdateSelectMock,
-            })),
-          })),
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
               single: vacationSingleMock,
@@ -108,11 +64,6 @@ describe("UpdateVacations", () => {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
               single: userSingleMock,
-            })),
-          })),
-          update: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              select: vi.fn().mockResolvedValue({ error: null }),
             })),
           })),
         };
@@ -129,6 +80,7 @@ describe("UpdateVacations", () => {
         }),
       },
       from: fromMock,
+      rpc: rpcMock,
     });
 
     const updateVacations = (await import("@/actions/updateVacations")).default;
@@ -143,13 +95,21 @@ describe("UpdateVacations", () => {
     expect(result.success).toBe(true);
     expect(result.usedGrantBalance).toBe(true);
     expect(result.remainingGrantBalance).toBe(7);
+    expect(rpcMock).toHaveBeenCalledWith(
+      "approve_vacation_with_grants",
+      expect.objectContaining({
+        p_vacation_id: "123e4567-e89b-12d3-a456-426614174111",
+        p_user_id: "123e4567-e89b-12d3-a456-426614174000",
+        p_days: 3,
+        p_legacy_balance: 0,
+        p_allow_legacy_fallback: true,
+      }),
+    );
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin/users");
     expect(revalidatePathMock).toHaveBeenCalledWith("/vacaciones/123e4567-e89b-12d3-a456-426614174000");
   });
 
   it("hace fallback a num_vacations si no alcanza el saldo por grants", async () => {
-    const vacationUpdateSelectMock = vi.fn().mockResolvedValue({ error: null });
-    const userUpdateSelectMock = vi.fn().mockResolvedValue({ error: null });
     const vacationSingleMock = vi.fn().mockResolvedValue({
       data: { start: "2026-04-01", finish: "2026-04-03" },
       error: null,
@@ -158,45 +118,14 @@ describe("UpdateVacations", () => {
       data: { name: "Cesar Murillo" },
       error: null,
     });
-    const userUpdateMock = vi.fn(() => ({
-      eq: vi.fn(() => ({
-        select: userUpdateSelectMock,
-      })),
-    }));
+    const rpcMock = vi.fn().mockResolvedValue({
+      data: [{ used_grant_balance: false, remaining_balance: 7 }],
+      error: null,
+    });
 
     const fromMock = vi.fn((table: string) => {
-      if (table === "vacation_grants") {
-        return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              gt: vi.fn(() => ({
-                order: vi.fn(() => ({
-                  order: vi.fn().mockResolvedValue({
-                    data: [
-                      {
-                        id: "grant-1",
-                        granted_on: "2026-03-16",
-                        expires_on: "2028-03-16",
-                        days_remaining: 2,
-                      },
-                    ],
-                    error: null,
-                  }),
-                })),
-              })),
-            })),
-            single: vacationSingleMock,
-          })),
-        };
-      }
-
       if (table === "vacations") {
         return {
-          update: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              select: vacationUpdateSelectMock,
-            })),
-          })),
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
               single: vacationSingleMock,
@@ -212,15 +141,6 @@ describe("UpdateVacations", () => {
               single: userSingleMock,
             })),
           })),
-          update: userUpdateMock,
-        };
-      }
-
-      if (table === "vacation_grant_consumptions") {
-        return {
-          insert: vi.fn(() => ({
-            select: vi.fn().mockResolvedValue({ error: null }),
-          })),
         };
       }
 
@@ -235,6 +155,7 @@ describe("UpdateVacations", () => {
         }),
       },
       from: fromMock,
+      rpc: rpcMock,
     });
 
     const updateVacations = (await import("@/actions/updateVacations")).default;
@@ -248,6 +169,7 @@ describe("UpdateVacations", () => {
 
     expect(result.success).toBe(true);
     expect(result.usedGrantBalance).toBe(false);
-    expect(userUpdateMock).toHaveBeenCalled();
+    expect(result.remainingGrantBalance).toBeNull();
+    expect(rpcMock).toHaveBeenCalled();
   });
 });

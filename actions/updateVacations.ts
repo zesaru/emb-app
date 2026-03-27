@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache";
 import { requireCurrentUserAdmin } from "@/lib/auth/admin-check";
 import { sendOrCaptureEmail } from "@/lib/email/dev-email-outbox";
 import { positiveIntegerSchema, uuidSchema } from "@/lib/validation/schemas";
-import { buildVacationGrantConsumptionPlan } from "@/lib/vacations/grant-consumption";
 import { VacationApprovedUser } from "@/components/email/templates/vacation/vacation-approved-user";
 import { buildUrl, resolveEmailRecipients } from "@/components/email/utils/email-config";
 import { createClient } from "@/utils/supabase/server";
@@ -50,90 +49,41 @@ export default async function UpdateVacations(vacations: VacationInput) {
 
   const approvedBy = user.id;
   const approvedDateIso = new Date().toISOString();
-  const today = approvedDateIso.slice(0, 10);
 
   try {
-    const { data: grantRows, error: grantsError } = await supabase
-      .from("vacation_grants")
-      .select("id, granted_on, expires_on, days_remaining")
-      .eq("user_id", vacations.user_id)
-      .gt("days_remaining", 0)
-      .order("expires_on", { ascending: true })
-      .order("granted_on", { ascending: true });
+    const { data: approvalRows, error: approvalError } = await supabase.rpc(
+      "approve_vacation_with_grants",
+      {
+        p_vacation_id: vacations.id,
+        p_user_id: vacations.user_id,
+        p_days: vacations.days,
+        p_approved_by: approvedBy,
+        p_approved_at: approvedDateIso,
+        p_legacy_balance: vacations.num_vacations,
+        p_allow_legacy_fallback: true,
+      } as any,
+    );
 
-    if (grantsError) {
-      return { success: false, error: "Error al consultar grants de vacaciones" };
-    }
+    if (approvalError) {
+      const errorMessage = approvalError.message || "";
 
-    const grantPlan = buildVacationGrantConsumptionPlan((grantRows as any) ?? [], vacations.days, today);
-    const useGrantBalance = grantPlan.ok;
-
-    if (!useGrantBalance && vacations.num_vacations < vacations.days) {
-      return { success: false, error: "Usuario no tiene suficientes días de vacaciones" };
-    }
-
-    const { error: updateError } = await supabase
-      .from("vacations")
-      .update({
-        approved_date: approvedDateIso,
-        approvedby: approvedBy,
-        approve_request: true,
-      })
-      .eq("id", vacations.id)
-      .select();
-
-    if (updateError) {
-      return { success: false, error: "Error al actualizar el registro" };
-    }
-
-    let newVacationBalance = vacations.num_vacations - vacations.days;
-
-    if (useGrantBalance) {
-      for (const allocation of grantPlan.allocations) {
-        const { error: grantUpdateError } = await supabase
-          .from("vacation_grants")
-          .update({
-            days_remaining: allocation.resultingDaysRemaining,
-          })
-          .eq("id", allocation.grantId)
-          .eq("user_id", vacations.user_id)
-          .select();
-
-        if (grantUpdateError) {
-          return { success: false, error: "Error al descontar saldo del grant" };
-        }
+      if (
+        errorMessage.includes("INSUFFICIENT_GRANT_BALANCE") ||
+        errorMessage.includes("INSUFFICIENT_LEGACY_BALANCE")
+      ) {
+        return { success: false, error: "Usuario no tiene suficientes días de vacaciones" };
       }
 
-      const { error: consumptionInsertError } = await supabase
-        .from("vacation_grant_consumptions")
-        .insert(
-          grantPlan.allocations.map((allocation) => ({
-            vacation_id: vacations.id,
-            grant_id: allocation.grantId,
-            user_id: vacations.user_id,
-            days_used: allocation.daysUsed,
-          })) as any
-        )
-        .select();
-
-      if (consumptionInsertError) {
-        return { success: false, error: "Error al registrar consumo de grants" };
+      if (errorMessage.includes("VACATION_ALREADY_CONSUMED")) {
+        return { success: false, error: "La vacación ya fue procesada previamente" };
       }
 
-      newVacationBalance = grantPlan.remainingBalance;
-    } else {
-      const { error: userUpdateError } = await supabase
-        .from("users")
-        .update({
-          num_vacations: newVacationBalance,
-        })
-        .eq("id", vacations.user_id)
-        .select();
-
-      if (userUpdateError) {
-        return { success: false, error: "Error al actualizar días del usuario" };
-      }
+      return { success: false, error: "Error al aprobar y consumir saldo de vacaciones" };
     }
+
+    const approval = Array.isArray(approvalRows) ? approvalRows[0] : approvalRows;
+    const useGrantBalance = Boolean(approval?.used_grant_balance);
+    const newVacationBalance = Number(approval?.remaining_balance ?? (vacations.num_vacations - vacations.days));
 
     try {
       const { data: vacationData } = await supabase
