@@ -28,7 +28,11 @@ export async function listAdminUsers(filters: Filters = {}) {
     let rows = (data || []).map((row) => normalizeUserRow(row as any));
 
     const activeUserIds = rows.map((row) => row.id);
-    const latestGrantByUserId = new Map<string, string>();
+    const latestGrantByUserId = new Map<string, {
+      grantedOn: string;
+      ruleType: "standard" | "proportional" | "manual" | null;
+      notes: string | null;
+    }>();
 
     if (activeUserIds.length > 0) {
       const { data: grants, error: grantsError } = await supabase
@@ -42,7 +46,11 @@ export async function listAdminUsers(filters: Filters = {}) {
       } else {
         for (const grant of grants || []) {
           if (!latestGrantByUserId.has(grant.user_id)) {
-            latestGrantByUserId.set(grant.user_id, grant.granted_on);
+            latestGrantByUserId.set(grant.user_id, {
+              grantedOn: grant.granted_on,
+              ruleType: grant.rule_type ?? null,
+              notes: grant.notes ?? null,
+            });
           }
         }
       }

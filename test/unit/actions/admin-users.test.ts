@@ -5,6 +5,7 @@ const revalidatePathMock = vi.fn();
 const requireAdminContextMock = vi.fn();
 const getUserByIdMock = vi.fn();
 const countActiveAdminsMock = vi.fn();
+const consoleErrorMock = vi.spyOn(console, "error").mockImplementation(() => {});
 
 vi.mock("next/cache", () => ({
   revalidatePath: (...args: any[]) => revalidatePathMock(...args),
@@ -19,6 +20,10 @@ vi.mock("@/actions/admin/users/shared", () => ({
 describe("Admin Users Actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    consoleErrorMock.mockRestore();
   });
 
   describe("deactivateAdminUser", () => {
@@ -166,6 +171,77 @@ describe("Admin Users Actions", () => {
       expect(updateMock).toHaveBeenCalled();
       expect(eqMock).toHaveBeenCalledWith("id", "66666666-6666-4666-8666-666666666666");
       expect(revalidatePathMock).toHaveBeenCalledWith("/admin/users");
+    });
+  });
+
+  describe("listAdminUsers", () => {
+    it("ignora grants manuales de cutover al calcular proximo grant", async () => {
+      const orderUsersMock = vi.fn().mockResolvedValue({
+        data: [
+          {
+            id: "user-1",
+            email: "auemise@embperujapan.org",
+            name: "Akiko Uemise",
+            role: "user",
+            admin: null,
+            is_active: true,
+            hire_date: "2013-04-01",
+            grant_mode: null,
+            manual_next_grant_date: null,
+            num_vacations: 29,
+            num_compensatorys: 4,
+            created_at: "2026-01-01T00:00:00.000Z",
+          },
+        ],
+        error: null,
+      });
+
+      const grantsOrderMock = vi.fn().mockResolvedValue({
+        data: [
+          {
+            user_id: "user-1",
+            granted_on: "2026-04-01",
+            rule_type: "manual",
+            notes: "[cutover:2026-04-01] Initial manual grant from legacy num_vacations",
+          },
+        ],
+        error: null,
+      });
+
+      const fromMock = vi.fn((table: string) => {
+        if (table === "users") {
+          return {
+            select: vi.fn(() => ({
+              order: orderUsersMock,
+            })),
+          };
+        }
+
+        if (table === "vacation_grants") {
+          return {
+            select: vi.fn(() => ({
+              in: vi.fn(() => ({
+                order: grantsOrderMock,
+              })),
+            })),
+          };
+        }
+
+        throw new Error(`Unexpected table ${table}`);
+      });
+
+      requireAdminContextMock.mockResolvedValue({
+        adminUserId: "admin-1",
+        supabase: { from: fromMock },
+      });
+
+      const { default: listAdminUsers } = await import("@/actions/admin/users/list-users");
+      const result = await listAdminUsers();
+
+      expect(result.success).toBe(true);
+      if (!result.success) return;
+
+      expect(result.data[0]?.nextExpectedGrantDate).toBe("2026-10-01");
     });
   });
 });
