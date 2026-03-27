@@ -55,6 +55,7 @@ const TABLE_SCHEMAS: Record<string, TableSchema> = {
       { name: 'weekly_hours', type: 'numeric', nullable: true },
       { name: 'attendance_eligible', type: 'boolean', nullable: true },
       { name: 'grant_mode', type: 'text', nullable: true },
+      { name: 'manual_next_grant_date', type: 'date', nullable: true },
       { name: 'num_vacations', type: 'integer', nullable: true },
       { name: 'num_compensatorys', type: 'integer', nullable: true },
       { name: 'admin', type: 'text', nullable: true },

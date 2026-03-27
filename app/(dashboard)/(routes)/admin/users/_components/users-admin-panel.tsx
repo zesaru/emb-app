@@ -73,6 +73,7 @@ const emptyCreateForm = {
   weeklyHours: "",
   attendanceEligible: "pending" as "pending" | "eligible" | "ineligible",
   grantMode: "automatic" as "automatic" | "manual",
+  manualNextGrantDate: "",
   numVacations: "0",
   numCompensatorys: "0",
 };
@@ -218,6 +219,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
         weeklyHours: createForm.weeklyHours === "" ? null : Number(createForm.weeklyHours),
         attendanceEligible: attendanceFormToValue(createForm.attendanceEligible),
         grantMode: createForm.grantMode,
+        manualNextGrantDate: createForm.manualNextGrantDate || null,
         numVacations: Number(createForm.numVacations || "0"),
         numCompensatorys: Number(createForm.numCompensatorys || "0"),
       });
@@ -249,6 +251,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     const weeklyHoursValue = String(form.get("weeklyHours") || "");
     const attendanceEligible = attendanceFormToValue(String(form.get("attendanceEligible") || "pending"));
     const grantMode = String(form.get("grantMode") || "automatic") as "automatic" | "manual";
+    const manualNextGrantDate = String(form.get("manualNextGrantDate") || "");
     const numVacations = Number(form.get("numVacations") || "0");
     const numCompensatorys = Number(form.get("numCompensatorys") || "0");
 
@@ -264,6 +267,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
         weeklyHours: weeklyHoursValue === "" ? null : Number(weeklyHoursValue),
         attendanceEligible,
         grantMode,
+        manualNextGrantDate: manualNextGrantDate || null,
         numVacations,
         numCompensatorys,
       });
@@ -536,7 +540,13 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                     {user.attendanceEligible == null ? "Pendiente" : user.attendanceEligible ? "Elegible" : "No elegible"}
                   </Badge>
                 </TableCell>
-                <TableCell>{user.grantMode === "manual" ? "Manual" : formatAdminDate(user.nextExpectedGrantDate)}</TableCell>
+                <TableCell>
+                  {user.grantMode === "manual"
+                    ? user.nextExpectedGrantDate
+                      ? `Manual (${formatAdminDate(user.nextExpectedGrantDate)})`
+                      : "Manual"
+                    : formatAdminDate(user.nextExpectedGrantDate)}
+                </TableCell>
                 <TableCell>{user.numVacations}</TableCell>
                 <TableCell>{user.numCompensatorys}</TableCell>
                 <TableCell>{formatAdminDate(user.hireDate || user.createdAt)}</TableCell>
@@ -647,6 +657,12 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
               <option value="automatic">Grant automático</option>
               <option value="manual">Grant manual</option>
             </select>
+            <Input
+              type="date"
+              value={createForm.manualNextGrantDate}
+              onChange={(e) => setCreateForm((prev) => ({ ...prev, manualNextGrantDate: e.target.value }))}
+              placeholder="Próximo grant manual"
+            />
             <div className="grid grid-cols-2 gap-3">
               <select
                 className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -756,6 +772,12 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                 <option value="automatic">Grant automático</option>
                 <option value="manual">Grant manual</option>
               </select>
+              <Input
+                name="manualNextGrantDate"
+                type="date"
+                defaultValue={editingUser.manualNextGrantDate ?? ""}
+                placeholder="Próximo grant manual"
+              />
               <label className="flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm">
                 <input
                   name="isDiplomatic"

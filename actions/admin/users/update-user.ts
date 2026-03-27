@@ -17,6 +17,7 @@ type UpdateAdminUserInput = {
   weeklyHours?: number | null;
   attendanceEligible?: boolean | null;
   grantMode?: "automatic" | "manual";
+  manualNextGrantDate?: string | null;
   numVacations?: number;
   numCompensatorys?: number;
 };
@@ -48,6 +49,7 @@ export async function updateAdminUser(input: UpdateAdminUserInput) {
       weeklyHours: data.weeklyHours,
       attendanceEligible: data.attendanceEligible,
       grantMode: data.grantMode,
+      manualNextGrantDate: data.manualNextGrantDate ?? null,
       numVacations: data.numVacations,
       numCompensatorys: data.numCompensatorys,
     });

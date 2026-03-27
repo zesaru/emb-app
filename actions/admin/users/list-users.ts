@@ -54,9 +54,11 @@ export async function listAdminUsers(filters: Filters = {}) {
       ...row,
       nextExpectedGrantDate: row.hireDate
         ? row.grantMode === "manual"
-          ? null
+          ? row.manualNextGrantDate
           : resolveJapanNextExpectedGrantDate(row.hireDate, latestGrantByUserId.get(row.id) ?? null, today)
-        : null,
+        : row.grantMode === "manual"
+          ? row.manualNextGrantDate
+          : null,
     }));
 
     if (parsed.search) {

@@ -189,6 +189,7 @@ export const adminUserCreateSchema = z.object({
   weeklyHours: weeklyHoursSchema.nullable().optional(),
   attendanceEligible: z.boolean().nullable().optional(),
   grantMode: userGrantModeSchema.optional().default("automatic"),
+  manualNextGrantDate: dateSchema.nullable().optional(),
   numVacations: nonNegativeIntegerSchema.optional().default(0),
   numCompensatorys: nonNegativeIntegerSchema.optional().default(0),
 }).superRefine((data, ctx) => {
@@ -212,6 +213,7 @@ export const adminUserUpdateSchema = z.object({
   weeklyHours: weeklyHoursSchema.nullable().optional(),
   attendanceEligible: z.boolean().nullable().optional(),
   grantMode: userGrantModeSchema.optional(),
+  manualNextGrantDate: dateSchema.nullable().optional(),
   numVacations: nonNegativeIntegerSchema.optional(),
   numCompensatorys: nonNegativeIntegerSchema.optional(),
 });

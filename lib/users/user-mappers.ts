@@ -15,6 +15,7 @@ type RawUserRow = {
   weekly_hours?: string | number | null;
   attendance_eligible?: boolean | string | null;
   grant_mode?: string | null;
+  manual_next_grant_date?: string | null;
 };
 
 export type UserGrantMode = "automatic" | "manual";
@@ -34,6 +35,7 @@ export type AdminUserListItem = {
   weeklyHours: number | null;
   attendanceEligible: boolean | null;
   grantMode: UserGrantMode;
+  manualNextGrantDate: string | null;
   nextExpectedGrantDate: string | null;
   numVacations: number;
   numCompensatorys: number;
@@ -107,6 +109,7 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     weeklyHours: parseNullableNumberLike(row.weekly_hours),
     attendanceEligible: parseNullableBooleanLike(row.attendance_eligible),
     grantMode: parseGrantMode(row.grant_mode),
+    manualNextGrantDate: row.manual_next_grant_date ?? null,
     nextExpectedGrantDate: null,
     numVacations: parseNumberLike(row.num_vacations),
     numCompensatorys: parseNumberLike(row.num_compensatorys),
@@ -124,6 +127,7 @@ export function toUsersTableUpdate(input: {
   weeklyHours?: number | null;
   attendanceEligible?: boolean | null;
   grantMode?: UserGrantMode;
+  manualNextGrantDate?: string | null;
   numVacations?: number;
   numCompensatorys?: number;
 }) {
@@ -144,6 +148,7 @@ export function toUsersTableUpdate(input: {
   if (input.weeklyHours !== undefined) payload.weekly_hours = input.weeklyHours;
   if (input.attendanceEligible !== undefined) payload.attendance_eligible = input.attendanceEligible;
   if (input.grantMode !== undefined) payload.grant_mode = input.grantMode;
+  if (input.manualNextGrantDate !== undefined) payload.manual_next_grant_date = input.manualNextGrantDate;
   if (input.numVacations !== undefined) payload.num_vacations = input.numVacations;
   if (input.numCompensatorys !== undefined) payload.num_compensatorys = input.numCompensatorys;
 

@@ -18,6 +18,7 @@ describe("normalizeUserRow", () => {
       weekly_hours: "40",
       attendance_eligible: "true",
       grant_mode: "manual",
+      manual_next_grant_date: "2026-08-31",
     });
 
     expect(result.isActive).toBe(false);
@@ -27,6 +28,7 @@ describe("normalizeUserRow", () => {
     expect(result.weeklyHours).toBe(40);
     expect(result.attendanceEligible).toBe(true);
     expect(result.grantMode).toBe("manual");
+    expect(result.manualNextGrantDate).toBe("2026-08-31");
     expect(result.nextExpectedGrantDate).toBeNull();
     expect(result.role).toBe("user");
   });
@@ -53,6 +55,7 @@ describe("toUsersTableUpdate", () => {
       weeklyHours: 40,
       attendanceEligible: null,
       grantMode: "manual",
+      manualNextGrantDate: "2026-08-31",
       numVacations: 5,
       numCompensatorys: 2,
     });
@@ -65,6 +68,7 @@ describe("toUsersTableUpdate", () => {
       weekly_hours: 40,
       attendance_eligible: null,
       grant_mode: "manual",
+      manual_next_grant_date: "2026-08-31",
       num_vacations: 5,
       num_compensatorys: 2,
     });
