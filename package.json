@@ -4,6 +4,8 @@
     "node": "24.x"
   },
   "scripts": {
+    "env:dev": "powershell -Command \"Copy-Item .env.dev.local .env.local -Force\"",
+    "env:staging": "powershell -Command \"Copy-Item .env.staging.local .env.local -Force\"",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
