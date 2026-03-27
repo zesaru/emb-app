@@ -3,7 +3,6 @@
  */
 
 import { test, expect } from '@playwright/test'
-import { login } from '../helpers'
 
 test.describe('Autenticación', () => {
   test('redirige a login si no está autenticado', async ({ page }) => {
@@ -17,10 +16,9 @@ test.describe('Autenticación', () => {
 
     await page.fill('input[placeholder*="example"]', 'invalid@test.com')
     await page.fill('input[type="password"]', 'wrongpassword')
-    await page.click('button:has-text("Sign In")')
+    await page.click('button:has-text("Ingresar")')
 
-    // Verificar que se muestra algún mensaje de error
-    await expect(page.locator('body')).toBeVisible()
+    await expect(page.locator('text=No se pudo autenticar al usuario.')).toBeVisible()
   })
 
   test('login exitoso redirige al dashboard', async ({ page }) => {
@@ -32,7 +30,7 @@ test.describe('Autenticación', () => {
 
     await page.fill('input[placeholder*="example"]', email)
     await page.fill('input[type="password"]', password)
-    await page.click('button:has-text("Sign In")')
+    await page.click('button:has-text("Ingresar")')
 
     // Esperar redirección al dashboard
     await page.waitForLoadState('networkidle', { timeout: 15000 })
@@ -47,7 +45,7 @@ test.describe('Autenticación', () => {
 
     await page.fill('input[placeholder*="example"]', email)
     await page.fill('input[type="password"]', password)
-    await page.click('button:has-text("Sign In")')
+    await page.click('button:has-text("Ingresar")')
 
     await page.waitForLoadState('networkidle', { timeout: 15000 })
 
