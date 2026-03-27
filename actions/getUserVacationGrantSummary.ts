@@ -37,7 +37,7 @@ const getUserVacationGrantSummary = async (userId: string): Promise<UserVacation
 
   const { data: grants, error: grantsError } = await supabase
     .from("vacation_grants")
-    .select("granted_on, expires_on, days_granted, days_remaining")
+    .select("granted_on, expires_on, days_granted, days_remaining, rule_type, notes")
     .eq("user_id", userId)
     .order("granted_on", { ascending: false });
 
@@ -54,7 +54,17 @@ const getUserVacationGrantSummary = async (userId: string): Promise<UserVacation
     nextExpectedGrantDate: userRow.hire_date
       ? userRow.grant_mode === "manual"
         ? null
-        : resolveJapanNextExpectedGrantDate(userRow.hire_date, latestGrant?.granted_on ?? null, today)
+        : resolveJapanNextExpectedGrantDate(
+          userRow.hire_date,
+          latestGrant
+            ? {
+                grantedOn: latestGrant.granted_on,
+                ruleType: (latestGrant as any).rule_type ?? null,
+                notes: (latestGrant as any).notes ?? null,
+              }
+            : null,
+          today,
+        )
       : null,
   };
 };

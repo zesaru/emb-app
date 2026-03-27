@@ -11,6 +11,14 @@ export const JAPAN_SERVICE_BANDS = [
 export type JapanServiceBand = typeof JAPAN_SERVICE_BANDS[number];
 export type JapanVacationRuleType = "standard" | "proportional" | "manual";
 
+type NextExpectedGrantInput =
+  | {
+      grantedOn: string;
+      ruleType?: JapanVacationRuleType | null;
+      notes?: string | null;
+    }
+  | string;
+
 type GrantDraftInput = {
   userId: string;
   hireDate: string;
@@ -155,15 +163,34 @@ export function resolveJapanUpcomingGrantDate(hireDate: string, latestGrantedOn?
   return getJapanNextGrantDate(hireDate, latestGrantedOn);
 }
 
+function isCutoverManualGrant(grant?: {
+  grantedOn: string;
+  ruleType?: JapanVacationRuleType | null;
+  notes?: string | null;
+} | null) {
+  if (!grant) return false;
+
+  return grant.ruleType === "manual" && (grant.notes ?? "").startsWith("[cutover:");
+}
+
 export function resolveJapanNextExpectedGrantDate(
   hireDate: string,
-  latestGrantedOn?: string | null,
+  latestGrant?: NextExpectedGrantInput | null,
   referenceDate?: string | null,
 ) {
   const firstGrantDate = parseIsoDate(formatIsoDate(addUtcMonths(parseIsoDate(hireDate), 6)));
 
-  if (latestGrantedOn) {
-    return getJapanNextGrantDate(hireDate, latestGrantedOn);
+  const normalizedGrant =
+    typeof latestGrant === "string"
+      ? {
+          grantedOn: latestGrant,
+          ruleType: null,
+          notes: null,
+        }
+      : latestGrant ?? null;
+
+  if (normalizedGrant && !isCutoverManualGrant(normalizedGrant)) {
+    return getJapanNextGrantDate(hireDate, normalizedGrant.grantedOn);
   }
 
   const reference = referenceDate ? parseIsoDate(referenceDate) : new Date();

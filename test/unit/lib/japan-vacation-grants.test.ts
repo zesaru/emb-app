@@ -173,4 +173,20 @@ describe("resolveJapanNextExpectedGrantDate", () => {
   it("mantiene el siguiente grant desde el ultimo grant emitido", () => {
     expect(resolveJapanNextExpectedGrantDate("2025-09-16", "2026-03-16", "2026-03-26")).toBe("2027-03-16");
   });
+
+  it("ignora grants manuales de cutover como ancla de la cadencia futura", () => {
+    expect(resolveJapanNextExpectedGrantDate("2013-04-01", {
+      grantedOn: "2026-04-01",
+      ruleType: "manual",
+      notes: "[cutover:2026-04-01] Initial manual grant from legacy num_vacations",
+    }, "2026-03-26")).toBe("2026-10-01");
+  });
+
+  it("mantiene la cadencia desde grants manuales no marcados como cutover", () => {
+    expect(resolveJapanNextExpectedGrantDate("2025-09-16", {
+      grantedOn: "2026-03-16",
+      ruleType: "manual",
+      notes: "Ajuste manual validado por administracion",
+    }, "2026-03-26")).toBe("2027-03-16");
+  });
 });

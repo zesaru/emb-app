@@ -33,7 +33,7 @@ export async function listAdminUsers(filters: Filters = {}) {
     if (activeUserIds.length > 0) {
       const { data: grants, error: grantsError } = await supabase
         .from("vacation_grants")
-        .select("user_id, granted_on")
+        .select("user_id, granted_on, rule_type, notes")
         .in("user_id", activeUserIds)
         .order("granted_on", { ascending: false });
 
