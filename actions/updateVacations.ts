@@ -65,6 +65,7 @@ export default async function UpdateVacations(vacations: VacationInput) {
     );
 
     if (approvalError) {
+      console.error("approve_vacation_with_grants failed:", approvalError);
       const errorMessage = approvalError.message || "";
 
       if (

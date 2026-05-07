@@ -62,7 +62,7 @@ export default async function List() {
   const totalUsers = users.length;
 
   const totalVacationDays = users.reduce(
-    (sum, user) => sum + Number(user.num_vacations ?? 0),
+    (sum, user) => sum + Number(user.vacation_balance_real ?? 0),
     0
   );
   const totalCompHours = users.reduce(
@@ -70,7 +70,7 @@ export default async function List() {
     0
   );
   const lowBalanceUsers = users.filter(
-    (user) => Number(user.num_vacations ?? 0) <= 7
+    (user) => Number(user.vacation_balance_real ?? 0) <= 7
   ).length;
 
   return (
@@ -221,7 +221,7 @@ export default async function List() {
 
               <tbody>
                 {users.map((user, index) => {
-                  const vacationDays = Number(user.num_vacations ?? 0);
+                  const vacationDays = Number(user.vacation_balance_real ?? 0);
                   const compensatoryHours = Number(user.num_compensatorys ?? 0);
                   const vacationStatus = getVacationStatus(vacationDays);
                   const isEven = index % 2 === 0;

@@ -44,10 +44,9 @@ begin
 
   if v_available_grant_balance >= v_requested_days then
     update public.vacations
-    set approved = true,
-        approved_by = p_approved_by,
+    set approve_request = true,
+        approvedby = p_approved_by,
         approved_date = p_approved_at,
-        updated_at = now()
     where id = p_vacation_id;
 
     v_remaining_days := v_requested_days;
@@ -91,15 +90,13 @@ begin
 
   if p_allow_legacy_fallback and v_legacy_balance >= v_requested_days then
     update public.vacations
-    set approved = true,
-        approved_by = p_approved_by,
+    set approve_request = true,
+        approvedby = p_approved_by,
         approved_date = p_approved_at,
-        updated_at = now()
     where id = p_vacation_id;
 
     update public.users
-    set num_vacations = greatest(coalesce(num_vacations, 0) - v_requested_days, 0),
-        updated_at = now()
+    set num_vacations = greatest(coalesce(num_vacations, 0) - v_requested_days, 0)
     where id = p_user_id;
 
     return query
