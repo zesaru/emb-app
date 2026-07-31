@@ -25,11 +25,11 @@ export default async function Approvec({ params }: { params: Promise<{ id: strin
           Compensatorios / Detalle
         </div>
         <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-          compensatory?.[0]?.final_approve_request === "true" || compensatory?.[0]?.approve_request === "true"
+          compensatory?.[0]?.final_approve_request || compensatory?.[0]?.approve_request
             ? "bg-green-100 text-green-700"
             : "bg-gray-100 text-gray-700"
         }`}>
-          {compensatory?.[0]?.final_approve_request === "true" || compensatory?.[0]?.approve_request === "true"
+          {compensatory?.[0]?.final_approve_request || compensatory?.[0]?.approve_request
             ? "Aprobado"
             : "Pendiente"}
         </div>

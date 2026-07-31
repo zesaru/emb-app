@@ -2,6 +2,11 @@
 
 import { ColumnDef } from "@tanstack/react-table"
 import { VacationsWithUser } from '@/types/collections';
+import { CancelRequestButton } from "@/app/(dashboard)/_components/cancel-request-button";
+
+function isCancelled(row: VacationsWithUser) {
+  return Boolean((row as { cancelled_at?: string | null }).cancelled_at);
+}
 
 export const columns: ColumnDef<VacationsWithUser>[] = [
   {
@@ -24,7 +29,7 @@ export const columns: ColumnDef<VacationsWithUser>[] = [
       const start = row.original.start as string | null;
       const finish = row.original.finish as string | null;
 
-      let description = period;
+      let description: string | number | null = period;
       if (!description && start && finish) {
         const startDate = new Date(start).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
         const finishDate = new Date(finish).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -53,6 +58,13 @@ export const columns: ColumnDef<VacationsWithUser>[] = [
     accessorKey: "approve_request",
     header: "Estado",
     cell: ({ row }) => {
+      if (isCancelled(row.original)) {
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">
+            Cancelada
+          </span>
+        );
+      }
       const approved = row.getValue("approve_request");
       if (approved) {
         return (
@@ -85,7 +97,7 @@ export const columns: ColumnDef<VacationsWithUser>[] = [
       let approvedDaysSoFar = 0;
       for (let i = 0; i <= rowIndex; i++) {
         const r = rows[i];
-        if (r.original.approve_request) {
+        if (r.original.approve_request && !isCancelled(r.original)) {
           approvedDaysSoFar += Number(r.original.days ?? 0);
         }
       }
@@ -101,5 +113,17 @@ export const columns: ColumnDef<VacationsWithUser>[] = [
         </div>
       );
     },
+  },
+  {
+    id: "accion",
+    header: "Acción",
+    cell: ({ row }) => (
+      <CancelRequestButton
+        requestId={row.original.id ?? ""}
+        ownerId={row.original.id_user ?? ""}
+        isPending={!row.original.approve_request && !isCancelled(row.original)}
+        resource="vacation"
+      />
+    ),
   },
 ]

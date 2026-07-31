@@ -3,6 +3,15 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { CompensatorysWithUser } from '@/types/collections';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { CancelRequestButton } from "@/app/(dashboard)/_components/cancel-request-button";
+
+function isCancelled(row: CompensatorysWithUser) {
+  return Boolean((row as { cancelled_at?: string | null }).cancelled_at);
+}
+
+function isApproved(row: CompensatorysWithUser) {
+  return Boolean(row.approve_request) || Boolean(row.final_approve_request);
+}
 
 export const columns: ColumnDef<CompensatorysWithUser>[] = [
   {
@@ -39,6 +48,31 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
       }
 
       return <div className="text-gray-800">{description}</div>;
+    },
+  },
+  {
+    id: "estado",
+    header: "Estado",
+    cell: ({ row }) => {
+      if (isCancelled(row.original)) {
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">
+            Cancelada
+          </span>
+        );
+      }
+      if (isApproved(row.original)) {
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            Aprobado
+          </span>
+        );
+      }
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          Pendiente
+        </span>
+      );
     },
   },
   {
@@ -88,10 +122,14 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
       const { rows } = table.getRowModel();
       const rowIndex = rows.findIndex(r => r.id === row.id);
 
-      // Calcular saldo acumulado hasta esta fila
+      // Solo las filas ya aprobadas afectan el saldo real; las pendientes
+      // o canceladas todavía no impactan num_compensatorys del usuario.
       let balance = 0;
       for (let i = 0; i <= rowIndex; i++) {
         const r = rows[i];
+        if (!isApproved(r.original) || isCancelled(r.original)) {
+          continue;
+        }
         const entrada = Number(r.original.hours ?? 0);
         const salida = Number(r.original.compensated_hours ?? 0);
         balance += entrada - salida;
@@ -105,5 +143,17 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
         </div>
       );
     },
+  },
+  {
+    id: "accion",
+    header: "Acción",
+    cell: ({ row }) => (
+      <CancelRequestButton
+        requestId={row.original.id ?? ""}
+        ownerId={row.original.user_id ?? ""}
+        isPending={!isApproved(row.original) && !isCancelled(row.original)}
+        resource="compensatorio"
+      />
+    ),
   },
 ]
