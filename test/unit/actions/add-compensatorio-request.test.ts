@@ -17,14 +17,7 @@ vi.mock("next/cache", () => ({
   revalidatePath: vi.fn(),
 }));
 
-vi.mock("resend", () => ({
-  Resend: class {
-    emails = { send: sendEmailMock };
-  },
-}));
-
 vi.mock("@/components/email/utils/email-config", () => ({
-  getFromEmail: vi.fn(() => "EMB <noreply@example.com>"),
   buildUrl: vi.fn((path: string) => `http://localhost:3003${path}`),
   isEmailDeliveryEnabled: vi.fn(() => true),
   resolveEmailRecipients: (...args: any[]) => resolveEmailRecipientsMock(...args),
@@ -51,7 +44,7 @@ describe("add-compensatorio-request", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    sendEmailMock.mockResolvedValue({ id: "mail-1" });
+    sendEmailMock.mockResolvedValue({ data: null, error: null });
     resolveEmailRecipientsMock.mockImplementation((recipients: string | string[]) => recipients);
   });
 
@@ -104,6 +97,7 @@ describe("add-compensatorio-request", () => {
       },
       rpc: rpcMock,
       from: buildUsersFromMock(),
+      functions: { invoke: sendEmailMock },
     } as any);
 
     const action = (await import("@/actions/add-compensatorio-request")).default;
@@ -144,6 +138,7 @@ describe("add-compensatorio-request", () => {
       },
       rpc: rpcMock,
       from: buildUsersFromMock(),
+      functions: { invoke: sendEmailMock },
     } as any);
 
     const action = (await import("@/actions/add-compensatorio-request")).default;
@@ -160,8 +155,11 @@ describe("add-compensatorio-request", () => {
       "cmurillo@embperujapan.org",
     );
     expect(sendEmailMock).toHaveBeenCalledWith(
+      "send-email",
       expect.objectContaining({
-        to: ["cmurillo@embperujapan.org", "sistema@embperujapan.org"],
+        body: expect.objectContaining({
+          to: ["cmurillo@embperujapan.org", "sistema@embperujapan.org"],
+        }),
       }),
     );
   });
@@ -229,6 +227,7 @@ describe("add-compensatorio-request", () => {
       },
       rpc: rpcMock,
       from: buildUsersFromMock(),
+      functions: { invoke: sendEmailMock },
     } as any);
 
     const action = (await import("@/actions/add-compensatorio-request")).default;

@@ -84,9 +84,10 @@ Agregar `export const dynamic = 'force-dynamic'` a Server Components/Actions que
 - **State Management**: Zustand con middleware persist (`store/index.ts`) para datos de sesión de usuario
 
 ### Integración de Email
-- Resend para entrega de emails
-- Plantillas React Email en `components/email-template.tsx`
-- Endpoint de envío: `app/api/send/route.ts`
+- Microsoft 365 (Graph API) para entrega de emails, vía una Supabase Edge Function (`supabase/functions/send-email`) que hace el envío real usando client credentials (app-only auth) contra el buzón configurado en `M365_SENDER`
+- Todo el envío de la app pasa por `sendOrCaptureEmail()` en `lib/email/dev-email-outbox.ts`: en dev/staging captura el correo en la tabla `dev_email_outbox` (visible en `/admin/dev-emails`) sin enviarlo; en producción invoca la Edge Function
+- Plantillas React Email en `components/email/templates/`, renderizadas a HTML server-side antes de invocar la función
+- Endpoint de prueba: `app/api/send/route.ts` (solo admin)
 
 ### Alias de Rutas
 - `@/*` mapea a la raíz del proyecto (definido en `tsconfig.json`)
@@ -111,5 +112,6 @@ Requeridas en `.env.local`:
 ```
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
-RESEND_API_KEY
+SUPABASE_INTERNAL_FUNCTION_SECRET
 ```
+La Edge Function `send-email` requiere además, como secrets de Supabase (no de Next.js): `M365_TENANT_ID`, `M365_CLIENT_ID`, `M365_CLIENT_SECRET`, `M365_SENDER`, `INTERNAL_FUNCTION_SECRET` (mismo valor que `SUPABASE_INTERNAL_FUNCTION_SECRET`).

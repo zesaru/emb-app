@@ -1,9 +1,8 @@
 import React from "react";
 import { render } from "@react-email/render";
-import { Resend } from "resend";
 
 import { createClient } from "@/utils/supabase/server";
-import { getFromEmail, isEmailDeliveryEnabled } from "@/components/email/utils/email-config";
+import { isEmailDeliveryEnabled } from "@/components/email/utils/email-config";
 
 type SendOrCaptureEmailInput = {
   to: string | string[];
@@ -68,8 +67,7 @@ async function persistCapturedEmail(input: {
 }
 
 export async function sendOrCaptureEmail(input: SendOrCaptureEmailInput) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  const from = getFromEmail();
+  const from = process.env.M365_SENDER || "sistema@embperujapan.org";
   const recipients = normalizeRecipients(input.to);
   const html = await render(input.react);
   const deliveryEnabled = isEmailDeliveryEnabled();
@@ -97,12 +95,15 @@ export async function sendOrCaptureEmail(input: SendOrCaptureEmailInput) {
     return { success: true as const, deliveryMode };
   }
 
-  await resend.emails.send({
-    from,
-    to: recipients.length <= 1 ? recipients[0] || "" : recipients,
-    subject: input.subject,
-    react: input.react,
+  const supabase = await createClient();
+  const { error } = await supabase.functions.invoke("send-email", {
+    body: { to: recipients, subject: input.subject, html },
+    headers: { "x-internal-token": process.env.SUPABASE_INTERNAL_FUNCTION_SECRET || "" },
   });
+
+  if (error) {
+    throw new Error(`Email send failed: ${error.message}`);
+  }
 
   return { success: true as const, deliveryMode };
 }

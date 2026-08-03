@@ -3,18 +3,6 @@
  */
 
 export const config = {
-  // Sender information
-  from: {
-    name: 'EMB - Embajada del Perú en Japón',
-    email: 'noreply@embassyofperuinjapan.org',
-  },
-
-  // Fallback sender (for testing or if domain not verified)
-  fromFallback: {
-    name: 'EMB',
-    email: 'team@peruinjapan.com',
-  },
-
   // URLs
   urls: {
     baseUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://emb-app.vercel.app',
@@ -37,19 +25,6 @@ export const config = {
     locale: 'es',
   },
 };
-
-/**
- * Get the from email address
- * Uses the verified domain if available, otherwise falls back to test domain
- */
-export function getFromEmail() {
-  // Use fallback if RESEND_API_KEY is in test mode
-  if (process.env.RESEND_API_KEY?.startsWith('re_')) {
-    return `${config.fromFallback.name} <${config.fromFallback.email}>`;
-  }
-
-  return `${config.from.name} <${config.from.email}>`;
-}
 
 export function getSystemEmail(): string {
   return process.env.EMBPERUJAPAN_EMAIL || 'sistema@embperujapan.org';

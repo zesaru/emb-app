@@ -20,16 +20,7 @@ vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }))
 
-vi.mock('resend', () => ({
-  Resend: class {
-    emails = {
-      send: sendEmailMock,
-    }
-  },
-}))
-
 vi.mock('@/components/email/utils/email-config', () => ({
-  getFromEmail: vi.fn(() => 'EMB <noreply@example.com>'),
   buildUrl: vi.fn((path: string) => `https://emb-app.vercel.app${path}`),
   getSystemEmail: vi.fn(() => 'sistema@embperujapan.org'),
   isEmailDeliveryEnabled: vi.fn(() => true),
@@ -39,7 +30,7 @@ vi.mock('@/components/email/utils/email-config', () => ({
 describe('addVacation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    sendEmailMock.mockResolvedValue({ id: 'mail-1' })
+    sendEmailMock.mockResolvedValue({ data: null, error: null })
     resolveEmailRecipientsMock.mockImplementation((recipients: string | string[]) => recipients)
   })
 
@@ -96,6 +87,7 @@ describe('addVacation', () => {
         }),
       },
       rpc: rpcMock,
+      functions: { invoke: sendEmailMock },
     } as any)
 
     const response = await addVacation({
@@ -136,6 +128,7 @@ describe('addVacation', () => {
       },
       rpc: rpcMock,
       from: fromMock,
+      functions: { invoke: sendEmailMock },
     } as any)
 
     const response = await addVacation({
@@ -163,6 +156,7 @@ describe('addVacation', () => {
         }),
       },
       rpc: rpcMock,
+      functions: { invoke: sendEmailMock },
     } as any)
 
     const response = await addVacation({
@@ -197,6 +191,7 @@ describe('addVacation', () => {
         }),
       },
       rpc: rpcMock,
+      functions: { invoke: sendEmailMock },
     } as any)
 
     const response = await addVacation({
@@ -207,8 +202,11 @@ describe('addVacation', () => {
 
     expect(response).toEqual({ success: true })
     expect(sendEmailMock).toHaveBeenCalledWith(
+      'send-email',
       expect.objectContaining({
-        to: ['auemise@embperujapan.org', 'sistema@embperujapan.org'],
+        body: expect.objectContaining({
+          to: ['auemise@embperujapan.org', 'sistema@embperujapan.org'],
+        }),
       })
     )
   })
@@ -228,6 +226,7 @@ describe('addVacation', () => {
         }),
       },
       rpc: rpcMock,
+      functions: { invoke: sendEmailMock },
     } as any)
 
     const response = await addVacation({
