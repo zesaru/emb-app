@@ -4,6 +4,7 @@ import { columns } from "./_components/columns"
 import getVacationswithUser from "@/actions/getVacationswithUser";
 import { redirect } from "next/navigation";
 import { Clock, CalendarCheck, Users } from 'lucide-react';
+import { isAdmin } from "@/lib/auth/admin-check";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,11 @@ export default async function Vacaciones() {
     redirect("/login");
   }
 
-  const vacations = await getVacationswithUser();
+  const admin = await isAdmin(user.id);
+  const allVacations = await getVacationswithUser();
+  const vacations = admin
+    ? allVacations
+    : allVacations.filter((v) => v.id_user === user.id);
 
   // Calcular estadísticas para admin
   const now = new Date();

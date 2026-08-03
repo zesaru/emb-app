@@ -18,7 +18,6 @@ const Usertabs = ( {user}: any) => {
         setUserName(safeUser.name ?? "Usuario");
     }, [safeUser.name, setUserName]);
 
-    console.log(safeUser);
     return (
     <div className="bg-slate-100  mt-[77px]  py-3 px-3">
       <section className="relative overflow-hidden">
@@ -96,33 +95,13 @@ const Usertabs = ( {user}: any) => {
                     <div className="md:w-1/2 w-full">
                       <div className="flex justify-between mb-3">
                         <h6 className="fw-medium my-0">Vacaciones</h6>
-                        <p className="float-end mb-0">15%</p>
-                      </div>
-                      <div className="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700 ">
-                        <div
-                          className="flex flex-col justify-center overflow-hidden bg-primary"
-                          role="progressbar"
-                          style={{ width: "15%" }}
-                          aria-valuenow={25}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                        />
+                        <p className="float-end mb-0">{safeUser.num_vacations ?? 0} días</p>
                       </div>
                     </div>
                     <div className="md:w-1/2 w-full">
                       <div className="flex justify-between mb-3">
                         <h6 className="fw-medium my-0">Compensatorios</h6>
-                        <p className="float-end mb-0">7.5</p>
-                      </div>
-                      <div className="flex w-full h-1.5 bg-gray-200 rounded-full overflow-hidden dark:bg-gray-700 ">
-                        <div
-                          className="flex flex-col justify-center overflow-hidden bg-orange-500"
-                          role="progressbar"
-                          style={{ width: "85%" }}
-                          aria-valuenow={25}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                        />
+                        <p className="float-end mb-0">{safeUser.num_compensatorys ?? 0} hrs</p>
                       </div>
                     </div>
                   </div>
@@ -200,8 +179,8 @@ const Usertabs = ( {user}: any) => {
                       </h4>
                     </div>
                   </div>
-                  <h1 className="text-3xl text-gray-800 my-2.5">xxxxx</h1>
-                  <p className="text-gray-400 text-sm">Ultimo mes</p>
+                  <h1 className="text-3xl text-gray-800 my-2.5">—</h1>
+                  <p className="text-gray-400 text-sm">Aún no disponible</p>
                   <hr className="my-3.5" />
                 </div>
               </div>

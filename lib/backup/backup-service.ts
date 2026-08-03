@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server';
+import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 import { Database } from '@/types/database.type';
 import { BackupMetadata, BackupResult, RestoreResult } from './backup-types';
 import { storageManager } from './storage-manager';
@@ -192,7 +193,7 @@ export const backupService = {
   },
 
   async restoreBackup(backupId: string): Promise<RestoreResult> {
-    const supabase = await createClient();
+    const supabase = getSupabaseAdminClient();
     const tablesAffected: string[] = [];
 
     try {
@@ -233,7 +234,8 @@ export const backupService = {
             data: parsed as Record<string, any[]>
           };
 
-      // Restore each table
+      // Validate the payload for each known table before touching the database.
+      const restorePayload: Record<string, any[]> = {};
       for (const table of TABLES_TO_BACKUP) {
         const records = backupData.data[table];
         if (!records) {
@@ -245,29 +247,24 @@ export const backupService = {
           throw new Error(`Invalid data format for table ${table}`);
         }
 
-        // Delete existing data
-        const { error: deleteError } = await supabase
-          .from(table)
-          .delete()
-          .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all (dummy condition)
-
-        if (deleteError && deleteError.code !== 'PGRST116') {
-          throw new Error(`Failed to clear table ${table}: ${deleteError.message}`);
-        }
-
-        // Insert backup data
-        if (records.length > 0) {
-          const { error: insertError } = await supabase
-            .from(table)
-            .insert(records);
-
-          if (insertError) {
-            throw new Error(`Failed to restore table ${table}: ${insertError.message}`);
-          }
-        }
-
-        tablesAffected.push(table);
+        restorePayload[table] = records;
       }
+
+      // All 4 tables are wiped and reinserted inside a single Postgres
+      // transaction (restore_backup is one function call), in FK-dependency
+      // order (children before/after users as needed). This avoids both a
+      // partially-restored table on failure and FK violations from deleting
+      // users while a child table still references the old rows.
+      const { data: restoreData, error: restoreError } = await (supabase.rpc as any)(
+        'restore_backup',
+        { p_data: restorePayload },
+      );
+
+      if (restoreError) {
+        throw new Error(`Failed to restore backup: ${restoreError.message}`);
+      }
+
+      tablesAffected.push(...((restoreData?.tables_affected as string[]) ?? []));
 
       return {
         success: true,

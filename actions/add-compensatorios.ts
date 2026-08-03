@@ -50,6 +50,10 @@ export const addPost = async (formData: FormData) => {
       }
     ).select('*');
 
+    if (result.error) {
+      return { success: false, error: "Error creando registro" };
+    }
+
     const email = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
     const { data: userProfile } = await supabase
       .from("users")
@@ -58,7 +62,7 @@ export const addPost = async (formData: FormData) => {
       .single();
     const userName = userProfile?.name?.trim() || user.email || "Usuario";
 
-    if (result.statusText === 'Created' && result.data) {
+    if (result.data) {
       try {
         const compensatoryId = result.data[0]?.id;
         const data = await sendOrCaptureEmail({

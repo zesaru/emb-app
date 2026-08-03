@@ -61,8 +61,8 @@ export default async function updateApproveRegister(compensatory: CompensatoryIn
     }
 
     await supabase.rpc("accumulate_compensatory_hours", {
-      hours: compensatory.hours,
-      user_id: compensatory.user_id,
+      hours: updated.hours,
+      user_id: updated.user_id,
     });
 
     try {

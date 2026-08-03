@@ -5,6 +5,7 @@ import { columns } from "./_components/columns";
 import { User, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import getsCompensatorioswithUserById from "@/actions/getCompensatoriosbyId";
 import getUsersById from "@/actions/getUsersById";
+import { isAdmin } from "@/lib/auth/admin-check";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,10 @@ export default async function CompensatoriosbyId({
 
   if (!user) {
     redirect("/login");
+  }
+
+  if (id !== user.id && !(await isAdmin(user.id))) {
+    redirect("/");
   }
 
   const compensatorys = await getsCompensatorioswithUserById(id);

@@ -8,6 +8,7 @@ import { compensatoryRegisterApprovalSchema } from "@/lib/validation/schemas";
 import { CompensatoryUseApprovedUser } from "@/components/email/templates/compensatory/compensatory-use-approved-user";
 import { buildUrl } from "@/components/email/utils/email-config";
 import { createClient } from "@/utils/supabase/server";
+import { requireCurrentUserAdmin } from "@/lib/auth/admin-check";
 
 export default async function updateApproveRegisterHour(compensatory: any) {
   const supabase = await createClient();
@@ -22,6 +23,12 @@ export default async function updateApproveRegisterHour(compensatory: any) {
   }
 
   try {
+    await requireCurrentUserAdmin();
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : "No autorizado" };
+  }
+
+  try {
     compensatoryRegisterApprovalSchema.parse({
       id: compensatory.id,
       user_id: compensatory.user_id,
@@ -32,7 +39,7 @@ export default async function updateApproveRegisterHour(compensatory: any) {
     return { success: false, error: error.errors?.[0]?.message || "Datos inválidos" };
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("compensatorys")
     .update({
       final_approve_request: true,
@@ -41,10 +48,18 @@ export default async function updateApproveRegisterHour(compensatory: any) {
     .eq("id", compensatory.id)
     .select("*");
 
-  await supabase.rpc("subtract_compensatory_hours", {
+  if (updateError) {
+    return { success: false, error: "Error al actualizar el registro" };
+  }
+
+  const { error: rpcError } = await supabase.rpc("subtract_compensatory_hours", {
     hours: compensatory.compensated_hours,
     user_id: compensatory.user_id,
   });
+
+  if (rpcError) {
+    return { success: false, error: "Error al descontar horas compensatorias" };
+  }
 
   const { data: userData } = await supabase
     .from("users")

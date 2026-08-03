@@ -3,6 +3,7 @@ import { DataTable } from "./_components/data-table"
 import { columns } from "./_components/columns"
 import getsCompensatorioswithUser from "@/actions/getCompensatorioswithUser";
 import { redirect } from "next/navigation";
+import { isAdmin } from "@/lib/auth/admin-check";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,11 @@ export default async function Compensatorios() {
   if (!user) {
     redirect("/login");
   }
-  const compensatorys = await getsCompensatorioswithUser();
+  const admin = await isAdmin(user.id);
+  const allCompensatorys = await getsCompensatorioswithUser();
+  const compensatorys = admin
+    ? allCompensatorys
+    : allCompensatorys.filter((c) => c.user_id === user.id);
 
   return (
     <div className="flex flex-col">

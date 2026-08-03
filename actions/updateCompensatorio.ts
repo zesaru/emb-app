@@ -50,7 +50,6 @@ export default async function UpdateCompensatorio(compensatory: CompensatorysWit
 
   const approvedBy = user.id;
   const hours = Number(compensatorio.hours ?? 0);
-  const currentHours = Number(compensatorio.user1.num_compensatorys ?? 0);
 
   try {
     const { error: updateError } = await supabase
@@ -67,18 +66,22 @@ export default async function UpdateCompensatorio(compensatory: CompensatorysWit
       return { success: false, error: "Error al actualizar el registro" };
     }
 
-    const newCompensatoryHours = currentHours + hours;
-    const { error: userUpdateError } = await supabase
-      .from("users")
-      .update({
-        num_compensatorys: newCompensatoryHours,
-      })
-      .eq("id", compensatorio.user1.id)
-      .select();
+    const { error: rpcError } = await supabase.rpc("accumulate_compensatory_hours", {
+      hours,
+      user_id: compensatorio.user1.id,
+    });
 
-    if (userUpdateError) {
+    if (rpcError) {
       return { success: false, error: "Error al actualizar horas del usuario" };
     }
+
+    const { data: refreshedUser } = await supabase
+      .from("users")
+      .select("num_compensatorys")
+      .eq("id", compensatorio.user1.id)
+      .single();
+
+    const newCompensatoryHours = Number(refreshedUser?.num_compensatorys ?? hours);
 
     try {
       await sendOrCaptureEmail({

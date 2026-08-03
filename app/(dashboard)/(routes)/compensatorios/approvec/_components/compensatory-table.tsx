@@ -1,5 +1,3 @@
-'use client';
-
 import {
   Table,
   TableBody,
@@ -11,7 +9,12 @@ import {
 } from "@/components/ui/table";
 
 export default async function CTable({ compensatory }: { compensatory: any }) {
-  const compensatorio = compensatory[0];
+  const compensatorio = compensatory?.[0];
+
+  if (!compensatorio || !compensatorio.user1) {
+    return <p className="text-sm text-muted-foreground">No se encontró el registro.</p>;
+  }
+
   return (
     <>
       <Table>

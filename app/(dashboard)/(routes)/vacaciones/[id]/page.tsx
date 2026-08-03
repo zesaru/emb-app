@@ -7,6 +7,7 @@ import getUsersById from "@/actions/getUsersById";
 import getVacationswithUserById from "@/actions/getVacationswithUserById";
 import { DataTable } from "./_components/data-table";
 import { columns } from "./_components/columns";
+import { isAdmin } from "@/lib/auth/admin-check";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,10 @@ export default async function VacacionesById({
 
   if (!user) {
     redirect("/login");
+  }
+
+  if (id !== user.id && !(await isAdmin(user.id))) {
+    redirect("/");
   }
 
   const vacations = await getVacationswithUserById(id);

@@ -100,18 +100,21 @@ export default async function List() {
             </div>
 
             <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto">
-              <label className="relative block min-w-[18rem]">
+              <label className="relative block min-w-[18rem]" title="Próximamente">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Buscar empleado..."
-                  className="w-full rounded-xl border border-outline-variant/20 bg-surface-container-lowest py-2.5 pl-10 pr-4 text-sm text-foreground shadow-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  disabled
+                  placeholder="Buscar empleado (próximamente)"
+                  className="w-full cursor-not-allowed rounded-xl border border-outline-variant/20 bg-surface-container-lowest py-2.5 pl-10 pr-4 text-sm text-foreground opacity-60 shadow-sm outline-none"
                 />
               </label>
 
               <button
                 type="button"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-primary to-primary-container px-5 py-2.5 text-sm font-medium text-primary-foreground shadow-ambient transition hover:opacity-95"
+                disabled
+                title="Próximamente"
+                className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-primary to-primary-container px-5 py-2.5 text-sm font-medium text-primary-foreground opacity-60 shadow-ambient"
               >
                 <UserPlus className="h-4 w-4" />
                 Agregar empleado
