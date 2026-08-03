@@ -21,6 +21,15 @@ vi.mock("@/lib/email/dev-email-outbox", () => ({
   sendOrCaptureEmail: (...args: any[]) => sendOrCaptureEmailMock(...args),
 }));
 
+const isEmailTestModeMock = vi.fn();
+const resolveEmailRecipientsMock = vi.fn();
+
+vi.mock("@/components/email/utils/email-config", () => ({
+  buildUrl: (path: string) => `https://emb-app.vercel.app${path}`,
+  isEmailTestMode: (...args: any[]) => isEmailTestModeMock(...args),
+  resolveEmailRecipients: (...args: any[]) => resolveEmailRecipientsMock(...args),
+}));
+
 function mockRpcResults(results: { compensatorys: any[]; compensatoryHours: any[]; vacations: any[] }) {
   const rpcMock = vi.fn((fn: string) => {
     if (fn === "list_unapproved_compensatorys") {
@@ -43,6 +52,8 @@ describe("GET /api/cron/pending-approvals-reminder", () => {
     vi.clearAllMocks();
     verifyCronSecretMock.mockReturnValue({ authorized: true });
     sendOrCaptureEmailMock.mockResolvedValue({ success: true, deliveryMode: "sent" });
+    isEmailTestModeMock.mockReturnValue(false);
+    resolveEmailRecipientsMock.mockImplementation((recipients: string | string[]) => recipients);
   });
 
   it("rechaza si el CRON_SECRET no es válido", async () => {
@@ -83,7 +94,9 @@ describe("GET /api/cron/pending-approvals-reminder", () => {
 
     expect(body).toEqual({
       sent: true,
+      testMode: false,
       admins: 2,
+      recipients: 2,
       counts: { compensatorys: 1, compensatoryHours: 0, vacations: 1, total: 2 },
     });
     expect(sendOrCaptureEmailMock).toHaveBeenCalledTimes(2);
@@ -92,6 +105,36 @@ describe("GET /api/cron/pending-approvals-reminder", () => {
     );
     expect(sendOrCaptureEmailMock).toHaveBeenCalledWith(
       expect.objectContaining({ to: "admin2@test.com", templateName: "PendingApprovalsReminder" }),
+    );
+  });
+
+  it("en modo de prueba no envía a los admins reales, solo al destinatario de prueba", async () => {
+    mockRpcResults({
+      compensatorys: [{ user_name: "Juan", email: "juan@test.com", hours: 8 }],
+      compensatoryHours: [],
+      vacations: [],
+    });
+    getActiveAdminEmailsMock.mockResolvedValue(["admin1@test.com", "admin2@test.com", "admin3@test.com"]);
+    isEmailTestModeMock.mockReturnValue(true);
+    resolveEmailRecipientsMock.mockReturnValue(["tester@test.com", "sistema@embperujapan.org"]);
+
+    const { GET } = await import("@/app/api/cron/pending-approvals-reminder/route");
+    const response = await GET(new Request("http://localhost/api/cron/pending-approvals-reminder"));
+    const body = await response.json();
+
+    expect(body).toEqual({
+      sent: true,
+      testMode: true,
+      admins: 3,
+      recipients: 2,
+      counts: { compensatorys: 1, compensatoryHours: 0, vacations: 0, total: 1 },
+    });
+    expect(sendOrCaptureEmailMock).toHaveBeenCalledTimes(2);
+    expect(sendOrCaptureEmailMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ to: "admin1@test.com" }),
+    );
+    expect(sendOrCaptureEmailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ to: "tester@test.com" }),
     );
   });
 });
