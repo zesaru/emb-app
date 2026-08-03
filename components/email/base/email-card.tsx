@@ -24,9 +24,13 @@ export const EmailCard: React.FC<Readonly<EmailCardProps>> = ({
 };
 
 const cardStyle = {
+  // Fondo blanco + borde fino en vez de relleno gris: mismo patrón que usan
+  // las plantillas de referencia de react.email (Vercel Invite, GitHub
+  // Access Token) para notificaciones utilitarias -- se ve más limpio y
+  // "nativo" de cliente de correo que una tarjeta con fondo sólido.
   border: `1px solid ${colors.border}`,
   borderRadius: borderRadius.lg,
-  backgroundColor: '#f9f9f9',
+  backgroundColor: colors.white,
   marginTop: '24px',
   marginBottom: '24px',
 };
