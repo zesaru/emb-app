@@ -9,9 +9,7 @@ import * as React from 'react';
 import EmailLayout from '../../base/email-layout';
 import { EmailButton } from '../../base/email-button';
 import { EmailCard } from '../../base/email-card';
-import { EmailHeading } from '../../base/email-text';
-import { EmailLabel } from '../../base/email-text';
-import { EmailBadge } from '../../base/email-badge';
+import { EmailHeading, EmailSeparator } from '../../base/email-text';
 
 export interface PendingApprovalItemSummary {
   name: string;
@@ -30,46 +28,43 @@ interface PendingApprovalsReminderProps {
   dashboardUrl: string;
 }
 
-const MAX_ITEMS_SHOWN = 5;
+const MAX_ITEMS_SHOWN = 3;
 
 export const PendingApprovalsReminder: React.FC<
   Readonly<PendingApprovalsReminderProps>
 > = ({ categories, totalCount, dashboardUrl }) => {
+  const activeCategories = categories.filter((category) => category.count > 0);
+
   return (
     <EmailLayout previewText={`Tienes ${totalCount} solicitud(es) pendiente(s) de aprobar`}>
-      <EmailHeading level={1}>
-        Tienes {totalCount} solicitud{totalCount === 1 ? '' : 'es'} pendiente
+      <EmailHeading level={2}>
+        {totalCount} solicitud{totalCount === 1 ? '' : 'es'} pendiente
         {totalCount === 1 ? '' : 's'} de aprobar
       </EmailHeading>
 
-      <Text style={{ ...textStyle, marginBottom: '16px' }}>Hola,</Text>
+      <EmailCard padding="16px 20px">
+        {activeCategories.map((category, categoryIndex) => (
+          <React.Fragment key={category.label}>
+            {categoryIndex > 0 && <EmailSeparator margin="12px 0" />}
 
-      <Text style={textStyle}>
-        Este es un recordatorio de las solicitudes que siguen esperando tu aprobación.
-      </Text>
-
-      {categories
-        .filter((category) => category.count > 0)
-        .map((category) => (
-          <EmailCard key={category.label}>
-            <EmailLabel>{category.label}</EmailLabel>
-            <EmailBadge variant="warning">
-              {category.count} pendiente{category.count === 1 ? '' : 's'}
-            </EmailBadge>
+            <Text style={categoryHeaderStyle}>
+              {category.label} ({category.count})
+            </Text>
 
             {category.items.slice(0, MAX_ITEMS_SHOWN).map((item, index) => (
-              <Text key={index} style={valueText}>
+              <Text key={index} style={itemStyle}>
                 {item.name} — {item.detail}
               </Text>
             ))}
 
             {category.count > MAX_ITEMS_SHOWN && (
-              <Text style={valueText}>
-                ...y {category.count - MAX_ITEMS_SHOWN} más
+              <Text style={moreStyle}>
+                +{category.count - MAX_ITEMS_SHOWN} más
               </Text>
             )}
-          </EmailCard>
+          </React.Fragment>
         ))}
+      </EmailCard>
 
       <EmailButton href={dashboardUrl}>Revisar solicitudes pendientes</EmailButton>
     </EmailLayout>
@@ -78,16 +73,25 @@ export const PendingApprovalsReminder: React.FC<
 
 export default PendingApprovalsReminder;
 
-const textStyle = {
-  color: '#333333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  margin: '12px 0',
-};
-
-const valueText = {
+const categoryHeaderStyle = {
   color: '#333333',
   fontSize: '14px',
-  lineHeight: '24px',
-  margin: '8px 0',
+  fontWeight: 'bold',
+  lineHeight: '20px',
+  margin: '0 0 4px 0',
+};
+
+const itemStyle = {
+  color: '#555555',
+  fontSize: '13px',
+  lineHeight: '18px',
+  margin: '2px 0',
+};
+
+const moreStyle = {
+  color: '#888888',
+  fontSize: '12px',
+  lineHeight: '16px',
+  margin: '2px 0',
+  fontStyle: 'italic' as const,
 };
