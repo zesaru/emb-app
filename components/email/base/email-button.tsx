@@ -3,7 +3,7 @@
  * Used for CTAs in email templates
  */
 
-import { Button } from '@react-email/components';
+import { Button, Section } from '@react-email/components';
 import * as React from 'react';
 import { colors, borderRadius } from '../utils/email-constants';
 
@@ -20,11 +20,24 @@ export const EmailButton: React.FC<Readonly<EmailButtonProps>> = ({
 }) => {
   const style = variant === 'primary' ? primaryButtonStyle : secondaryButtonStyle;
 
+  // El botón no debe ocupar todo el ancho ni ir pegado a los bordes del
+  // cuerpo del correo -- una Section centrada + ancho automático (según el
+  // padding) es el mismo patrón que usan los templates de referencia de
+  // react.email (Vercel Invite, GitHub Access Token): un botón-pill
+  // centrado, no una barra completa.
   return (
-    <Button href={href} style={style}>
-      {children}
-    </Button>
+    <Section style={buttonWrapperStyle}>
+      <Button href={href} style={style}>
+        {children}
+      </Button>
+    </Section>
   );
+};
+
+const buttonWrapperStyle = {
+  textAlign: 'center' as const,
+  marginTop: '24px',
+  marginBottom: '24px',
 };
 
 const primaryButtonStyle = {
@@ -41,10 +54,9 @@ const primaryButtonStyle = {
   fontWeight: 'bold',
   textDecoration: 'none',
   textAlign: 'center' as const,
-  display: 'block',
-  padding: '12px 24px',
+  display: 'inline-block',
+  padding: '12px 32px',
   border: 'none',
-  width: '100%',
 };
 
 const secondaryButtonStyle = {
@@ -55,8 +67,7 @@ const secondaryButtonStyle = {
   fontWeight: '600',
   textDecoration: 'none',
   textAlign: 'center' as const,
-  display: 'block',
-  padding: '12px 24px',
+  display: 'inline-block',
+  padding: '12px 32px',
   border: `2px solid ${colors.border}`,
-  width: '100%',
 };
