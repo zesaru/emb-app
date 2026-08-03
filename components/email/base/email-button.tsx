@@ -3,7 +3,7 @@
  * Used for CTAs in email templates
  */
 
-import { Button } from '@react-email/button';
+import { Button } from '@react-email/components';
 import * as React from 'react';
 import { colors, borderRadius } from '../utils/email-constants';
 
