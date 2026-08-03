@@ -171,7 +171,7 @@ export const passwordUpdateSchema = z.object({
     .max(100, "Máximo 100 caracteres"),
 });
 
-export const adminRoleSchema = z.enum(["admin", "user"]);
+export const adminRoleSchema = z.enum(["admin", "user", "super_admin"]);
 export const userGrantModeSchema = z.enum(["automatic", "manual"]);
 
 export const adminUserProvisioningModeSchema = z.enum(["invite", "temporary_password"]);

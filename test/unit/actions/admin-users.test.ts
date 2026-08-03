@@ -5,6 +5,7 @@ const revalidatePathMock = vi.fn();
 const requireAdminContextMock = vi.fn();
 const getUserByIdMock = vi.fn();
 const countActiveAdminsMock = vi.fn();
+const requireCurrentUserSuperAdminAndActiveMock = vi.fn();
 const consoleErrorMock = vi.spyOn(console, "error").mockImplementation(() => {});
 
 vi.mock("next/cache", () => ({
@@ -17,9 +18,15 @@ vi.mock("@/actions/admin/users/shared", () => ({
   countActiveAdmins: (...args: any[]) => countActiveAdminsMock(...args),
 }));
 
+vi.mock("@/lib/auth/admin-check", () => ({
+  requireCurrentUserSuperAdminAndActive: (...args: any[]) =>
+    requireCurrentUserSuperAdminAndActiveMock(...args),
+}));
+
 describe("Admin Users Actions", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    requireCurrentUserSuperAdminAndActiveMock.mockResolvedValue("admin-1");
   });
 
   afterAll(() => {

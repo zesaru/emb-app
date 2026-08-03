@@ -24,7 +24,7 @@ export type AdminUserListItem = {
   id: string;
   email: string;
   name: string | null;
-  role: "admin" | "user";
+  role: "admin" | "user" | "super_admin";
   position: string | null;
   isActive: boolean;
   admin: "admin" | null;
@@ -85,7 +85,8 @@ function parseGrantMode(value: unknown): UserGrantMode {
   return value === "manual" ? "manual" : "automatic";
 }
 
-export function normalizeUserRole(row: Pick<RawUserRow, "admin" | "role">): "admin" | "user" {
+export function normalizeUserRole(row: Pick<RawUserRow, "admin" | "role">): "admin" | "user" | "super_admin" {
+  if ((row.role || "").toLowerCase() === "super_admin") return "super_admin";
   if (row.admin === "admin") return "admin";
   if ((row.role || "").toLowerCase() === "admin") return "admin";
   return "user";
@@ -100,7 +101,7 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     name: row.name ?? null,
     position: row.position ?? null,
     role,
-    admin: role === "admin" ? "admin" : null,
+    admin: role === "admin" || role === "super_admin" ? "admin" : null,
     isActive: parseBooleanLike(row.is_active, true),
     createdAt: row.created_at ?? null,
     hireDate: row.hire_date ?? null,
@@ -118,7 +119,7 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
 
 export function toUsersTableUpdate(input: {
   name?: string | null;
-  role?: "admin" | "user";
+  role?: "admin" | "user" | "super_admin";
   position?: string | null;
   isActive?: boolean;
   hireDate?: string | null;
@@ -136,7 +137,7 @@ export function toUsersTableUpdate(input: {
   if (input.name !== undefined) payload.name = input.name;
   if (input.role !== undefined) {
     payload.role = input.role;
-    payload.admin = input.role === "admin" ? "admin" : null;
+    payload.admin = input.role === "admin" || input.role === "super_admin" ? "admin" : null;
   }
   if (input.position !== undefined) payload.position = input.position;
   if (input.isActive !== undefined) {

@@ -9,6 +9,7 @@ import { SidebarRoutes } from "./sidebar-routes";
 
 const Sidebar = () => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -30,10 +31,13 @@ const Sidebar = () => {
 
         if (!mounted) return;
 
-        const admin = data?.admin === "admin" || String(data?.role || "").toLowerCase() === "admin";
-        setIsAdmin(Boolean(admin));
+        setIsAdmin(data?.admin === "admin");
+        setIsSuperAdmin(String(data?.role || "").toLowerCase() === "super_admin");
       } catch {
-        if (mounted) setIsAdmin(false);
+        if (mounted) {
+          setIsAdmin(false);
+          setIsSuperAdmin(false);
+        }
       }
     };
 
@@ -50,7 +54,7 @@ const Sidebar = () => {
         <Logo />
       </div>
       <div className="flex flex-col w-full">
-        <SidebarRoutes isAdmin={isAdmin} />
+        <SidebarRoutes isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
       </div>
     </div>
   );

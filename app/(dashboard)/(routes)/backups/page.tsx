@@ -1,32 +1,18 @@
-import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import { BackupList } from "./components/backup-list";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { requireCurrentUserSuperAdminAndActive } from "@/lib/auth/admin-check";
 
 export const dynamic = "force-dynamic";
 
 export default async function BackupsPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  // Check if user is admin
-  const { data: userData } = await supabase
-    .from("users")
-    .select("admin")
-    .eq("id", user.id)
-    .single();
-
-  if (userData?.admin !== "admin") {
-    redirect("/");
+  try {
+    await requireCurrentUserSuperAdminAndActive();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    redirect(message.includes("No autenticado") ? "/login" : "/");
   }
 
   // Fetch backups from local storage

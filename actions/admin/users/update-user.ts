@@ -2,15 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 
+import { requireCurrentUserSuperAdminAndActive } from "@/lib/auth/admin-check";
 import { adminUserUpdateSchema } from "@/lib/validation/schemas";
 import { toUsersTableUpdate } from "@/lib/users/user-mappers";
 import { countActiveAdmins, getUserById, requireAdminContext } from "./shared";
+
+const PRIVILEGED_ROLES = new Set(["admin", "super_admin"]);
 
 type UpdateAdminUserInput = {
   id: string;
   name?: string;
   position?: string;
-  role?: "admin" | "user";
+  role?: "admin" | "user" | "super_admin";
   hireDate?: string;
   isDiplomatic?: boolean;
   weeklyDays?: number | null;
@@ -28,7 +31,18 @@ export async function updateAdminUser(input: UpdateAdminUserInput) {
     const { supabase, adminUserId } = await requireAdminContext();
     const target = await getUserById(data.id);
 
-    if (data.role && data.role !== target.role && target.role === "admin") {
+    const rolePrivilegeChanges =
+      data.role !== undefined &&
+      data.role !== target.role &&
+      (PRIVILEGED_ROLES.has(data.role) || PRIVILEGED_ROLES.has(target.role));
+
+    if (rolePrivilegeChanges) {
+      // Otorgar o quitar admin/super_admin es exclusivo de un super admin, aunque
+      // quien ejecuta ya haya pasado requireAdminContext (admin normal).
+      await requireCurrentUserSuperAdminAndActive();
+    }
+
+    if (data.role && data.role !== target.role && PRIVILEGED_ROLES.has(target.role)) {
       if (target.id === adminUserId) {
         return { success: false as const, error: "No puedes cambiar tu propio rol de administrador" };
       }

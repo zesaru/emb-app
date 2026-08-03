@@ -1,9 +1,9 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
 import { backupService } from "@/lib/backup/backup-service";
 import { emailNotifier } from "@/lib/backup/email-notifier";
 import { BackupResult } from "@/lib/backup/backup-types";
+import { requireCurrentUserSuperAdminAndActive } from "@/lib/auth/admin-check";
 
 /**
  * Creates a backup of the database.
@@ -12,32 +12,12 @@ import { BackupResult } from "@/lib/backup/backup-types";
  * @returns {Promise<BackupResult>} Result of the backup operation
  */
 export const createBackup = async (): Promise<BackupResult> => {
-  const supabase = await createClient();
-
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
+  try {
+    await requireCurrentUserSuperAdminAndActive();
+  } catch (error) {
     return {
       success: false,
-      error: "Usuario no autenticado",
-      duration: 0
-    };
-  }
-
-  // Get user details to check admin status
-  const { data: userData, error: userError } = await supabase
-    .from("users")
-    .select("admin")
-    .eq("id", user.id)
-    .single();
-
-  if (userError || !userData || userData.admin !== "admin") {
-    return {
-      success: false,
-      error: "No autorizado: Se requieren privilegios de administrador",
+      error: error instanceof Error ? error.message : "No autorizado",
       duration: 0
     };
   }

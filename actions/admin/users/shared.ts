@@ -1,11 +1,17 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { requireCurrentUserAdminAndActive } from "@/lib/auth/admin-check";
+import { requireCurrentUserAdminAndActive, requireCurrentUserSuperAdminAndActive } from "@/lib/auth/admin-check";
 import { normalizeUserRow } from "@/lib/users/user-mappers";
 
 export async function requireAdminContext() {
   const adminUserId = await requireCurrentUserAdminAndActive();
+  const supabase = await createClient();
+  return { supabase, adminUserId };
+}
+
+export async function requireSuperAdminContext() {
+  const adminUserId = await requireCurrentUserSuperAdminAndActive();
   const supabase = await createClient();
   return { supabase, adminUserId };
 }
@@ -35,6 +41,6 @@ export async function countActiveAdmins(excludeUserId?: string) {
 
   return (data || [])
     .map((row) => normalizeUserRow(row as any))
-    .filter((row) => row.role === "admin" && row.isActive && row.id !== excludeUserId)
+    .filter((row) => (row.role === "admin" || row.role === "super_admin") && row.isActive && row.id !== excludeUserId)
     .length;
 }

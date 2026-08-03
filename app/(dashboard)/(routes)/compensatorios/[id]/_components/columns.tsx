@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { CompensatorysWithUser } from '@/types/collections';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { CancelRequestButton } from "@/app/(dashboard)/_components/cancel-request-button";
+import { SuperAdminForceCancelButton } from "@/app/(dashboard)/_components/super-admin-force-cancel-button";
 
 function isCancelled(row: CompensatorysWithUser) {
   return Boolean((row as { cancelled_at?: string | null }).cancelled_at);
@@ -148,12 +149,19 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
     id: "accion",
     header: "Acción",
     cell: ({ row }) => (
-      <CancelRequestButton
-        requestId={row.original.id ?? ""}
-        ownerId={row.original.user_id ?? ""}
-        isPending={!isApproved(row.original) && !isCancelled(row.original)}
-        resource="compensatorio"
-      />
+      <div className="flex flex-col items-start gap-1">
+        <CancelRequestButton
+          requestId={row.original.id ?? ""}
+          ownerId={row.original.user_id ?? ""}
+          isPending={!isApproved(row.original) && !isCancelled(row.original)}
+          resource="compensatorio"
+        />
+        <SuperAdminForceCancelButton
+          requestId={row.original.id ?? ""}
+          isCancelled={isCancelled(row.original)}
+          resource="compensatorio"
+        />
+      </div>
     ),
   },
 ]

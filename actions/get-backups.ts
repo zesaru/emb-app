@@ -1,8 +1,8 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/server";
 import { storageManager } from "@/lib/backup/storage-manager";
 import { BackupMetadata } from "@/lib/backup/backup-types";
+import { requireCurrentUserSuperAdminAndActive } from "@/lib/auth/admin-check";
 
 /**
  * Lists all available backups from both local and cloud storage.
@@ -11,27 +11,7 @@ import { BackupMetadata } from "@/lib/backup/backup-types";
  * @returns {Promise<BackupMetadata[]>} Array of backup metadata
  */
 export const getBackups = async (): Promise<BackupMetadata[]> => {
-  const supabase = await createClient();
-
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("Usuario no autenticado");
-  }
-
-  // Get user details to check admin status
-  const { data: userData, error: userError } = await supabase
-    .from("users")
-    .select("admin")
-    .eq("id", user.id)
-    .single();
-
-  if (userError || !userData || userData.admin !== "admin") {
-    throw new Error("No autorizado: Se requieren privilegios de administrador");
-  }
+  await requireCurrentUserSuperAdminAndActive();
 
   // Get backups from both local and cloud storage
   const [localBackups, cloudBackups] = await Promise.all([

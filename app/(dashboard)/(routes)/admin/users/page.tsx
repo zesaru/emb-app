@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import listAdminUsers from "@/actions/admin/users/list-users";
-import { requireCurrentUserAdminAndActive } from "@/lib/auth/admin-check";
+import { isCurrentUserSuperAdmin, requireCurrentUserAdminAndActive } from "@/lib/auth/admin-check";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { UsersAdminPanel } from "./_components/users-admin-panel";
@@ -16,6 +16,7 @@ export default async function AdminUsersPage() {
     redirect("/");
   }
 
+  const isSuperAdmin = await isCurrentUserSuperAdmin();
   const result = await listAdminUsers();
 
   return (
@@ -36,6 +37,7 @@ export default async function AdminUsersPage() {
           <UsersAdminPanel
             initialUsers={result.success ? result.data : []}
             initialError={result.success ? null : result.error}
+            isSuperAdmin={isSuperAdmin}
           />
         </CardContent>
       </Card>

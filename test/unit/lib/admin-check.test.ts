@@ -132,4 +132,70 @@ describe("lib/auth/admin-check", () => {
       await expect(requireCurrentUserAdminAndActive()).rejects.toThrow("No autenticado");
     });
   });
+
+  describe("requireSuperAdmin / isSuperAdmin", () => {
+    it("permite cuando el usuario tiene role=super_admin", async () => {
+      const client = makeQuerySingleClient({ data: { role: "super_admin" }, error: null });
+      createClientMock.mockResolvedValue(client);
+
+      const { requireSuperAdmin } = await import("@/lib/auth/admin-check");
+      await expect(requireSuperAdmin("user-1")).resolves.toBeUndefined();
+
+      expect(client.__mocks.selectMock).toHaveBeenCalledWith("role");
+    });
+
+    it("rechaza a un admin normal (role=admin, no super_admin)", async () => {
+      createClientMock.mockResolvedValue(
+        makeQuerySingleClient({ data: { role: "admin" }, error: null }),
+      );
+
+      const { requireSuperAdmin } = await import("@/lib/auth/admin-check");
+      await expect(requireSuperAdmin("user-2")).rejects.toThrow("super administrador");
+    });
+
+    it("isSuperAdmin retorna false cuando requireSuperAdmin falla", async () => {
+      createClientMock.mockResolvedValue(
+        makeQuerySingleClient({ data: { role: "user" }, error: null }),
+      );
+
+      const { isSuperAdmin } = await import("@/lib/auth/admin-check");
+      await expect(isSuperAdmin("user-3")).resolves.toBe(false);
+    });
+  });
+
+  describe("requireCurrentUserSuperAdminAndActive", () => {
+    it("retorna user id cuando autenticado, activo y super_admin", async () => {
+      const authClient = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-1" } }, error: null }) },
+        from: vi.fn(),
+      };
+      const activeClient = makeQuerySingleClient({ data: { is_active: "true" }, error: null });
+      const superAdminClient = makeQuerySingleClient({ data: { role: "super_admin" }, error: null });
+
+      createClientMock
+        .mockResolvedValueOnce(authClient)
+        .mockResolvedValueOnce(activeClient)
+        .mockResolvedValueOnce(superAdminClient);
+
+      const { requireCurrentUserSuperAdminAndActive } = await import("@/lib/auth/admin-check");
+      await expect(requireCurrentUserSuperAdminAndActive()).resolves.toBe("auth-1");
+    });
+
+    it("rechaza cuando el usuario activo es admin pero no super_admin", async () => {
+      const authClient = {
+        auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: "auth-2" } }, error: null }) },
+        from: vi.fn(),
+      };
+      const activeClient = makeQuerySingleClient({ data: { is_active: "true" }, error: null });
+      const superAdminClient = makeQuerySingleClient({ data: { role: "admin" }, error: null });
+
+      createClientMock
+        .mockResolvedValueOnce(authClient)
+        .mockResolvedValueOnce(activeClient)
+        .mockResolvedValueOnce(superAdminClient);
+
+      const { requireCurrentUserSuperAdminAndActive } = await import("@/lib/auth/admin-check");
+      await expect(requireCurrentUserSuperAdminAndActive()).rejects.toThrow("super administrador");
+    });
+  });
 });

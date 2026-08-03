@@ -59,11 +59,13 @@ const routes = [
     icon: LayoutList,
     label: "Reportes",
     href: "/report",
+    adminOnly: true,
   },
   {
     icon: DatabaseBackup,
     label: "Backups",
     href: "/backups",
+    superAdminOnly: true,
   },
   {
     icon: Shield,
@@ -73,8 +75,18 @@ const routes = [
   },
 ];
 
-export const SidebarRoutes = ({ isAdmin = false }: { isAdmin?: boolean }) => {
-  const visibleRoutes = routes.filter((route) => !route.adminOnly || isAdmin);
+export const SidebarRoutes = ({
+  isAdmin = false,
+  isSuperAdmin = false,
+}: {
+  isAdmin?: boolean;
+  isSuperAdmin?: boolean;
+}) => {
+  const visibleRoutes = routes.filter((route) => {
+    if (route.superAdminOnly) return isSuperAdmin;
+    if (route.adminOnly) return isAdmin;
+    return true;
+  });
 
   return (
     <div className="flex w-full flex-col">

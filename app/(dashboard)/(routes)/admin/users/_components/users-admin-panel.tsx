@@ -44,6 +44,7 @@ import {
 type Props = {
   initialUsers: AdminUserListItem[];
   initialError: string | null;
+  isSuperAdmin: boolean;
 };
 
 type MessageState = { type: "success" | "error"; text: string } | null;
@@ -105,7 +106,7 @@ function formatAdminDate(value: string | null) {
   return `${date.getUTCDate()}/${date.getUTCMonth() + 1}/${date.getUTCFullYear()}`;
 }
 
-export function UsersAdminPanel({ initialUsers, initialError }: Props) {
+export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Props) {
   const [users, setUsers] = useState(initialUsers);
   const [message, setMessage] = useState<MessageState>(
     initialError ? { type: "error", text: initialError } : null
@@ -114,7 +115,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("active");
-  const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "user">("all");
+  const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "user" | "super_admin">("all");
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState(emptyCreateForm);
@@ -244,7 +245,10 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") || "");
     const position = String(form.get("position") || "");
-    const role = String(form.get("role") || "user") as "admin" | "user";
+    // El campo "role" solo se renderiza para super admins (ver dialog de edición);
+    // si no está presente, no se debe enviar (evita degradar sin querer a "user").
+    const roleFieldValue = form.get("role");
+    const role = roleFieldValue === null ? undefined : (String(roleFieldValue) as "admin" | "user" | "super_admin");
     const hireDate = String(form.get("hireDate") || "");
     const isDiplomatic = form.get("isDiplomatic") === "on";
     const weeklyDaysValue = String(form.get("weeklyDays") || "");
@@ -472,6 +476,7 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
             >
               <option value="all">Todos los roles</option>
               <option value="admin">Admin</option>
+              <option value="super_admin">Super Admin</option>
               <option value="user">Usuario</option>
             </select>
             <div className="flex gap-2">
@@ -517,8 +522,8 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                    {user.role === "admin" ? "Admin" : "Usuario"}
+                  <Badge variant={user.role === "admin" || user.role === "super_admin" ? "default" : "secondary"}>
+                    {user.role === "super_admin" ? "Super Admin" : user.role === "admin" ? "Admin" : "Usuario"}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -786,14 +791,22 @@ export function UsersAdminPanel({ initialUsers, initialError }: Props) {
                 />
                 Es diplomático
               </label>
-              <select
-                name="role"
-                defaultValue={editingUser.role}
-                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="user">Usuario</option>
-                <option value="admin">Admin</option>
-              </select>
+              {isSuperAdmin ? (
+                <select
+                  name="role"
+                  defaultValue={editingUser.role}
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                >
+                  <option value="user">Usuario</option>
+                  <option value="admin">Admin</option>
+                  <option value="super_admin">Super Admin</option>
+                </select>
+              ) : (
+                <div className="flex h-10 w-full items-center rounded-md border border-input bg-muted px-3 text-sm text-muted-foreground">
+                  Rol: {editingUser.role === "super_admin" ? "Super Admin" : editingUser.role === "admin" ? "Admin" : "Usuario"}
+                  <span className="ml-auto text-xs">(solo super admin puede cambiarlo)</span>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <Input
                   name="numVacations"

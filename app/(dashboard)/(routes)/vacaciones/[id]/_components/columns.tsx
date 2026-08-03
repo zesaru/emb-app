@@ -3,6 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { VacationsWithUser } from '@/types/collections';
 import { CancelRequestButton } from "@/app/(dashboard)/_components/cancel-request-button";
+import { SuperAdminForceCancelButton } from "@/app/(dashboard)/_components/super-admin-force-cancel-button";
 
 function isCancelled(row: VacationsWithUser) {
   return Boolean((row as { cancelled_at?: string | null }).cancelled_at);
@@ -118,12 +119,19 @@ export const columns: ColumnDef<VacationsWithUser>[] = [
     id: "accion",
     header: "Acción",
     cell: ({ row }) => (
-      <CancelRequestButton
-        requestId={row.original.id ?? ""}
-        ownerId={row.original.id_user ?? ""}
-        isPending={!row.original.approve_request && !isCancelled(row.original)}
-        resource="vacation"
-      />
+      <div className="flex flex-col items-start gap-1">
+        <CancelRequestButton
+          requestId={row.original.id ?? ""}
+          ownerId={row.original.id_user ?? ""}
+          isPending={!row.original.approve_request && !isCancelled(row.original)}
+          resource="vacation"
+        />
+        <SuperAdminForceCancelButton
+          requestId={row.original.id ?? ""}
+          isCancelled={isCancelled(row.original)}
+          resource="vacation"
+        />
+      </div>
     ),
   },
 ]
