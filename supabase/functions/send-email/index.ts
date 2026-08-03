@@ -9,7 +9,6 @@ interface SendEmailPayload {
   to: string[];
   subject: string;
   html: string;
-  importance?: "normal" | "high";
 }
 
 function isSendEmailPayload(value: unknown): value is SendEmailPayload {
@@ -20,8 +19,7 @@ function isSendEmailPayload(value: unknown): value is SendEmailPayload {
     v.to.length > 0 &&
     v.to.every((entry) => typeof entry === "string" && entry.trim().length > 0) &&
     typeof v.subject === "string" &&
-    typeof v.html === "string" &&
-    (v.importance === undefined || v.importance === "normal" || v.importance === "high")
+    typeof v.html === "string"
   );
 }
 
@@ -67,7 +65,6 @@ async function sendMailViaGraph(
           subject: payload.subject,
           body: { contentType: "HTML", content: payload.html },
           toRecipients: payload.to.map((address) => ({ emailAddress: { address } })),
-          importance: payload.importance ?? "normal",
         },
         saveToSentItems: false,
       }),

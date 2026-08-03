@@ -12,11 +12,20 @@ import PendingApprovalsReminder, {
 
 export const dynamic = "force-dynamic";
 
+const STALE_AFTER_DAYS = 3;
+
+function isStale(createdAt: string | null | undefined): boolean {
+  if (!createdAt) return false;
+  const ageMs = Date.now() - new Date(createdAt).getTime();
+  return ageMs >= STALE_AFTER_DAYS * 24 * 60 * 60 * 1000;
+}
+
 /**
  * GET /api/cron/pending-approvals-reminder
  * Recordatorio diario a admins/super_admins activos con las solicitudes
- * de compensatorios/vacaciones que siguen pendientes de aprobar. No manda
- * nada si no hay ninguna pendiente. Invocada por Vercel Cron (vercel.json).
+ * de compensatorios/vacaciones que llevan más de 3 días esperando
+ * aprobación. No manda nada si no hay ninguna solicitud tan atrasada.
+ * Invocada por Vercel Cron (vercel.json).
  */
 export async function GET(request: Request) {
   const verification = verifyCronSecret(request);
@@ -33,9 +42,9 @@ export async function GET(request: Request) {
       supabase.rpc("list_unapproved_vacations"),
     ]);
 
-    const compensatorys = (compensatorysResult.data as any[]) || [];
-    const compensatoryHours = (compensatoryHoursResult.data as any[]) || [];
-    const vacations = (vacationsResult.data as any[]) || [];
+    const compensatorys = ((compensatorysResult.data as any[]) || []).filter((row) => isStale(row.created_at));
+    const compensatoryHours = ((compensatoryHoursResult.data as any[]) || []).filter((row) => isStale(row.created_at));
+    const vacations = ((vacationsResult.data as any[]) || []).filter((row) => isStale(row.created_at));
 
     const categories: PendingApprovalsCategory[] = [
       {
@@ -67,7 +76,7 @@ export async function GET(request: Request) {
     const totalCount = categories.reduce((sum, category) => sum + category.count, 0);
 
     if (totalCount === 0) {
-      return NextResponse.json({ sent: false, reason: "no pending requests" });
+      return NextResponse.json({ sent: false, reason: "no pending requests older than 3 days" });
     }
 
     const realAdminEmails = await getActiveAdminEmails();
@@ -86,10 +95,9 @@ export async function GET(request: Request) {
       if (!email) continue;
       await sendOrCaptureEmail({
         to: email,
-        subject: `Recordatorio: ${totalCount} solicitud${totalCount === 1 ? "" : "es"} pendiente${totalCount === 1 ? "" : "s"} de aprobar`,
+        subject: `Recordatorio amistoso: ${totalCount} solicitud${totalCount === 1 ? "" : "es"} pendiente${totalCount === 1 ? "" : "s"} de aprobar`,
         templateName: "PendingApprovalsReminder",
         triggeredByUserId: null,
-        importance: "high",
         react: React.createElement(PendingApprovalsReminder, {
           categories,
           totalCount,
