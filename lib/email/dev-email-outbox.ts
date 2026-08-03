@@ -11,6 +11,7 @@ type SendOrCaptureEmailInput = {
   templateName: string;
   payload?: Record<string, unknown> | null;
   triggeredByUserId?: string | null;
+  importance?: "normal" | "high";
 };
 
 function normalizeRecipients(recipients: string | string[]) {
@@ -97,7 +98,7 @@ export async function sendOrCaptureEmail(input: SendOrCaptureEmailInput) {
 
   const supabase = await createClient();
   const { error } = await supabase.functions.invoke("send-email", {
-    body: { to: recipients, subject: input.subject, html },
+    body: { to: recipients, subject: input.subject, html, importance: input.importance ?? "normal" },
     headers: { "x-internal-token": process.env.SUPABASE_INTERNAL_FUNCTION_SECRET || "" },
   });
 

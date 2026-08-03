@@ -89,6 +89,7 @@ export async function GET(request: Request) {
         subject: `Recordatorio: ${totalCount} solicitud${totalCount === 1 ? "" : "es"} pendiente${totalCount === 1 ? "" : "s"} de aprobar`,
         templateName: "PendingApprovalsReminder",
         triggeredByUserId: null,
+        importance: "high",
         react: React.createElement(PendingApprovalsReminder, {
           categories,
           totalCount,
