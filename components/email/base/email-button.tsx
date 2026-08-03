@@ -28,6 +28,12 @@ export const EmailButton: React.FC<Readonly<EmailButtonProps>> = ({
 };
 
 const primaryButtonStyle = {
+  // backgroundColor primero: Outlook/M365 (motor de Word) y otros clientes no
+  // soportan linear-gradient y descartan la propiedad "background" completa
+  // si no la entienden -- sin este fallback sólido, el botón queda sin fondo
+  // y el texto blanco se vuelve invisible. El gradient se aplica encima en
+  // los clientes que sí lo soportan.
+  backgroundColor: colors.accentBlue,
   background: `linear-gradient(135deg, ${colors.accentBlue} 0%, ${colors.accentPurple} 100%)`,
   borderRadius: borderRadius.md,
   color: colors.white,
