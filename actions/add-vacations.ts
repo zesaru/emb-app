@@ -8,9 +8,9 @@ import { sendOrCaptureEmail } from "@/lib/email/dev-email-outbox";
 import { VacationRequestAdmin } from "@/components/email/templates/vacation/vacation-request-admin";
 import {
   buildUrl,
-  getSystemEmail,
   resolveEmailRecipients,
 } from "@/components/email/utils/email-config";
+import { getActiveAdminEmails } from "@/lib/notifications/get-active-admin-emails";
 import React from "react";
 
 interface AddVacationResponse {
@@ -109,7 +109,8 @@ export const addVacation = async (data: unknown): Promise<AddVacationResponse> =
       return { success: false, error: "No se pudo registrar la solicitud de vacaciones" };
     }
 
-    const to = resolveEmailRecipients(getSystemEmail(), user.email);
+    const adminEmails = await getActiveAdminEmails();
+    const to = resolveEmailRecipients(adminEmails, user.email);
     const userName = (insertedRows[0] as { users_name?: string })?.users_name || user.email || "Usuario";
 
     try {

@@ -7,9 +7,10 @@ import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { addVacation } from '@/actions/add-vacations'
 
-const { sendEmailMock, resolveEmailRecipientsMock } = vi.hoisted(() => ({
+const { sendEmailMock, resolveEmailRecipientsMock, getActiveAdminEmailsMock } = vi.hoisted(() => ({
   sendEmailMock: vi.fn(),
   resolveEmailRecipientsMock: vi.fn((recipients: string | string[]) => recipients),
+  getActiveAdminEmailsMock: vi.fn(),
 }))
 
 vi.mock('@/utils/supabase/server', () => ({
@@ -22,9 +23,12 @@ vi.mock('next/cache', () => ({
 
 vi.mock('@/components/email/utils/email-config', () => ({
   buildUrl: vi.fn((path: string) => `https://emb-app.vercel.app${path}`),
-  getSystemEmail: vi.fn(() => 'sistema@embperujapan.org'),
   isEmailDeliveryEnabled: vi.fn(() => true),
   resolveEmailRecipients: resolveEmailRecipientsMock,
+}))
+
+vi.mock('@/lib/notifications/get-active-admin-emails', () => ({
+  getActiveAdminEmails: (...args: any[]) => getActiveAdminEmailsMock(...args),
 }))
 
 describe('addVacation', () => {
@@ -32,6 +36,7 @@ describe('addVacation', () => {
     vi.clearAllMocks()
     sendEmailMock.mockResolvedValue({ data: null, error: null })
     resolveEmailRecipientsMock.mockImplementation((recipients: string | string[]) => recipients)
+    getActiveAdminEmailsMock.mockResolvedValue(['admin1@embperujapan.org', 'admin2@embperujapan.org'])
   })
 
   it('retorna error cuando no hay sesión', async () => {

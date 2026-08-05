@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { compensatorySchema } from "@/lib/validation/schemas";
 import { sendOrCaptureEmail } from "@/lib/email/dev-email-outbox";
 import { CompensatoryRequestAdmin } from "@/components/email/templates/compensatory/compensatory-request-admin";
-import { buildUrl } from "@/components/email/utils/email-config";
+import { buildUrl, resolveEmailRecipients } from "@/components/email/utils/email-config";
+import { getActiveAdminEmails } from "@/lib/notifications/get-active-admin-emails";
 import React from "react";
 
 export const addPost = async (formData: FormData) => {
@@ -54,7 +55,8 @@ export const addPost = async (formData: FormData) => {
       return { success: false, error: "Error creando registro" };
     }
 
-    const email = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
+    const adminEmails = await getActiveAdminEmails();
+    const recipients = resolveEmailRecipients(adminEmails, user.email);
     const { data: userProfile } = await supabase
       .from("users")
       .select("name")
@@ -66,7 +68,7 @@ export const addPost = async (formData: FormData) => {
       try {
         const compensatoryId = result.data[0]?.id;
         const data = await sendOrCaptureEmail({
-          to: email,
+          to: recipients,
           subject: `Nueva Solicitud de Compensatorio - ${userName}`,
           templateName: "CompensatoryRequestAdmin",
           triggeredByUserId: user.id,

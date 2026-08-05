@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const createClientMock = vi.fn();
 const revalidatePathMock = vi.fn();
 const sendOrCaptureEmailMock = vi.fn();
+const getActiveAdminEmailsMock = vi.fn();
+const resolveEmailRecipientsMock = vi.fn((recipients: string | string[]) => recipients);
 
 vi.mock("@/utils/supabase/server", () => ({
   createClient: (...args: any[]) => createClientMock(...args),
@@ -14,6 +16,15 @@ vi.mock("next/cache", () => ({
 
 vi.mock("@/lib/email/dev-email-outbox", () => ({
   sendOrCaptureEmail: (...args: any[]) => sendOrCaptureEmailMock(...args),
+}));
+
+vi.mock("@/lib/notifications/get-active-admin-emails", () => ({
+  getActiveAdminEmails: (...args: any[]) => getActiveAdminEmailsMock(...args),
+}));
+
+vi.mock("@/components/email/utils/email-config", () => ({
+  buildUrl: (path: string) => `http://localhost:3003${path}`,
+  resolveEmailRecipients: (...args: any[]) => resolveEmailRecipientsMock(...args),
 }));
 
 function buildFormData(overrides: Partial<Record<string, string>> = {}) {
@@ -32,6 +43,8 @@ describe("addPost", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sendOrCaptureEmailMock.mockResolvedValue({});
+    getActiveAdminEmailsMock.mockResolvedValue(["admin1@embperujapan.org", "admin2@embperujapan.org"]);
+    resolveEmailRecipientsMock.mockImplementation((recipients: string | string[]) => recipients);
   });
 
   it("retorna error y no envía email si el insert falla", async () => {

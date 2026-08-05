@@ -7,6 +7,7 @@ import { compensatoryRequestSchema } from "@/lib/validation/schemas";
 import { sendOrCaptureEmail } from "@/lib/email/dev-email-outbox";
 import { CompensatoryUseRequestAdmin } from "@/components/email/templates/compensatory/compensatory-use-request-admin";
 import { buildUrl, resolveEmailRecipients } from "@/components/email/utils/email-config";
+import { getActiveAdminEmails } from "@/lib/notifications/get-active-admin-emails";
 import React from "react";
 import { z } from "zod";
 
@@ -68,8 +69,8 @@ export async function addCompensatorioRequest(
       return { success: false, error: "Error procesando solicitud" };
     }
 
-    const email = process.env.EMBPERUJAPAN_EMAIL || 'admin@example.com';
-    const recipients = resolveEmailRecipients(email, user.email);
+    const adminEmails = await getActiveAdminEmails();
+    const recipients = resolveEmailRecipients(adminEmails, user.email);
     const { data: userProfile } = await supabase
       .from("users")
       .select("name")

@@ -8,6 +8,9 @@ const { sendEmailMock } = vi.hoisted(() => ({
 const { resolveEmailRecipientsMock } = vi.hoisted(() => ({
   resolveEmailRecipientsMock: vi.fn((recipients: string | string[]) => recipients),
 }));
+const { getActiveAdminEmailsMock } = vi.hoisted(() => ({
+  getActiveAdminEmailsMock: vi.fn(),
+}));
 
 vi.mock("@/utils/supabase/server", () => ({
   createClient: vi.fn(),
@@ -21,6 +24,10 @@ vi.mock("@/components/email/utils/email-config", () => ({
   buildUrl: vi.fn((path: string) => `http://localhost:3003${path}`),
   isEmailDeliveryEnabled: vi.fn(() => true),
   resolveEmailRecipients: (...args: any[]) => resolveEmailRecipientsMock(...args),
+}));
+
+vi.mock("@/lib/notifications/get-active-admin-emails", () => ({
+  getActiveAdminEmails: (...args: any[]) => getActiveAdminEmailsMock(...args),
 }));
 
 describe("add-compensatorio-request", () => {
@@ -46,6 +53,7 @@ describe("add-compensatorio-request", () => {
     vi.clearAllMocks();
     sendEmailMock.mockResolvedValue({ data: null, error: null });
     resolveEmailRecipientsMock.mockImplementation((recipients: string | string[]) => recipients);
+    getActiveAdminEmailsMock.mockResolvedValue(["admin1@embperujapan.org", "admin2@embperujapan.org"]);
   });
 
   it("retorna error cuando no hay sesión", async () => {
@@ -151,7 +159,7 @@ describe("add-compensatorio-request", () => {
 
     expect(result).toEqual({ success: true });
     expect(resolveEmailRecipientsMock).toHaveBeenCalledWith(
-      expect.any(String),
+      ["admin1@embperujapan.org", "admin2@embperujapan.org"],
       "cmurillo@embperujapan.org",
     );
     expect(sendEmailMock).toHaveBeenCalledWith(
