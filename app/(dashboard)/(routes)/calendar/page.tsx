@@ -1,6 +1,6 @@
 import { createClient } from "@/utils/supabase/server";
 import getVacationswithUser from "@/actions/getVacationswithUser";
-import getsCompensatorioswithUser from "@/actions/getCompensatorioswithUser";
+import getCalendarCompensatorios from "@/actions/getCalendarCompensatorios";
 import { redirect } from "next/navigation";
 import Calendar from "./_components/calendar";
 
@@ -20,7 +20,7 @@ export default async function CalendarPage() {
   // Vercel best practice: Parallel data fetching to eliminate waterfalls
   const [vacations, compensatorys] = await Promise.all([
     getVacationswithUser(),
-    getsCompensatorioswithUser()
+    getCalendarCompensatorios()
   ]);
 
   return (

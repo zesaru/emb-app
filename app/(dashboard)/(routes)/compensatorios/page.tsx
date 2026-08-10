@@ -4,6 +4,7 @@ import { columns } from "./_components/columns"
 import getsCompensatorioswithUser from "@/actions/getCompensatorioswithUser";
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth/admin-check";
+import { canViewAllCompensatorys } from "@/lib/auth/compensatory-permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +20,9 @@ export default async function Compensatorios() {
     redirect("/login");
   }
   const admin = await isAdmin(user.id);
+  const canViewAll = admin || await canViewAllCompensatorys(user.id);
   const allCompensatorys = await getsCompensatorioswithUser();
-  const compensatorys = admin
+  const compensatorys = canViewAll
     ? allCompensatorys
     : allCompensatorys.filter((c) => c.user_id === user.id);
 
@@ -32,4 +34,3 @@ export default async function Compensatorios() {
     </div>
   )
 }
-

@@ -6,6 +6,7 @@ import { User, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import getsCompensatorioswithUserById from "@/actions/getCompensatoriosbyId";
 import getUsersById from "@/actions/getUsersById";
 import { isAdmin } from "@/lib/auth/admin-check";
+import { canViewAllCompensatorys } from "@/lib/auth/compensatory-permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,9 @@ export default async function CompensatoriosbyId({
     redirect("/login");
   }
 
-  if (id !== user.id && !(await isAdmin(user.id))) {
+  const canViewAll = (await isAdmin(user.id)) || await canViewAllCompensatorys(user.id);
+
+  if (id !== user.id && !canViewAll) {
     redirect("/");
   }
 

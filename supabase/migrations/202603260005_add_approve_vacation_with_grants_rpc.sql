@@ -46,7 +46,7 @@ begin
     update public.vacations
     set approve_request = true,
         approvedby = p_approved_by,
-        approved_date = p_approved_at,
+        approved_date = p_approved_at
     where id = p_vacation_id;
 
     v_remaining_days := v_requested_days;
@@ -92,7 +92,7 @@ begin
     update public.vacations
     set approve_request = true,
         approvedby = p_approved_by,
-        approved_date = p_approved_at,
+        approved_date = p_approved_at
     where id = p_vacation_id;
 
     update public.users
