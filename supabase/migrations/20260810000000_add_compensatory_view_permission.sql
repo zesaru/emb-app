@@ -48,5 +48,5 @@ using (
 insert into public.user_permissions (user_id, permission)
 select id, 'compensatorys.view_all'
 from public.users
-where lower(email) = 'aumise@embperujapan.org'
+where lower(email) = 'auemise@embperujapan.org'
 on conflict (user_id, permission) do nothing;
