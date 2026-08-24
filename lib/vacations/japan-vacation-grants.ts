@@ -163,14 +163,14 @@ export function resolveJapanUpcomingGrantDate(hireDate: string, latestGrantedOn?
   return getJapanNextGrantDate(hireDate, latestGrantedOn);
 }
 
-function isCutoverManualGrant(grant?: {
+function isManualGrant(grant?: {
   grantedOn: string;
   ruleType?: JapanVacationRuleType | null;
   notes?: string | null;
 } | null) {
   if (!grant) return false;
 
-  return grant.ruleType === "manual" && (grant.notes ?? "").startsWith("[cutover:");
+  return grant.ruleType === "manual";
 }
 
 export function resolveJapanNextExpectedGrantDate(
@@ -189,7 +189,9 @@ export function resolveJapanNextExpectedGrantDate(
         }
       : latestGrant ?? null;
 
-  if (normalizedGrant && !isCutoverManualGrant(normalizedGrant)) {
+  // A manual adjustment may change a balance, but never the statutory
+  // anniversary derived from the employee's hire date.
+  if (normalizedGrant && !isManualGrant(normalizedGrant)) {
     return getJapanNextGrantDate(hireDate, normalizedGrant.grantedOn);
   }
 
@@ -201,6 +203,21 @@ export function resolveJapanNextExpectedGrantDate(
   }
 
   return formatIsoDate(nextGrant);
+}
+
+/** Returns the legal anniversary that is currently due, if the employee is eligible. */
+export function resolveJapanDueGrantDate(hireDate: string, referenceDate?: string | null) {
+  const firstGrantDate = parseIsoDate(formatIsoDate(addUtcMonths(parseIsoDate(hireDate), 6)));
+  const reference = referenceDate ? parseIsoDate(referenceDate) : new Date();
+
+  if (firstGrantDate > reference) return null;
+
+  let dueGrant = firstGrantDate;
+  while (addUtcMonths(dueGrant, 12) <= reference) {
+    dueGrant = addUtcMonths(dueGrant, 12);
+  }
+
+  return formatIsoDate(dueGrant);
 }
 
 export function determineJapanVacationRuleType(input: {

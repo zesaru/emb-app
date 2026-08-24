@@ -6,6 +6,7 @@ import {
   getJapanGrantedDays,
   getJapanNextGrantDate,
   resolveJapanNextExpectedGrantDate,
+  resolveJapanDueGrantDate,
   resolveJapanUpcomingGrantDate,
   resolveJapanServiceBand,
 } from "@/lib/vacations/japan-vacation-grants";
@@ -182,11 +183,21 @@ describe("resolveJapanNextExpectedGrantDate", () => {
     }, "2026-03-26")).toBe("2026-10-01");
   });
 
-  it("mantiene la cadencia desde grants manuales no marcados como cutover", () => {
-    expect(resolveJapanNextExpectedGrantDate("2025-09-16", {
-      grantedOn: "2026-03-16",
+  it("no permite que un grant manual desplace el aniversario legal", () => {
+    expect(resolveJapanNextExpectedGrantDate("2007-12-14", {
+      grantedOn: "2026-04-01",
       ruleType: "manual",
       notes: "Ajuste manual validado por administracion",
-    }, "2026-03-26")).toBe("2027-03-16");
+    }, "2026-03-26")).toBe("2026-06-14");
+  });
+});
+
+describe("resolveJapanDueGrantDate", () => {
+  it("conserva como pendiente el aniversario legal aun con un ajuste manual previo", () => {
+    expect(resolveJapanDueGrantDate("2007-12-14", "2026-08-24")).toBe("2026-06-14");
+  });
+
+  it("no devuelve una fecha antes de que nazca el primer derecho", () => {
+    expect(resolveJapanDueGrantDate("2026-01-01", "2026-06-30")).toBeNull();
   });
 });

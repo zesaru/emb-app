@@ -502,7 +502,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
               <TableHead>Jornada</TableHead>
               <TableHead>Asistencia 80%</TableHead>
               <TableHead>Proximo grant</TableHead>
-              <TableHead>Vacaciones</TableHead>
+              <TableHead>Saldo de vacaciones</TableHead>
               <TableHead>Compensatorios</TableHead>
               <TableHead>Ingreso</TableHead>
               <TableHead>Diplomatico</TableHead>
@@ -552,7 +552,14 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                       : "Manual"
                     : formatAdminDate(user.nextExpectedGrantDate)}
                 </TableCell>
-                <TableCell>{user.numVacations}</TableCell>
+                <TableCell>
+                  <div className="font-medium">{user.vacationBalance} días</div>
+                  <div className="text-xs text-muted-foreground">
+                    {user.nextVacationExpirationDate
+                      ? `Vence: ${formatAdminDate(user.nextVacationExpirationDate)}`
+                      : "Sin días vigentes"}
+                  </div>
+                </TableCell>
                 <TableCell>{user.numCompensatorys}</TableCell>
                 <TableCell>{formatAdminDate(user.hireDate || user.createdAt)}</TableCell>
                 <TableCell>

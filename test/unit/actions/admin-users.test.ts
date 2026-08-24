@@ -182,7 +182,7 @@ describe("Admin Users Actions", () => {
   });
 
   describe("listAdminUsers", () => {
-    it("ignora grants manuales de cutover al calcular proximo grant", async () => {
+    it("calcula fechas y saldo desde grants reales, no desde valores legacy", async () => {
       const orderUsersMock = vi.fn().mockResolvedValue({
         data: [
           {
@@ -210,6 +210,8 @@ describe("Admin Users Actions", () => {
             granted_on: "2026-04-01",
             rule_type: "manual",
             notes: "[cutover:2026-04-01] Initial manual grant from legacy num_vacations",
+            days_remaining: 15,
+            expires_on: "2028-04-01",
           },
         ],
         error: null,
@@ -249,6 +251,8 @@ describe("Admin Users Actions", () => {
       if (!result.success) return;
 
       expect(result.data[0]?.nextExpectedGrantDate).toBe("2026-10-01");
+      expect(result.data[0]?.vacationBalance).toBe(15);
+      expect(result.data[0]?.nextVacationExpirationDate).toBe("2028-04-01");
     });
   });
 });

@@ -18,6 +18,8 @@ describe("Admin Vacation Grants Actions", () => {
   });
 
   it("crea un grant cuando el usuario es elegible y no existe duplicado", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-07-01T00:00:00.000Z"));
     const singleUserMock = vi.fn().mockResolvedValue({
       data: {
         id: "123e4567-e89b-12d3-a456-426614174000",
@@ -30,6 +32,7 @@ describe("Admin Vacation Grants Actions", () => {
       error: null,
     });
     const maybeSingleGrantMock = vi.fn().mockResolvedValue({ data: null, error: null });
+    const grantsOrderMock = vi.fn().mockResolvedValue({ data: [], error: null });
     const insertedGrant = {
       id: "grant-1",
       user_id: "123e4567-e89b-12d3-a456-426614174000",
@@ -38,6 +41,7 @@ describe("Admin Vacation Grants Actions", () => {
     };
     const insertSingleMock = vi.fn().mockResolvedValue({ data: insertedGrant, error: null });
 
+    let grantSelectCalls = 0;
     const fromMock = vi.fn((table: string) => {
       if (table === "users") {
         return {
@@ -51,15 +55,11 @@ describe("Admin Vacation Grants Actions", () => {
 
       if (table === "vacation_grants") {
         return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              eq: vi.fn(() => ({
-                eq: vi.fn(() => ({
-                  maybeSingle: maybeSingleGrantMock,
-                })),
-              })),
-            })),
-          })),
+          select: vi.fn(() => {
+            grantSelectCalls += 1;
+            if (grantSelectCalls === 1) return { eq: vi.fn(() => ({ order: grantsOrderMock })) };
+            return { eq: vi.fn(() => ({ eq: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle: maybeSingleGrantMock })) })) })) };
+          }),
           insert: vi.fn(() => ({
             select: vi.fn(() => ({
               single: insertSingleMock,
@@ -86,9 +86,10 @@ describe("Admin Vacation Grants Actions", () => {
     if (!result.success) return;
     expect(result.data).toMatchObject(insertedGrant);
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin/users");
+    vi.useRealTimers();
   });
 
-  it("rechaza grants con asistencia pendiente", async () => {
+  it("rechaza grants con asistencia marcada como no elegible", async () => {
     const singleUserMock = vi.fn().mockResolvedValue({
       data: {
         id: "123e4567-e89b-12d3-a456-426614174000",
@@ -96,7 +97,7 @@ describe("Admin Vacation Grants Actions", () => {
         hire_date: "2024-01-01",
         weekly_days: 5,
         weekly_hours: 40,
-        attendance_eligible: null,
+        attendance_eligible: false,
       },
       error: null,
     });
@@ -121,7 +122,7 @@ describe("Admin Vacation Grants Actions", () => {
     });
 
     expect(result.success).toBe(false);
-    expect(result.error).toContain("80%");
+    expect(result.error).toContain("asistencia");
     expect(revalidatePathMock).not.toHaveBeenCalled();
   });
 
@@ -147,8 +148,8 @@ describe("Admin Vacation Grants Actions", () => {
       },
       error: null,
     });
-    const maybeSingleGrantMock = vi.fn().mockResolvedValue({
-      data: { granted_on: "2024-07-01" },
+    const grantsOrderMock = vi.fn().mockResolvedValue({
+      data: [{ granted_on: "2024-07-01" }],
       error: null,
     });
 
@@ -167,11 +168,7 @@ describe("Admin Vacation Grants Actions", () => {
         return {
           select: vi.fn(() => ({
             eq: vi.fn(() => ({
-              order: vi.fn(() => ({
-                limit: vi.fn(() => ({
-                  maybeSingle: maybeSingleGrantMock,
-                })),
-              })),
+              order: grantsOrderMock,
             })),
           })),
         };

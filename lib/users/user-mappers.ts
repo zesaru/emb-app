@@ -37,6 +37,8 @@ export type AdminUserListItem = {
   grantMode: UserGrantMode;
   manualNextGrantDate: string | null;
   nextExpectedGrantDate: string | null;
+  vacationBalance: number;
+  nextVacationExpirationDate: string | null;
   numVacations: number;
   numCompensatorys: number;
 };
@@ -112,6 +114,8 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     grantMode: parseGrantMode(row.grant_mode),
     manualNextGrantDate: row.manual_next_grant_date ?? null,
     nextExpectedGrantDate: null,
+    vacationBalance: 0,
+    nextVacationExpirationDate: null,
     numVacations: parseNumberLike(row.num_vacations),
     numCompensatorys: parseNumberLike(row.num_compensatorys),
   };

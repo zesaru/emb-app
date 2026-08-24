@@ -26,6 +26,7 @@ export async function listAdminUsers(filters: Filters = {}) {
     }
 
     let rows = (data || []).map((row) => normalizeUserRow(row as any));
+    const today = new Date().toISOString().slice(0, 10);
 
     const activeUserIds = rows.map((row) => row.id);
     const latestGrantByUserId = new Map<string, {
@@ -33,11 +34,15 @@ export async function listAdminUsers(filters: Filters = {}) {
       ruleType: "standard" | "proportional" | "manual" | null;
       notes: string | null;
     }>();
+    const vacationSummaryByUserId = new Map<string, {
+      balance: number;
+      nextExpirationDate: string | null;
+    }>();
 
     if (activeUserIds.length > 0) {
       const { data: grants, error: grantsError } = await supabase
         .from("vacation_grants")
-        .select("user_id, granted_on, rule_type, notes")
+        .select("user_id, granted_on, rule_type, notes, days_remaining, expires_on")
         .in("user_id", activeUserIds)
         .order("granted_on", { ascending: false });
 
@@ -52,14 +57,27 @@ export async function listAdminUsers(filters: Filters = {}) {
               notes: grant.notes ?? null,
             });
           }
+
+          // Only unexpired available days are part of the real balance.
+          if (grant.days_remaining > 0 && grant.expires_on >= today) {
+            const summary = vacationSummaryByUserId.get(grant.user_id) ?? {
+              balance: 0,
+              nextExpirationDate: null,
+            };
+            summary.balance += grant.days_remaining;
+            if (!summary.nextExpirationDate || grant.expires_on < summary.nextExpirationDate) {
+              summary.nextExpirationDate = grant.expires_on;
+            }
+            vacationSummaryByUserId.set(grant.user_id, summary);
+          }
         }
       }
     }
 
-    const today = new Date().toISOString().slice(0, 10);
-
     rows = rows.map((row) => ({
       ...row,
+      vacationBalance: vacationSummaryByUserId.get(row.id)?.balance ?? 0,
+      nextVacationExpirationDate: vacationSummaryByUserId.get(row.id)?.nextExpirationDate ?? null,
       nextExpectedGrantDate: row.hireDate
         ? row.grantMode === "manual"
           ? row.manualNextGrantDate

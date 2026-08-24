@@ -3,7 +3,7 @@
 import { requireAdminContext } from "@/actions/admin/users/shared";
 import { normalizeUserRow } from "@/lib/users/user-mappers";
 import { adminVacationGrantListSchema } from "@/lib/validation/schemas";
-import { resolveJapanNextExpectedGrantDate } from "@/lib/vacations/japan-vacation-grants";
+import { resolveJapanDueGrantDate } from "@/lib/vacations/japan-vacation-grants";
 import issueUserVacationGrant from "./issue-user-grant";
 
 type IssueNextUserVacationGrantInput = {
@@ -35,23 +35,21 @@ export async function issueNextUserVacationGrant(input: IssueNextUserVacationGra
       return { success: false as const, error: "Este usuario requiere emisión manual de grants" };
     }
 
-    const { data: latestGrant, error: latestGrantError } = await supabase
+    const { data: grants, error: grantsError } = await supabase
       .from("vacation_grants")
       .select("granted_on")
       .eq("user_id", data.userId)
       .order("granted_on", { ascending: false })
-      .limit(1)
-      .maybeSingle();
 
-    if (latestGrantError) {
+    if (grantsError) {
       return { success: false as const, error: "No se pudo calcular el siguiente grant" };
     }
 
-    const grantedOn = resolveJapanNextExpectedGrantDate(
-      user.hireDate,
-      latestGrant?.granted_on ?? null,
-      new Date().toISOString().slice(0, 10),
-    );
+    const grantedOn = resolveJapanDueGrantDate(user.hireDate, new Date().toISOString().slice(0, 10));
+    if (!grantedOn) return { success: false as const, error: "El primer grant legal todavía no está vigente" };
+    if ((grants ?? []).some((grant) => grant.granted_on === grantedOn)) {
+      return { success: false as const, error: `El grant legal del ${grantedOn} ya fue emitido` };
+    }
 
     return issueUserVacationGrant({
       userId: data.userId,

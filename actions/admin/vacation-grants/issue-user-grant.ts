@@ -5,7 +5,10 @@ import { revalidatePath } from "next/cache";
 import { requireAdminContext } from "@/actions/admin/users/shared";
 import { normalizeUserRow } from "@/lib/users/user-mappers";
 import { adminVacationGrantCreateSchema } from "@/lib/validation/schemas";
-import { buildJapanVacationGrantDraft } from "@/lib/vacations/japan-vacation-grants";
+import {
+  buildJapanVacationGrantDraft,
+  resolveJapanDueGrantDate,
+} from "@/lib/vacations/japan-vacation-grants";
 
 type IssueUserVacationGrantInput = {
   userId: string;
@@ -49,13 +52,50 @@ export async function issueUserVacationGrant(input: IssueUserVacationGrantInput)
       return { success: false as const, error: "El usuario no tiene fecha de ingreso configurada" };
     }
 
+    if (user.attendanceEligible === false) {
+      return { success: false as const, error: "El usuario no es elegible por asistencia para este grant" };
+    }
+
+    // For the standard schedule, an administrator may issue only the next
+    // statutory grant and only once that entitlement date has arrived.
+    // Manual-mode users retain an explicit exception path.
+    if (user.grantMode !== "manual") {
+      const { data: grants, error: grantsError } = await supabase
+        .from("vacation_grants")
+        .select("granted_on")
+        .eq("user_id", user.id)
+        .order("granted_on", { ascending: false });
+
+      if (grantsError) {
+        return { success: false as const, error: "No se pudo verificar el calendario legal de grants" };
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+      const dueDate = resolveJapanDueGrantDate(user.hireDate, today);
+      if (!dueDate) {
+        return { success: false as const, error: "El primer grant legal todavía no está vigente" };
+      }
+
+      if ((grants ?? []).some((grant) => grant.granted_on === dueDate)) {
+        return { success: false as const, error: `El grant legal del ${dueDate} ya fue emitido` };
+      }
+
+      if (data.grantedOn !== dueDate) {
+        return { success: false as const, error: `La fecha debe coincidir con el hito legal pendiente: ${dueDate}` };
+      }
+
+    }
+
     const draft = buildJapanVacationGrantDraft({
       userId: user.id,
       hireDate: user.hireDate,
       grantedOn: data.grantedOn,
       weeklyDays: user.weeklyDays,
       weeklyHours: user.weeklyHours,
-      attendanceEligible: user.attendanceEligible,
+      // Until attendance reconciliation is implemented, a pending review is
+      // treated as eligible. An explicit administrative "false" still blocks
+      // a grant, preserving the existing exception path.
+      attendanceEligible: user.attendanceEligible ?? true,
       notes: data.notes ?? null,
     });
 
