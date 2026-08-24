@@ -10,11 +10,9 @@ import { DataTableVacations } from "../../_components/data-table-vacaciones";
 import { columnVacations } from "../../_components/columms-vacations";
 
 import getsCompensatoriosNoApproved from "@/actions/getCompensatoriosNoApproved";
-import GetNotApproved from "@/actions/getNotApproved";
 import getCompensatoriosHourNoapproved from "@/actions/getCompensatoriosHourNoapproved";
 import getVacationsNoapproved from "@/actions/getVacationsNoApproved";
 import getUsersById from "@/actions/getUsersById";
-import getAttendanceswithUser from "@/actions/getAttendanceswithUser";
 import Usertabs from "../../_components/usertabs";
 export const dynamic = "force-dynamic";
 
@@ -34,16 +32,12 @@ export default async function Index() {
     userData,
     compensatorysnoapproved,
     compensatorysHournoapproved,
-    vacationsnoapproved,
-    notApproved,
-    attendances
+    vacationsnoapproved
   ] = await Promise.all([
     getUsersById(user.id),
     getsCompensatoriosNoApproved(),
     getCompensatoriosHourNoapproved(),
-    getVacationsNoapproved(),
-    GetNotApproved(),
-    getAttendanceswithUser()
+    getVacationsNoapproved()
   ]);
 
   const currentUserProfile = userData?.[0] ?? {
@@ -62,7 +56,7 @@ export default async function Index() {
         <div>
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
@@ -71,7 +65,7 @@ export default async function Index() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {notApproved[0]?.unapproved_count ?? 0}
+                      {compensatorysnoapproved.length}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Cantidad de solicitudes por aprobar
@@ -86,7 +80,7 @@ export default async function Index() {
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {notApproved[0]?.final_approve_request_count ?? 0}
+                      {compensatorysHournoapproved.length}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Cantidad de solicitudes por aprobar
@@ -105,33 +99,6 @@ export default async function Index() {
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Cantidad de solicitudes por aprobar
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Registros de asistencia
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {attendances.length}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Total de registros
                     </p>
                   </CardContent>
                 </Card>

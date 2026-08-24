@@ -1,8 +1,9 @@
 import { createClient } from "@/utils/supabase/server";
 export const dynamic = "force-dynamic";
-import List from '../../_components/list'
 import { redirect } from "next/navigation";
 import { isAdmin } from "@/lib/auth/admin-check";
+import { getAdminDashboardReport } from "@/actions/get-admin-dashboard-report";
+import { DashboardReportView } from "./_components/dashboard-report";
 
 const Report = async () => {
   const supabase = await createClient();
@@ -19,11 +20,11 @@ const Report = async () => {
     redirect("/");
   }
 
+  const report = await getAdminDashboardReport();
+
   return (
-    <div className="min-h-screen bg-surface px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <List />
-      </div>
+    <div className="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
+      <DashboardReportView report={report} />
     </div>
   )
 }
