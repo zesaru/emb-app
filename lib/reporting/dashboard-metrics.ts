@@ -34,6 +34,20 @@ export type DashboardReport = {
   vacationStatus: { label: string; value: number; color: string }[];
   monthlyVacationDays: { label: string; approved: number; requested: number }[];
   upcomingVacations: { start: string; finish: string; days: number }[];
+  employees: EmployeeTimeReportRow[];
+};
+
+export type EmployeeTimeReportRow = {
+  id: string;
+  name: string;
+  email: string;
+  hireDate: string | null;
+  vacationBalance: number;
+  nextRenewalDate: string | null;
+  nextExpiryDate: string | null;
+  compensatoryApprovedHours: number;
+  compensatoryAvailableHours: number;
+  recommendation: "urgent" | "plan" | "healthy";
 };
 
 const monthFormatter = new Intl.DateTimeFormat("es-PE", { month: "short" });
@@ -50,6 +64,7 @@ export function buildDashboardReport(input: {
   compensatoryHoursAvailable: number;
   vacations: VacationRow[];
   compensatorys: CompensatoryRow[];
+  employees?: EmployeeTimeReportRow[];
   now?: Date;
 }): DashboardReport {
   const now = input.now ?? new Date();
@@ -122,5 +137,6 @@ export function buildDashboardReport(input: {
       .sort((a, b) => (a.start ?? "").localeCompare(b.start ?? ""))
       .slice(0, 5)
       .map((row) => ({ start: row.start ?? "", finish: row.finish ?? "", days: Number(row.days ?? 0) })),
+    employees: input.employees ?? [],
   };
 }

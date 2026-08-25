@@ -10,6 +10,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import type { DashboardReport } from "@/lib/reporting/dashboard-metrics";
+import { TeamTimeReport } from "./team-time-report";
 
 const number = new Intl.NumberFormat("es-PE");
 
@@ -84,6 +85,8 @@ export function DashboardReportView({ report }: { report: DashboardReport }) {
         <MetricCard label="Solicitudes pendientes" value={number.format(report.overview.pendingVacations)} detail="Vacaciones esperando aprobación" icon={Clock3} tone="amber" />
         <MetricCard label="En vacaciones hoy" value={number.format(report.overview.activeVacations)} detail="Personas con periodo activo" icon={CalendarCheck2} tone="sky" />
       </section>
+
+      <TeamTimeReport employees={report.employees} />
 
       <section className="grid gap-6 lg:grid-cols-[1.55fr_1fr]">
         <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_34px_-24px_rgba(15,23,42,0.32)]">
