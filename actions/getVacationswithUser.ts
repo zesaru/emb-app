@@ -15,8 +15,14 @@ const getVacationsWithUser = async():Promise<VacationsWithUser[]> => {
 
     const { data, error } = await supabase
       .from('vacations')
-      .select('*, user1:users!vacations_id_user_fkey(*)')
-      .gte('days',  0);
+      // The administration queue is only for active administrative staff.
+      // `!inner` prevents orphaned or non-eligible vacation rows from
+      // reaching the page at all.
+      .select('*, user1:users!vacations_id_user_fkey!inner(*)')
+      .eq('user1.is_active', true)
+      .eq('user1.is_diplomatic', false)
+      .gte('days',  0)
+      .order('request_date', { ascending: false });
 
     if (error) {
       console.log(error.message);

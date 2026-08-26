@@ -51,6 +51,14 @@ export default async function Vacaciones() {
   return (
     <div className="flex flex-col bg-gray-50 min-h-screen">
       <div className="container mx-auto py-8 px-4">
+        <div className="mb-7 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">Gestión de vacaciones</p>
+            <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">Personal administrativo activo</h1>
+            <p className="mt-1 text-sm text-slate-600">Solo se incluyen colaboradores activos no diplomáticos.</p>
+          </div>
+          <p className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700">{vacations.length} solicitudes visibles</p>
+        </div>
         {/* Tarjetas de estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Solicitudes Pendientes */}

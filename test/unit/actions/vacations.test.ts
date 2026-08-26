@@ -56,7 +56,9 @@ describe('Vacations Actions', () => {
         },
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        gte: vi.fn().mockResolvedValue({
+        eq: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
           data: mockData,
           error: null,
         }),
@@ -68,7 +70,10 @@ describe('Vacations Actions', () => {
       const result = await getVacationsWithUser()
 
       expect(mockSupabase.from).toHaveBeenCalledWith('vacations')
-      expect(mockSupabase.select).toHaveBeenCalledWith('*, user1:users!vacations_id_user_fkey(*)')
+      expect(mockSupabase.select).toHaveBeenCalledWith('*, user1:users!vacations_id_user_fkey!inner(*)')
+      expect(mockSupabase.eq).toHaveBeenCalledWith('user1.is_active', true)
+      expect(mockSupabase.eq).toHaveBeenCalledWith('user1.is_diplomatic', false)
+      expect(mockSupabase.order).toHaveBeenCalledWith('request_date', { ascending: false })
       expect(result).toEqual(mockData)
     })
   })
