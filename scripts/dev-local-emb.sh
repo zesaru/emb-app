@@ -7,7 +7,7 @@ npx supabase start >/dev/null
 
 status_env="$(npx supabase status -o env)"
 read_status_var() {
-  printf '%s\n' "$status_env" | awk -F= -v key="$1" '$1 == key { print substr($0, index($0, "=") + 1); exit }'
+  printf '%s\n' "$status_env" | awk -F= -v key="$1" '$1 == key { value = substr($0, index($0, "=") + 1); gsub(/^"|"$/, "", value); print value; exit }'
 }
 
 export NEXT_PUBLIC_SUPABASE_URL="$(read_status_var API_URL)"
