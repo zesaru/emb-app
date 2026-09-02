@@ -47,7 +47,7 @@ export function DataTable<TData, TValue>({
     columns,
     initialState: {
       pagination: {
-          pageSize: 100,
+          pageSize: 25,
       },
     },
     getCoreRowModel: getCoreRowModel(),
