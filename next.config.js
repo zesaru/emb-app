@@ -9,8 +9,12 @@ const connectSrc = [
     ? [
         "http://127.0.0.1:54321",
         "http://localhost:54321",
+        "http://127.0.0.1:55421",
+        "http://localhost:55421",
         "ws://127.0.0.1:54321",
         "ws://localhost:54321",
+        "ws://127.0.0.1:55421",
+        "ws://localhost:55421",
       ]
     : []),
 ].join(' ');
