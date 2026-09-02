@@ -20,6 +20,7 @@ describe("createAdminUser", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.resetModules();
+    process.env.NEXT_PUBLIC_APP_URL = "https://emb-app.vercel.app";
   });
 
   function mockProfileUpsert(profileError: unknown = null) {
@@ -58,7 +59,9 @@ describe("createAdminUser", () => {
     });
 
     expect(result.success).toBe(true);
-    expect(inviteUserByEmailMock).toHaveBeenCalledWith("newuser@example.com");
+    expect(inviteUserByEmailMock).toHaveBeenCalledWith("newuser@example.com", {
+      redirectTo: "https://emb-app.vercel.app/auth/callback?next=/welcome",
+    });
     expect(upsertMock).toHaveBeenCalled();
     const [payload] = upsertMock.mock.calls[0];
     expect(payload).toMatchObject({
@@ -73,6 +76,7 @@ describe("createAdminUser", () => {
       attendance_eligible: true,
       num_vacations: 5,
       num_compensatorys: 2,
+      invitation_status: "pending",
     });
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin/users");
   });

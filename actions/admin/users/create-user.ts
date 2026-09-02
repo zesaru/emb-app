@@ -7,6 +7,11 @@ import { adminUserCreateSchema } from "@/lib/validation/schemas";
 import { toUsersTableUpdate } from "@/lib/users/user-mappers";
 import { requireAdminContext } from "./shared";
 
+function getInviteRedirectUrl() {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  return appUrl ? `${appUrl.replace(/\/$/, "")}/auth/callback?next=/welcome` : undefined;
+}
+
 type CreateAdminUserInput = {
   email: string;
   name: string;
@@ -35,7 +40,7 @@ export async function createAdminUser(input: CreateAdminUserInput) {
 
     if (data.provisioningMode === "invite") {
       const { data: inviteData, error: inviteError } = await (adminClient.auth.admin as any)
-        .inviteUserByEmail(data.email);
+        .inviteUserByEmail(data.email, { redirectTo: getInviteRedirectUrl() });
 
       if (inviteError) {
         return { success: false as const, error: inviteError.message || "No se pudo invitar al usuario" };
@@ -64,6 +69,14 @@ export async function createAdminUser(input: CreateAdminUserInput) {
     const profilePayload = {
       id: authUserId,
       email: data.email,
+      ...(data.provisioningMode === "invite" ? {
+        invitation_status: "pending",
+        invitation_sent_at: new Date().toISOString(),
+        invitation_last_sent_at: new Date().toISOString(),
+      } : {
+        invitation_status: "accepted",
+        invitation_accepted_at: new Date().toISOString(),
+      }),
       ...toUsersTableUpdate({
         name: data.name,
         position: data.position,

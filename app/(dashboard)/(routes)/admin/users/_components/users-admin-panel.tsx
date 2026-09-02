@@ -6,6 +6,7 @@ import createAdminUser from "@/actions/admin/users/create-user";
 import deactivateAdminUser from "@/actions/admin/users/deactivate-user";
 import listAdminUsers from "@/actions/admin/users/list-users";
 import reactivateAdminUser from "@/actions/admin/users/reactivate-user";
+import resendUserInvitation from "@/actions/admin/users/resend-user-invitation";
 import sendAdminUserPasswordResetLink from "@/actions/admin/users/send-password-reset-link";
 import setAdminUserTemporaryPassword from "@/actions/admin/users/set-temporary-password";
 import updateAdminUser from "@/actions/admin/users/update-user";
@@ -316,6 +317,16 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
     });
   };
 
+  const handleResendInvitation = (userId: string) => {
+    setMessage(null);
+    startTransition(async () => {
+      const result = await resendUserInvitation({ userId });
+      if (!result.success) return setError(result.error);
+      setSuccess(result.message || "Invitación reenviada");
+      reloadUsers();
+    });
+  };
+
   const handleSetTempPassword = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!tempPasswordUser) return;
@@ -501,6 +512,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
               <TableHead>Estado</TableHead>
               <TableHead>Jornada</TableHead>
               <TableHead>Asistencia 80%</TableHead>
+              <TableHead>Acceso</TableHead>
               <TableHead>Proximo grant</TableHead>
               <TableHead>Saldo de vacaciones</TableHead>
               <TableHead>Compensatorios</TableHead>
@@ -515,6 +527,11 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                 <TableCell>
                   <div className="font-medium">{user.name || "Sin nombre"}</div>
                   <div className="text-xs text-muted-foreground">{user.email}</div>
+                </TableCell>
+                <TableCell>
+                  <Badge variant={user.invitationStatus === "pending" ? "outline" : "secondary"}>
+                    {user.invitationStatus === "pending" ? "Invitación pendiente" : "Activo"}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <div className="text-sm text-muted-foreground">
@@ -578,7 +595,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
             ))}
             {filteredUsers.length === 0 && (
               <TableRow>
-                <TableCell colSpan={12} className="text-center text-muted-foreground">
+                <TableCell colSpan={13} className="text-center text-muted-foreground">
                   No hay usuarios para los filtros seleccionados.
                 </TableCell>
               </TableRow>
@@ -854,6 +871,16 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                   >
                     Enviar enlace de reset
                   </Button>
+                  {editingUser.invitationStatus === "pending" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleResendInvitation(editingUser.id)}
+                      disabled={isPending}
+                    >
+                      Reenviar invitación
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     variant="outline"

@@ -5,3 +5,4 @@ export { deactivateAdminUser } from "./deactivate-user";
 export { reactivateAdminUser } from "./reactivate-user";
 export { sendAdminUserPasswordResetLink } from "./send-password-reset-link";
 export { setAdminUserTemporaryPassword } from "./set-temporary-password";
+export { resendUserInvitation } from "./resend-user-invitation";

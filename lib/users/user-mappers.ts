@@ -16,6 +16,9 @@ type RawUserRow = {
   attendance_eligible?: boolean | string | null;
   grant_mode?: string | null;
   manual_next_grant_date?: string | null;
+  invitation_status?: string | null;
+  invitation_sent_at?: string | null;
+  invitation_accepted_at?: string | null;
 };
 
 export type UserGrantMode = "automatic" | "manual";
@@ -39,6 +42,9 @@ export type AdminUserListItem = {
   nextExpectedGrantDate: string | null;
   vacationBalance: number;
   nextVacationExpirationDate: string | null;
+  invitationStatus: "pending" | "accepted";
+  invitationSentAt: string | null;
+  invitationAcceptedAt: string | null;
   numVacations: number;
   numCompensatorys: number;
 };
@@ -116,6 +122,9 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     nextExpectedGrantDate: null,
     vacationBalance: 0,
     nextVacationExpirationDate: null,
+    invitationStatus: row.invitation_status === "pending" ? "pending" : "accepted",
+    invitationSentAt: row.invitation_sent_at ?? null,
+    invitationAcceptedAt: row.invitation_accepted_at ?? null,
     numVacations: parseNumberLike(row.num_vacations),
     numCompensatorys: parseNumberLike(row.num_compensatorys),
   };
