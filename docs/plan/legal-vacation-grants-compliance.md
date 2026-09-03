@@ -93,6 +93,14 @@ Ninguna de estas conciliaciones debe aumentar o reducir días sin una fuente
 administrativa aprobada. La corrección de fecha de Risa es el único ajuste que
 preserva íntegramente el saldo y no exige inferir consumos.
 
+**Protección operativa (2026-09-03):** para impedir que el cron emita hitos
+históricos incompletos, `auemise@embperujapan.org`,
+`noyanagi@embperujapan.org` y `llopez@embperujapan.org` fueron pasadas a
+`grant_mode = manual`. Sus saldos y grants no se modificaron. César permanece
+en automático y Risa conserva el comportamiento automático por defecto. Los
+tres perfiles manuales solo volverán a automático después de una conciliación
+histórica aprobada.
+
 ## Fase 3 — Integridad, seguridad y trazabilidad de base de datos
 
 Agregar mediante migraciones revisadas:

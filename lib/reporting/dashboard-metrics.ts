@@ -47,6 +47,7 @@ export type EmployeeTimeReportRow = {
   nextExpiryDate: string | null;
   compensatoryApprovedHours: number;
   compensatoryAvailableHours: number;
+  grantMode: "automatic" | "manual" | null;
   recommendation: "urgent" | "plan" | "healthy";
 };
 
@@ -56,6 +57,22 @@ function asDate(value: string | null | undefined) {
   if (!value) return null;
   const date = new Date(`${value.length === 10 ? `${value}T12:00:00` : value}`);
   return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function getVacationRecommendation(input: {
+  vacationBalance: number;
+  nextExpiryDate: string | null;
+  now?: Date;
+}): EmployeeTimeReportRow["recommendation"] {
+  const now = input.now ?? new Date();
+  const expiry = asDate(input.nextExpiryDate);
+  const daysUntilExpiry = expiry
+    ? Math.ceil((expiry.getTime() - now.getTime()) / 86400000)
+    : null;
+
+  if (daysUntilExpiry != null && daysUntilExpiry <= 90 && input.vacationBalance > 0) return "urgent";
+  if (input.vacationBalance >= 15) return "plan";
+  return "healthy";
 }
 
 export function buildDashboardReport(input: {

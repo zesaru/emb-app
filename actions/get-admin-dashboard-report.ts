@@ -1,7 +1,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { requireCurrentUserAdmin } from "@/lib/auth/admin-check";
 import { summarizeVacationGrantBalance } from "@/lib/vacations/grant-balance";
-import { buildDashboardReport } from "@/lib/reporting/dashboard-metrics";
+import { buildDashboardReport, getVacationRecommendation } from "@/lib/reporting/dashboard-metrics";
 import { resolveJapanNextExpectedGrantDate } from "@/lib/vacations/japan-vacation-grants";
 
 export async function getAdminDashboardReport() {
@@ -9,7 +9,7 @@ export async function getAdminDashboardReport() {
   const supabase = await createClient();
 
   const [usersResult, grantsResult, vacationsResult, compensatorysResult] = await Promise.all([
-    supabase.from("users").select("id, name, email, hire_date").eq("is_active", true).eq("is_diplomatic", false),
+    supabase.from("users").select("id, name, email, hire_date, grant_mode").eq("is_active", true).eq("is_diplomatic", false),
     supabase.from("vacation_grants").select("user_id, granted_on, expires_on, days_granted, days_remaining, rule_type, notes"),
     supabase.from("vacations").select("id, created_at, start, finish, days, approve_request"),
     supabase.from("compensatorys").select("id, user_id, created_at, event_date, event_name, hours, compensated_hours, approve_request, final_approve_request, cancelled_at"),
@@ -56,10 +56,6 @@ export async function getAdminDashboardReport() {
     const balance = summarizeVacationGrantBalance(grants, today);
     const latestGrant = [...grants].sort((a, b) => b.granted_on.localeCompare(a.granted_on))[0];
     const compensation = compensatoryByUser.get(user.id) ?? { approved: 0, used: 0 };
-    const daysUntilExpiry = balance.nextExpiryDate
-      ? Math.ceil((new Date(`${balance.nextExpiryDate}T00:00:00Z`).getTime() - new Date(`${today}T00:00:00Z`).getTime()) / 86400000)
-      : null;
-
     return {
       id: user.id,
       name: user.name || "Sin nombre",
@@ -76,11 +72,12 @@ export async function getAdminDashboardReport() {
       nextExpiryDate: balance.nextExpiryDate,
       compensatoryApprovedHours: compensation.approved,
       compensatoryAvailableHours: Math.max(0, compensation.approved - compensation.used),
-      recommendation: daysUntilExpiry != null && daysUntilExpiry <= 90 && balance.totalRemaining > 0
-        ? "urgent" as const
-        : balance.totalRemaining >= 15
-          ? "plan" as const
-          : "healthy" as const,
+      grantMode: user.grant_mode === "manual" ? "manual" as const : user.grant_mode === "automatic" ? "automatic" as const : null,
+      recommendation: getVacationRecommendation({
+        vacationBalance: balance.totalRemaining,
+        nextExpiryDate: balance.nextExpiryDate,
+        now: new Date(`${today}T12:00:00Z`),
+      }),
     };
   }).sort((a, b) => {
     const priority = { urgent: 0, plan: 1, healthy: 2 };

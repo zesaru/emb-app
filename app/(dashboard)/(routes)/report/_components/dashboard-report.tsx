@@ -70,7 +70,7 @@ export function DashboardReportView({ report }: { report: DashboardReport }) {
             </p>
             <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Panorama del equipo</h1>
             <p className="mt-3 text-sm leading-6 text-slate-300 sm:text-base">
-              Métricas consolidadas de vacaciones, compensatorios y asistencia para priorizar la operación diaria.
+              Métricas consolidadas de vacaciones y compensatorios para priorizar la operación diaria.
             </p>
           </div>
           <p className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-medium text-slate-200">

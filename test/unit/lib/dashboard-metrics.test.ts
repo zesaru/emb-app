@@ -1,5 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { buildDashboardReport } from "@/lib/reporting/dashboard-metrics";
+import { buildDashboardReport, getVacationRecommendation } from "@/lib/reporting/dashboard-metrics";
+
+describe("getVacationRecommendation", () => {
+  it("prioriza saldos que vencen dentro de 90 días", () => {
+    expect(getVacationRecommendation({
+      vacationBalance: 4,
+      nextExpiryDate: "2026-10-01",
+      now: new Date("2026-09-03T12:00:00Z"),
+    })).toBe("urgent");
+  });
+
+  it("recomienda planificar el uso para saldos altos sin vencimiento cercano", () => {
+    expect(getVacationRecommendation({
+      vacationBalance: 15,
+      nextExpiryDate: null,
+      now: new Date("2026-09-03T12:00:00Z"),
+    })).toBe("plan");
+  });
+
+  it("mantiene saludable un saldo pequeño sin alerta de vencimiento", () => {
+    expect(getVacationRecommendation({
+      vacationBalance: 9,
+      nextExpiryDate: null,
+      now: new Date("2026-09-03T12:00:00Z"),
+    })).toBe("healthy");
+  });
+});
 
 describe("buildDashboardReport", () => {
   it("calcula los indicadores operativos sin contar registros cancelados", () => {

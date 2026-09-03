@@ -1,7 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "../../_components/data-table";
 import { columns } from "../../_components/columns";
 import { DataTableHour } from "../../_components/data-table-hour";
@@ -13,6 +11,8 @@ import getsCompensatoriosNoApproved from "@/actions/getCompensatoriosNoApproved"
 import getCompensatoriosHourNoapproved from "@/actions/getCompensatoriosHourNoapproved";
 import getVacationsNoapproved from "@/actions/getVacationsNoApproved";
 import getUsersById from "@/actions/getUsersById";
+import { getAdminDashboardReport } from "@/actions/get-admin-dashboard-report";
+import { DashboardReportView } from "../report/_components/dashboard-report";
 import Usertabs from "../../_components/usertabs";
 export const dynamic = "force-dynamic";
 
@@ -49,62 +49,15 @@ export default async function Index() {
     num_vacations: 0,
     num_compensatorys: 0,
   };
+  const dashboardReport = currentUserProfile.admin === "admin"
+    ? await getAdminDashboardReport()
+    : null;
 
   return (
     <div className="w-full flex flex-col items-center">
       {currentUserProfile?.admin === "admin" ? (
-        <div>
-          <Tabs defaultValue="overview" className="space-y-4">
-            <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Solicitudes de compensatorios
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {compensatorysnoapproved.length}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Cantidad de solicitudes por aprobar
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Descansos compensatorios por aprobar
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {compensatorysHournoapproved.length}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Cantidad de solicitudes por aprobar
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Solicitudes de vacaciones
-                    </CardTitle>
-                    </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      {vacationsnoapproved.length}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Cantidad de solicitudes por aprobar
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-          </Tabs>
+        <div className="w-full space-y-8 bg-slate-50 px-4 py-6 md:px-6 lg:px-8">
+          <DashboardReportView report={dashboardReport!} />
           <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
             <div className="flex items-center justify-between">
               <h2 className="text-m font-bold tracking-tight">
