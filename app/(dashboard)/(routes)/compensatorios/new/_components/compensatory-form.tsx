@@ -29,7 +29,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 const accountFormSchema = z.object({
   dob: z.date({
@@ -61,20 +61,18 @@ export function AccountForm() {
     data.append("hours", formData.hours.toString());
     data.append("event_date", format(formData.dob, 'yyyy-MM-dd'));
     
-    const response = await addPost(data);
+    try {
+      const response = await addPost(data);
 
-    if (response?.success) {
-      toast("🦄 Su registro ha sido ingresado!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
-      form.reset({ hours: 0, name: "", dob: new Date() });
+      if (response?.success) {
+        toast.success("Registro compensatorio ingresado.");
+        form.reset({ hours: 0, name: "", dob: new Date() });
+        return;
+      }
+
+      toast.error(response?.error || "No se pudo registrar el compensatorio.");
+    } catch {
+      toast.error("Ocurrió un error inesperado al registrar el compensatorio.");
     }
   };
 
@@ -155,7 +153,9 @@ export function AccountForm() {
           )}
         />
 
-        <Button type="submit">Guardar</Button>
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting ? "Guardando..." : "Guardar"}
+        </Button>
       </form>
     </Form>
   );

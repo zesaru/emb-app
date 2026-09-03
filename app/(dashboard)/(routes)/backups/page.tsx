@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { BackupList } from "./components/backup-list";
+import { CreateBackupButton } from "./components/create-backup-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 import { requireCurrentUserSuperAdminAndActive } from "@/lib/auth/admin-check";
 
 export const dynamic = "force-dynamic";
@@ -29,12 +28,7 @@ export default async function BackupsPage() {
               Gestiona los backups de la base de datos
             </p>
           </div>
-          <form action="/api/backup" method="POST">
-            <Button type="submit">
-              <Plus className="mr-2 h-4 w-4" />
-              Crear Backup
-            </Button>
-          </form>
+          <CreateBackupButton />
         </div>
 
         <Card>

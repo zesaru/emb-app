@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import { addVacation } from "@/actions/add-vacations";
 import { Button } from "@/components/ui/button";
@@ -90,41 +90,14 @@ export function VacationNewForm() {
       });
 
       if (response?.success) {
-        toast("Solicitud de vacaciones registrada correctamente.", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        toast.success("Solicitud de vacaciones registrada correctamente.");
         form.reset();
         return;
       }
 
-      toast(response?.error || "No se pudo registrar la solicitud de vacaciones.", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.error(response?.error || "No se pudo registrar la solicitud de vacaciones.");
     } catch {
-      toast("Ocurrió un error inesperado al registrar la solicitud.", {
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.error("Ocurrió un error inesperado al registrar la solicitud.");
     }
   };
 

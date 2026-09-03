@@ -2,7 +2,7 @@
 
 import { Row } from "@tanstack/react-table";
 import { useState, useTransition } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import adminCancelCompensatorio from "@/actions/admin-cancel-compensatorio";
 import {
@@ -33,18 +33,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       const response = await adminCancelCompensatorio(id);
 
       if (response?.success) {
-        toast("La solicitud fue eliminada.", {
-          position: "top-center",
-          autoClose: 3000,
-          theme: "light",
-        });
+        toast.success("La solicitud fue eliminada.");
         setOpen(false);
       } else {
-        toast(`Error: ${response?.error || "No se pudo eliminar la solicitud."}`, {
-          position: "top-center",
-          autoClose: 5000,
-          theme: "light",
-        });
+        toast.error(response?.error || "No se pudo eliminar la solicitud.");
       }
     });
   };
@@ -60,40 +52,24 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         hours: Number(data.hours ?? 0),
       };
 
-      const responseRequest = await fetch("/api/compensatorys/approve", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(compensatoryInput),
-      });
-      const response = await responseRequest.json();
-
-      if (response?.success) {
-        toast("El registro ha sido aprobado.", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+      try {
+        const responseRequest = await fetch("/api/compensatorys/approve", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(compensatoryInput),
         });
-        return;
-      }
+        const response = await responseRequest.json();
 
-      if (response?.error) {
-        toast(`Error: ${response.error}`, {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        if (response?.success) {
+          toast.success("El registro ha sido aprobado.");
+          return;
+        }
+
+        toast.error(response?.error || "No se pudo aprobar el registro.");
+      } catch {
+        toast.error("Ocurrió un error inesperado al aprobar el registro.");
       }
     });
   };

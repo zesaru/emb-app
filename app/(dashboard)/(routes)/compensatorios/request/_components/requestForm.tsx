@@ -7,7 +7,7 @@ import { es } from "date-fns/locale";
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import type { z } from "zod";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import addCompensatorioRequest from "@/actions/add-compensatorio-request";
 import { Button } from "@/components/ui/button";
@@ -47,23 +47,10 @@ export default function RequestForm() {
 
       if (response?.success) {
         if (response.warning) {
-          toast.warn(response.warning, {
-            position: "top-right",
-            autoClose: 4000,
-            theme: "light",
-          });
+          toast.warning(response.warning);
         }
 
-        toast("Su solicitud ha sido registrada.", {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
-        });
+        toast.success("Su solicitud ha sido registrada.");
 
         form.reset({
           hours: 0,
@@ -74,11 +61,7 @@ export default function RequestForm() {
         return;
       }
 
-      toast.error(response?.error || "No se pudo registrar la solicitud.", {
-        position: "top-right",
-        autoClose: 4000,
-        theme: "light",
-      });
+      toast.error(response?.error || "No se pudo registrar la solicitud.");
     });
   };
 

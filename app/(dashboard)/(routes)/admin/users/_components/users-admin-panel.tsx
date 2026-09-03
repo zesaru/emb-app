@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState, useTransition } from "react";
+import { toast } from "sonner";
 
 import createAdminUser from "@/actions/admin/users/create-user";
 import deactivateAdminUser from "@/actions/admin/users/deactivate-user";
@@ -174,8 +175,14 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
     });
   };
 
-  const setSuccess = (text: string) => setMessage({ type: "success", text });
-  const setError = (text: string) => setMessage({ type: "error", text });
+  const setSuccess = (text: string) => {
+    setMessage({ type: "success", text });
+    toast.success(text);
+  };
+  const setError = (text: string) => {
+    setMessage({ type: "error", text });
+    toast.error(text);
+  };
 
   const reloadGrantHistory = async (user: AdminUserListItem, grantIdToKeepEditing?: string | null) => {
     const result = await listUserVacationGrants({ userId: user.id });

@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Icons } from "@/components/animatespin"
 import { useState } from "react"
 import React from "react"
-import { toast } from "react-toastify"
+import { toast } from "sonner"
 import { supabase } from '@/lib/supabase'
 
 
@@ -52,8 +52,12 @@ export default  function ResetForm() {
         email: dat.username,
         password: dat.password,
       });
-      if (data.user) {
+      if (error) {
+        toast.error(error.message || "Error al cambiar la contraseña");
+      } else if (data.user) {
         toast.success("Contraseña cambiada con éxito");
+      } else {
+        toast.error("No se pudo cambiar la contraseña");
       }
     } catch (error) {
       console.log(error);

@@ -2,7 +2,7 @@
 
 import { Row } from "@tanstack/react-table";
 import { useState, useTransition } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 import adminCancelCompensatorio from "@/actions/admin-cancel-compensatorio";
 import {
@@ -32,26 +32,24 @@ export function DataTableRowActions<TData>({
 
   const handleClick = () => {
     startTransition(async () => {
-      const responseRequest = await fetch("/api/compensatorys/approve-hour", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(row.original),
-      });
-      const response = await responseRequest.json();
-
-      if (response?.success) {
-        toast("Ha sido aprobado el descanso.", {
-          position: "top-center",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-          theme: "light",
+      try {
+        const responseRequest = await fetch("/api/compensatorys/approve-hour", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(row.original),
         });
+        const response = await responseRequest.json();
+
+        if (response?.success) {
+          toast.success("Ha sido aprobado el descanso.");
+          return;
+        }
+
+        toast.error(response?.error || "No se pudo aprobar el descanso.");
+      } catch {
+        toast.error("Ocurrió un error inesperado al aprobar el descanso.");
       }
     });
   };
@@ -64,18 +62,10 @@ export function DataTableRowActions<TData>({
       const response = await adminCancelCompensatorio(id);
 
       if (response?.success) {
-        toast("La solicitud fue eliminada.", {
-          position: "top-center",
-          autoClose: 3000,
-          theme: "light",
-        });
+        toast.success("La solicitud fue eliminada.");
         setOpen(false);
       } else {
-        toast(`Error: ${response?.error || "No se pudo eliminar la solicitud."}`, {
-          position: "top-center",
-          autoClose: 5000,
-          theme: "light",
-        });
+        toast.error(response?.error || "No se pudo eliminar la solicitud.");
       }
     });
   };
