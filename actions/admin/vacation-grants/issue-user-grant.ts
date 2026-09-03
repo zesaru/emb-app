@@ -125,6 +125,10 @@ export async function issueUserVacationGrant(input: IssueUserVacationGrantInput)
       .select("*")
       .single();
 
+    if (insertError?.code === "23505") {
+      return { success: false as const, error: "El grant legal ya fue emitido por otro proceso" };
+    }
+
     if (insertError || !insertedGrant) {
       return { success: false as const, error: "No se pudo crear el grant de vacaciones" };
     }

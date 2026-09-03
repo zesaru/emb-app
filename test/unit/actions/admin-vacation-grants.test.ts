@@ -126,6 +126,73 @@ describe("Admin Vacation Grants Actions", () => {
     expect(revalidatePathMock).not.toHaveBeenCalled();
   });
 
+  it("informa un duplicado cuando otro proceso emite el mismo grant legal", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-07-01T00:00:00.000Z"));
+
+    const singleUserMock = vi.fn().mockResolvedValue({
+      data: {
+        id: "123e4567-e89b-12d3-a456-426614174000",
+        email: "user@example.com",
+        hire_date: "2024-01-01",
+        weekly_days: 5,
+        weekly_hours: 40,
+        attendance_eligible: true,
+      },
+      error: null,
+    });
+    const grantsOrderMock = vi.fn().mockResolvedValue({ data: [], error: null });
+    const maybeSingleGrantMock = vi.fn().mockResolvedValue({ data: null, error: null });
+    const insertSingleMock = vi.fn().mockResolvedValue({
+      data: null,
+      error: { code: "23505", message: "duplicate key value violates unique constraint" },
+    });
+
+    let grantSelectCalls = 0;
+    const fromMock = vi.fn((table: string) => {
+      if (table === "users") {
+        return {
+          select: vi.fn(() => ({
+            eq: vi.fn(() => ({ single: singleUserMock })),
+          })),
+        };
+      }
+
+      if (table === "vacation_grants") {
+        return {
+          select: vi.fn(() => {
+            grantSelectCalls += 1;
+            if (grantSelectCalls === 1) return { eq: vi.fn(() => ({ order: grantsOrderMock })) };
+            return { eq: vi.fn(() => ({ eq: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle: maybeSingleGrantMock })) })) })) };
+          }),
+          insert: vi.fn(() => ({
+            select: vi.fn(() => ({ single: insertSingleMock })),
+          })),
+        };
+      }
+
+      throw new Error(`unexpected table ${table}`);
+    });
+
+    requireAdminContextMock.mockResolvedValue({
+      adminUserId: "admin-1",
+      supabase: { from: fromMock },
+    });
+
+    const issueUserVacationGrant = (await import("@/actions/admin/vacation-grants/issue-user-grant")).default;
+    const result = await issueUserVacationGrant({
+      userId: "123e4567-e89b-12d3-a456-426614174000",
+      grantedOn: "2024-07-01",
+    });
+
+    expect(result).toEqual({
+      success: false,
+      error: "El grant legal ya fue emitido por otro proceso",
+    });
+    expect(revalidatePathMock).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
   it("calcula y delega la emision del siguiente grant", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-26T00:00:00.000Z"));
