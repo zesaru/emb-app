@@ -50,7 +50,7 @@ function MetricCard({
   );
 }
 
-export function DashboardReportView({ report }: { report: DashboardReport }) {
+export function DashboardReportView({ report, showDetailedReports = true, showHeader = true, showOverview = true }: { report: DashboardReport; showDetailedReports?: boolean; showHeader?: boolean; showOverview?: boolean }) {
   const maxMonth = Math.max(1, ...report.monthlyVacationDays.map((item) => item.requested));
   const statusTotal = Math.max(1, report.vacationStatus.reduce((total, item) => total + item.value, 0));
   const timestamp = new Intl.DateTimeFormat("es-PE", {
@@ -60,7 +60,7 @@ export function DashboardReportView({ report }: { report: DashboardReport }) {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <section className="relative overflow-hidden rounded-3xl bg-slate-950 px-6 py-8 text-white shadow-[0_22px_60px_-30px_rgba(15,23,42,0.85)] sm:px-8">
+      {showHeader && <section className="relative overflow-hidden rounded-3xl bg-slate-950 px-6 py-8 text-white shadow-[0_22px_60px_-30px_rgba(15,23,42,0.85)] sm:px-8">
         <div className="absolute -right-20 -top-24 h-64 w-64 rounded-full bg-cyan-400/20 blur-3xl" />
         <div className="absolute -bottom-24 left-1/3 h-56 w-56 rounded-full bg-indigo-500/30 blur-3xl" />
         <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -77,18 +77,18 @@ export function DashboardReportView({ report }: { report: DashboardReport }) {
             Actualizado con datos reales: {timestamp}
           </p>
         </div>
-      </section>
+      </section>}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {showOverview && <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Equipo activo" value={number.format(report.overview.activeEmployees)} detail="Colaboradores no diplomáticos activos" icon={UsersRound} tone="indigo" />
         <MetricCard label="Saldo disponible" value={`${number.format(report.overview.vacationBalance)} días`} detail="Vacaciones vigentes del equipo" icon={Palmtree} tone="emerald" />
         <MetricCard label="Solicitudes pendientes" value={number.format(report.overview.pendingVacations)} detail="Vacaciones esperando aprobación" icon={Clock3} tone="amber" />
         <MetricCard label="En vacaciones hoy" value={number.format(report.overview.activeVacations)} detail="Personas con periodo activo" icon={CalendarCheck2} tone="sky" />
-      </section>
+      </section>}
 
-      <TeamTimeReport employees={report.employees} />
+      {showDetailedReports && <TeamTimeReport employees={report.employees} />}
 
-      <section className="grid gap-6 lg:grid-cols-[1.55fr_1fr]">
+      {showDetailedReports && <section className="grid gap-6 lg:grid-cols-[1.55fr_1fr]">
         <article className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_34px_-24px_rgba(15,23,42,0.32)]">
           <div className="flex items-start justify-between gap-4">
             <div>
@@ -128,12 +128,12 @@ export function DashboardReportView({ report }: { report: DashboardReport }) {
             ))}
           </div>
         </article>
-      </section>
+      </section>}
 
       <section className="grid gap-4 md:grid-cols-3">
         <article className="rounded-2xl border border-amber-100 bg-amber-50/60 p-5"><div className="flex items-center gap-3 text-amber-800"><Clock3 className="h-5 w-5" /><p className="font-semibold">Cola de compensatorios</p></div><p className="mt-4 text-3xl font-semibold text-slate-900">{number.format(report.overview.pendingCompensatoryRequests)}</p><p className="mt-1 text-sm text-slate-600">Solicitudes de horas por aprobar.</p><Link href="/compensatorios" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-amber-800">Gestionar <ArrowUpRight className="h-4 w-4" /></Link></article>
         <article className="rounded-2xl border border-sky-100 bg-sky-50/60 p-5"><div className="flex items-center gap-3 text-sky-800"><TimerReset className="h-5 w-5" /><p className="font-semibold">Descansos pendientes</p></div><p className="mt-4 text-3xl font-semibold text-slate-900">{number.format(report.overview.pendingCompensatoryRests)}</p><p className="mt-1 text-sm text-slate-600">Compensatorios listos para descanso.</p><Link href="/compensatorios" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-sky-800">Revisar <ArrowUpRight className="h-4 w-4" /></Link></article>
-        <article className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5"><div className="flex items-center gap-3 text-emerald-800"><CalendarClock className="h-5 w-5" /><p className="font-semibold">Vacaciones aprobadas</p></div><p className="mt-4 text-3xl font-semibold text-slate-900">{number.format(report.overview.approvedVacationDaysThisMonth)} días</p><p className="mt-1 text-sm text-slate-600">Días aprobados durante el mes actual.</p><Link href="/vacaciones" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-800">Ver vacaciones <ArrowUpRight className="h-4 w-4" /></Link></article>
+        <article className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-5"><div className="flex items-center gap-3 text-emerald-800"><CalendarClock className="h-5 w-5" /><p className="font-semibold">Vacaciones por aprobar</p></div><p className="mt-4 text-3xl font-semibold text-slate-900">{number.format(report.overview.pendingVacations)}</p><p className="mt-1 text-sm text-slate-600">Solicitudes esperando aprobación.</p><Link href="/vacaciones" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-emerald-800">Ver vacaciones <ArrowUpRight className="h-4 w-4" /></Link></article>
       </section>
     </div>
   );

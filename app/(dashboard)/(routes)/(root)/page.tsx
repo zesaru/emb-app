@@ -57,7 +57,7 @@ export default async function Index() {
     <div className="w-full flex flex-col items-center">
       {currentUserProfile?.admin === "admin" ? (
         <div className="w-full space-y-8 bg-slate-50 px-4 py-6 md:px-6 lg:px-8">
-          <DashboardReportView report={dashboardReport!} />
+          <DashboardReportView report={dashboardReport!} showDetailedReports={false} showHeader={false} showOverview={false} />
           <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
             <div className="flex items-center justify-between">
               <h2 className="text-m font-bold tracking-tight">
