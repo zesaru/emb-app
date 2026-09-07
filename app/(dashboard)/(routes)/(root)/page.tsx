@@ -58,26 +58,30 @@ export default async function Index() {
       {currentUserProfile?.admin === "admin" ? (
         <div className="w-full space-y-8 bg-slate-50 px-4 py-6 md:px-6 lg:px-8">
           <DashboardReportView report={dashboardReport!} showDetailedReports={false} showHeader={false} showOverview={false} />
-          <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
-            <div className="flex items-center justify-between">
-              <h2 className="text-m font-bold tracking-tight">
-                Aprobar solicitudes de compensatorios
-              </h2>
+          {compensatorysnoapproved.length > 0 && (
+            <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
+              <div className="flex items-center justify-between">
+                <h2 className="text-m font-bold tracking-tight">
+                  Aprobar solicitudes de compensatorios
+                </h2>
+              </div>
+              <DataTable columns={columns} data={compensatorysnoapproved} />
             </div>
-            <DataTable columns={columns} data={compensatorysnoapproved} />
-          </div>
+          )}
 
-          <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
-            <div className="flex items-center justify-between">
-              <h2 className="text-m font-bold tracking-tight">
-                Aprobar descansos por compensatorios
-              </h2>
+          {compensatorysHournoapproved.length > 0 && (
+            <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
+              <div className="flex items-center justify-between">
+                <h2 className="text-m font-bold tracking-tight">
+                  Aprobar descansos por compensatorios
+                </h2>
+              </div>
+              <DataTableHour
+                columns={columnsHour}
+                data={compensatorysHournoapproved}
+              />
             </div>
-            <DataTableHour
-              columns={columnsHour}
-              data={compensatorysHournoapproved}
-            />
-          </div>
+          )}
 
           <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
             <div className="flex items-center justify-between">
