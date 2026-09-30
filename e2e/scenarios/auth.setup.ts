@@ -27,9 +27,9 @@ setup('authenticate as admin', async ({ page }) => {
       // Add delay to avoid rate limiting
       await page.waitForTimeout(2000)
 
-      await page.fill('input[placeholder*="example"]', email)
-      await page.fill('input[type="password"]', password)
-      await page.click('button:has-text("Sign In")')
+      await page.getByRole('textbox', { name: 'Email' }).fill(email)
+      await page.locator('input[type="password"]').fill(password)
+      await page.getByRole('button', { name: 'Ingresar' }).click()
 
       // Wait for navigation
       await page.waitForTimeout(3000)

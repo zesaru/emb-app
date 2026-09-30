@@ -31,6 +31,23 @@ describe("normalizeUserRow", () => {
     expect(result.manualNextGrantDate).toBe("2026-08-31");
     expect(result.nextExpectedGrantDate).toBeNull();
     expect(result.role).toBe("user");
+    expect(result.provisioningStatus).toBe("ready");
+  });
+
+  it("identifica una cuenta provisional y conserva su modo de alta", () => {
+    const result = normalizeUserRow({
+      id: "123e4567-e89b-12d3-a456-426614174000",
+      email: "pending@example.com",
+      is_active: false,
+      provisioning_status: "pending",
+      provisioning_mode: "invite",
+    });
+
+    expect(result).toMatchObject({
+      isActive: false,
+      provisioningStatus: "pending",
+      provisioningMode: "invite",
+    });
   });
 
   it("prioriza flag admin para rol efectivo", () => {

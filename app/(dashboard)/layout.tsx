@@ -1,9 +1,21 @@
 import Navbar from "./_components/navbar";
 import Sidebar from "./_components/sidebar";
+import { redirect } from "next/navigation";
+import { requireUserActive } from "@/lib/auth/admin-check";
+import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  try {
+    await requireUserActive(user.id);
+  } catch {
+    redirect("/login");
+  }
+
   return (
     <div className="h-full">
       <div className="h-[80px] md:pl-56 fixed inset-y-0 w-full z-50">

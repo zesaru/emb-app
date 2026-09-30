@@ -177,6 +177,7 @@ export const userGrantModeSchema = z.enum(["automatic", "manual"]);
 export const adminUserProvisioningModeSchema = z.enum(["invite", "temporary_password"]);
 
 export const adminUserCreateSchema = z.object({
+  resumeUserId: uuidSchema.optional(),
   email: emailSchema,
   name: z.string().min(1, "Nombre es requerido").max(100, "Máximo 100 caracteres"),
   position: z.string().max(120, "Máximo 120 caracteres").optional(),
@@ -193,7 +194,7 @@ export const adminUserCreateSchema = z.object({
   numVacations: nonNegativeIntegerSchema.optional().default(0),
   numCompensatorys: nonNegativeIntegerSchema.optional().default(0),
 }).superRefine((data, ctx) => {
-  if (data.provisioningMode === "temporary_password" && !data.temporaryPassword) {
+  if (data.provisioningMode === "temporary_password" && !data.resumeUserId && !data.temporaryPassword) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ["temporaryPassword"],

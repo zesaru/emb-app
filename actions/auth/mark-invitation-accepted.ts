@@ -2,11 +2,17 @@
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/utils/supabase/server";
+import { requireUserActive } from "@/lib/auth/admin-check";
 
 export async function markInvitationAccepted() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false as const };
+  try {
+    await requireUserActive(user.id);
+  } catch {
+    return { success: false as const };
+  }
 
   const { error } = await (getSupabaseAdminClient()
     .from("users") as any)

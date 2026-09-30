@@ -121,6 +121,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createForm, setCreateForm] = useState(emptyCreateForm);
+  const [resumeUserId, setResumeUserId] = useState<string | null>(null);
 
   const [editingUser, setEditingUser] = useState<AdminUserListItem | null>(null);
   const [tempPasswordUser, setTempPasswordUser] = useState<AdminUserListItem | null>(null);
@@ -216,6 +217,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
 
     startTransition(async () => {
       const result = await createAdminUser({
+        resumeUserId: resumeUserId ?? undefined,
         email: createForm.email,
         name: createForm.name,
         position: createForm.position || undefined,
@@ -234,6 +236,12 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
       });
 
       if (!result.success) {
+        if (result.state === "incomplete") {
+          setResumeUserId(result.userId);
+          setError(`${result.error}. Alta pendiente (${result.userId}). ${result.emailMayHaveBeenSent ? "El correo podría haberse enviado." : "Aún no se envió el correo."} Reintenta para completar el perfil.`);
+          reloadUsers();
+          return;
+        }
         setError(result.error);
         return;
       }
@@ -241,8 +249,31 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
       setSuccess(result.message || "Usuario creado");
       setCreateOpen(false);
       setCreateForm(emptyCreateForm);
+      setResumeUserId(null);
       reloadUsers();
     });
+  };
+
+  const openPendingUser = (user: AdminUserListItem) => {
+    setResumeUserId(user.id);
+    setCreateForm({
+      ...emptyCreateForm,
+      email: user.email,
+      name: user.name || "",
+      position: user.position || "",
+      role: user.role === "super_admin" ? "admin" : user.role,
+      provisioningMode: user.provisioningMode ?? "invite",
+      hireDate: user.hireDate || "",
+      isDiplomatic: user.isDiplomatic,
+      weeklyDays: user.weeklyDays == null ? "" : String(user.weeklyDays),
+      weeklyHours: user.weeklyHours == null ? "" : String(user.weeklyHours),
+      attendanceEligible: user.attendanceEligible == null ? "pending" : user.attendanceEligible ? "eligible" : "ineligible",
+      grantMode: user.grantMode,
+      manualNextGrantDate: user.manualNextGrantDate || "",
+      numVacations: String(user.numVacations),
+      numCompensatorys: String(user.numCompensatorys),
+    });
+    setCreateOpen(true);
   };
 
   const handleUpdate = (event: FormEvent<HTMLFormElement>) => {
@@ -501,7 +532,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
               <Button type="button" variant="outline" onClick={reloadUsers} disabled={isPending} className="w-full">
                 Refrescar
               </Button>
-              <Button type="button" onClick={() => setCreateOpen(true)} className="w-full">
+              <Button type="button" onClick={() => { setResumeUserId(null); setCreateForm(emptyCreateForm); setCreateOpen(true); }} className="w-full">
                 Crear usuario
               </Button>
             </div>
@@ -537,7 +568,9 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                 </TableCell>
                 <TableCell>
                   <Badge variant={user.invitationStatus === "pending" ? "outline" : "secondary"}>
-                    {user.invitationStatus === "pending" ? "Invitación pendiente" : "Activo"}
+                    {user.provisioningStatus === "pending"
+                      ? "Alta pendiente"
+                      : user.invitationStatus === "pending" ? "Invitación pendiente" : "Activo"}
                   </Badge>
                 </TableCell>
                 <TableCell>
@@ -552,7 +585,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                 </TableCell>
                 <TableCell>
                   <Badge variant={user.isActive ? "secondary" : "outline"}>
-                    {user.isActive ? "Activo" : "Inactivo"}
+                    {user.provisioningStatus === "pending" ? "Pendiente" : user.isActive ? "Activo" : "Inactivo"}
                   </Badge>
                 </TableCell>
                 <TableCell>{formatWorkPattern(user)}</TableCell>
@@ -593,9 +626,15 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-2">
-                    <Button type="button" size="sm" variant="outline" onClick={() => setEditingUser(user)} disabled={isPending}>
-                      Editar
-                    </Button>
+                    {user.provisioningStatus === "pending" ? (
+                      <Button type="button" size="sm" variant="outline" onClick={() => openPendingUser(user)} disabled={isPending || (user.role === "admin" && !isSuperAdmin)}>
+                        Completar alta
+                      </Button>
+                    ) : (
+                      <Button type="button" size="sm" variant="outline" onClick={() => setEditingUser(user)} disabled={isPending}>
+                        Editar
+                      </Button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
@@ -611,10 +650,10 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
         </Table>
       </div>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog open={createOpen} onOpenChange={(open) => { setCreateOpen(open); if (!open) setResumeUserId(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Crear usuario</DialogTitle>
+            <DialogTitle>{resumeUserId ? "Completar alta" : "Crear usuario"}</DialogTitle>
             <DialogDescription>
               Puedes invitar por email o crear una cuenta con contraseña temporal.
             </DialogDescription>
@@ -706,7 +745,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, role: e.target.value as "admin" | "user" }))}
               >
                 <option value="user">Usuario</option>
-                <option value="admin">Admin</option>
+                {isSuperAdmin && <option value="admin">Admin</option>}
               </select>
               <select
                 className="h-10 rounded-md border border-input bg-background px-3 text-sm"
@@ -723,7 +762,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                 value={createForm.temporaryPassword}
                 onChange={(e) => setCreateForm((prev) => ({ ...prev, temporaryPassword: e.target.value }))}
                 placeholder="Contraseña temporal (mín. 8)"
-                required
+                required={!resumeUserId}
               />
             )}
             <div className="grid grid-cols-2 gap-3">
@@ -747,7 +786,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                 Cancelar
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Guardando..." : "Crear"}
+                {isPending ? "Guardando..." : resumeUserId ? "Reintentar alta" : "Crear"}
               </Button>
             </DialogFooter>
           </form>

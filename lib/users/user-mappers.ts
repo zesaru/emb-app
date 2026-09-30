@@ -19,6 +19,8 @@ type RawUserRow = {
   invitation_status?: string | null;
   invitation_sent_at?: string | null;
   invitation_accepted_at?: string | null;
+  provisioning_status?: string | null;
+  provisioning_mode?: string | null;
 };
 
 export type UserGrantMode = "automatic" | "manual";
@@ -45,6 +47,8 @@ export type AdminUserListItem = {
   invitationStatus: "pending" | "accepted";
   invitationSentAt: string | null;
   invitationAcceptedAt: string | null;
+  provisioningStatus: "pending" | "ready";
+  provisioningMode: "invite" | "temporary_password" | null;
   numVacations: number;
   numCompensatorys: number;
 };
@@ -125,6 +129,9 @@ export function normalizeUserRow(row: RawUserRow): AdminUserListItem {
     invitationStatus: row.invitation_status === "pending" ? "pending" : "accepted",
     invitationSentAt: row.invitation_sent_at ?? null,
     invitationAcceptedAt: row.invitation_accepted_at ?? null,
+    provisioningStatus: row.provisioning_status === "pending" ? "pending" : "ready",
+    provisioningMode: row.provisioning_mode === "invite" || row.provisioning_mode === "temporary_password"
+      ? row.provisioning_mode : null,
     numVacations: parseNumberLike(row.num_vacations),
     numCompensatorys: parseNumberLike(row.num_compensatorys),
   };

@@ -3,13 +3,17 @@
 import { revalidatePath } from "next/cache";
 
 import { adminUserStatusSchema } from "@/lib/validation/schemas";
-import { requireAdminContext } from "./shared";
+import { getUserById, requireAdminContext } from "./shared";
 import { toUsersTableUpdate } from "@/lib/users/user-mappers";
 
 export async function reactivateAdminUser(input: { userId: string }) {
   try {
     const data = adminUserStatusSchema.parse(input);
     const { supabase } = await requireAdminContext();
+    const target = await getUserById(data.userId);
+    if (target.provisioningStatus === "pending") {
+      return { success: false as const, error: "Completa el alta antes de activar esta cuenta" };
+    }
 
     const { error } = await supabase
       .from("users")

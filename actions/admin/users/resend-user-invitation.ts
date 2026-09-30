@@ -7,7 +7,7 @@ import { getUserById, requireAdminContext } from "./shared";
 
 function getInviteRedirectUrl() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  return appUrl ? `${appUrl.replace(/\/$/, "")}/auth/callback?next=/welcome` : undefined;
+  return appUrl ? `${appUrl.replace(/\/$/, "")}/auth/complete-invite` : undefined;
 }
 
 export async function resendUserInvitation(input: { userId: string }) {
@@ -15,13 +15,21 @@ export async function resendUserInvitation(input: { userId: string }) {
     const data = adminUserPasswordResetLinkSchema.parse(input);
     const { supabase } = await requireAdminContext();
     const target = await getUserById(data.userId);
+    if (target.provisioningStatus === "pending") {
+      return { success: false as const, error: "Completa el alta antes de reenviar la invitación" };
+    }
 
     if (target.invitationStatus !== "pending") {
       return { success: false as const, error: "Esta cuenta ya activó su invitación" };
     }
 
+    const inviteRedirectUrl = getInviteRedirectUrl();
+    if (!inviteRedirectUrl) {
+      return { success: false as const, error: "Falta configurar NEXT_PUBLIC_APP_URL para enviar invitaciones" };
+    }
+
     const { error: inviteError } = await (getSupabaseAdminClient().auth.admin as any)
-      .inviteUserByEmail(target.email, { redirectTo: getInviteRedirectUrl() });
+      .inviteUserByEmail(target.email, { redirectTo: inviteRedirectUrl });
     if (inviteError) return { success: false as const, error: inviteError.message || "No se pudo reenviar la invitación" };
 
     const { error: profileError } = await supabase

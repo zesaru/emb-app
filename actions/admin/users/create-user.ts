@@ -3,16 +3,18 @@
 import { revalidatePath } from "next/cache";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
+import { requireCurrentUserSuperAdminAndActive } from "@/lib/auth/admin-check";
 import { adminUserCreateSchema } from "@/lib/validation/schemas";
 import { toUsersTableUpdate } from "@/lib/users/user-mappers";
 import { requireAdminContext } from "./shared";
 
 function getInviteRedirectUrl() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  return appUrl ? `${appUrl.replace(/\/$/, "")}/auth/callback?next=/welcome` : undefined;
+  return appUrl ? `${appUrl.replace(/\/$/, "")}/auth/complete-invite` : undefined;
 }
 
 type CreateAdminUserInput = {
+  resumeUserId?: string;
   email: string;
   name: string;
   position?: string;
@@ -31,57 +33,83 @@ type CreateAdminUserInput = {
 };
 
 export async function createAdminUser(input: CreateAdminUserInput) {
+  let authUserId: string | null = null;
+  let emailMayHaveBeenSent = false;
+
   try {
     const data = adminUserCreateSchema.parse(input);
     const { supabase } = await requireAdminContext();
+    if (data.role !== "user") {
+      await requireCurrentUserSuperAdminAndActive();
+    }
+    const inviteRedirectUrl = data.provisioningMode === "invite" ? getInviteRedirectUrl() : undefined;
+    if (data.provisioningMode === "invite" && !inviteRedirectUrl) {
+      return { success: false as const, state: "failed" as const, error: "Falta configurar NEXT_PUBLIC_APP_URL para enviar invitaciones" };
+    }
     const adminClient = getSupabaseAdminClient();
 
-    let authUserId: string | null = null;
-
-    if (data.provisioningMode === "invite") {
-      const { data: inviteData, error: inviteError } = await (adminClient.auth.admin as any)
-        .inviteUserByEmail(data.email, { redirectTo: getInviteRedirectUrl() });
-
-      if (inviteError) {
-        return { success: false as const, error: inviteError.message || "No se pudo invitar al usuario" };
+    let existingInviteAt: string | null = null;
+    let existingAcceptedAt: string | null = null;
+    if (data.resumeUserId) {
+      const { data: existing, error: lookupError } = await adminClient.auth.admin.getUserById(data.resumeUserId);
+      if (lookupError || !existing.user || existing.user.email?.toLowerCase() !== data.email.toLowerCase()) {
+        return { success: false as const, state: "failed" as const, error: "No se encontró una cuenta pendiente con ese email" };
+      }
+      const originalMode = existing.user.user_metadata?.provisioning_mode;
+      if (originalMode && originalMode !== data.provisioningMode) {
+        return { success: false as const, state: "failed" as const, error: "El modo de alta no coincide con el de la cuenta pendiente" };
       }
 
-      authUserId = inviteData?.user?.id ?? null;
+      const { data: profile, error: profileLookupError } = await (adminClient
+        .from("users") as any)
+        .select("provisioning_status, provisioning_mode")
+        .eq("id", data.resumeUserId)
+        .single();
+      if (profileLookupError || profile?.provisioning_status !== "pending") {
+        return { success: false as const, state: "failed" as const, error: "La cuenta ya no está pendiente de alta" };
+      }
+      if (profile.provisioning_mode && profile.provisioning_mode !== data.provisioningMode) {
+        return { success: false as const, state: "failed" as const, error: "El modo de alta no coincide con el perfil pendiente" };
+      }
+
+      authUserId = existing.user.id;
+      existingInviteAt = existing.user.invited_at ?? null;
+      existingAcceptedAt = existing.user.email_confirmed_at ?? null;
+      emailMayHaveBeenSent = Boolean(existingInviteAt);
     } else {
       const { data: created, error: createError } = await adminClient.auth.admin.createUser({
         email: data.email,
-        password: data.temporaryPassword,
-        email_confirm: true,
-        user_metadata: { name: data.name },
-      } as any);
+        ...(data.provisioningMode === "temporary_password" ? {
+          password: data.temporaryPassword,
+          email_confirm: true,
+        } : {
+          email_confirm: false,
+        }),
+        user_metadata: { name: data.name, provisioning_mode: data.provisioningMode },
+      });
 
       if (createError) {
-        return { success: false as const, error: createError.message || "No se pudo crear el usuario" };
+        return { success: false as const, state: "failed" as const, error: createError.message || "No se pudo crear el usuario" };
       }
 
       authUserId = created.user?.id ?? null;
     }
 
     if (!authUserId) {
-      return { success: false as const, error: "No se obtuvo el ID del usuario creado en Auth" };
+      return { success: false as const, state: "failed" as const, error: "No se obtuvo el ID del usuario creado en Auth" };
     }
 
     const profilePayload = {
       id: authUserId,
       email: data.email,
-      ...(data.provisioningMode === "invite" ? {
-        invitation_status: "pending",
-        invitation_sent_at: new Date().toISOString(),
-        invitation_last_sent_at: new Date().toISOString(),
-      } : {
-        invitation_status: "accepted",
-        invitation_accepted_at: new Date().toISOString(),
-      }),
+      invitation_status: data.provisioningMode === "invite" && !existingAcceptedAt ? "pending" : "accepted",
+      is_active: false,
+      provisioning_status: "pending",
+      provisioning_mode: data.provisioningMode,
       ...toUsersTableUpdate({
         name: data.name,
         position: data.position,
         role: data.role,
-        isActive: true,
         hireDate: data.hireDate,
         isDiplomatic: data.isDiplomatic,
         weeklyDays: data.weeklyDays,
@@ -99,20 +127,139 @@ export async function createAdminUser(input: CreateAdminUserInput) {
       .upsert(profilePayload as any, { onConflict: "id" });
 
     if (profileError) {
-      return { success: false as const, error: "Usuario creado en Auth, pero falló sincronizar perfil" };
+      return {
+        success: false as const,
+        state: "incomplete" as const,
+        userId: authUserId,
+        emailMayHaveBeenSent,
+        error: "Usuario creado en Auth, pero falló sincronizar perfil",
+      };
+    }
+
+    if (data.provisioningMode === "invite" && !existingInviteAt) {
+      const dispatchStartedAt = new Date().toISOString();
+      const claimQuery = () => (adminClient.from("users") as any)
+        .update({ invitation_dispatch_started_at: dispatchStartedAt })
+        .eq("id", authUserId)
+        .eq("provisioning_status", "pending");
+      const { data: initialClaim, error: claimError } = await claimQuery()
+        .is("invitation_dispatch_started_at", null)
+        .select("id")
+        .maybeSingle();
+
+      if (claimError) {
+        return {
+          success: false as const, state: "incomplete" as const,
+          userId: authUserId, emailMayHaveBeenSent: false,
+          error: "No se pudo reservar el envío de la invitación",
+        };
+      }
+
+      let claimed = Boolean(initialClaim);
+      if (!claimed) {
+        const { data: currentAuth, error: currentAuthError } = await adminClient.auth.admin.getUserById(authUserId);
+        if (currentAuthError || !currentAuth.user) {
+          return {
+            success: false as const, state: "incomplete" as const,
+            userId: authUserId, emailMayHaveBeenSent: true,
+            error: "No se pudo consultar si la invitación ya fue enviada",
+          };
+        }
+        if (currentAuth.user.invited_at) {
+          existingInviteAt = currentAuth.user.invited_at;
+          emailMayHaveBeenSent = true;
+        } else {
+          const staleBefore = new Date(Date.now() - 5 * 60_000).toISOString();
+          const { data: recoveredClaim, error: reclaimError } = await claimQuery()
+            .lt("invitation_dispatch_started_at", staleBefore)
+            .select("id")
+            .maybeSingle();
+          if (reclaimError) {
+            return {
+              success: false as const, state: "incomplete" as const,
+              userId: authUserId, emailMayHaveBeenSent: false,
+              error: "No se pudo verificar el estado de la invitación",
+            };
+          }
+          claimed = Boolean(recoveredClaim);
+        }
+      }
+
+      if (!claimed && !existingInviteAt) {
+        return {
+          success: false as const, state: "incomplete" as const,
+          userId: authUserId, emailMayHaveBeenSent: true,
+          error: "Ya hay un envío de invitación en curso; comprueba de nuevo en unos minutos",
+        };
+      }
+
+      if (claimed) {
+        emailMayHaveBeenSent = true;
+        const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
+          data.email,
+          { redirectTo: inviteRedirectUrl },
+        );
+        if (inviteError) {
+          return {
+            success: false as const,
+            state: "incomplete" as const,
+            userId: authUserId,
+            emailMayHaveBeenSent,
+            error: "Perfil guardado, pero no se pudo confirmar el envío de la invitación",
+          };
+        }
+      }
+    }
+
+    const now = new Date().toISOString();
+    const invitedAt = existingInviteAt ?? now;
+    const { error: activationError } = await supabase
+      .from("users")
+      .update({
+        provisioning_status: "ready",
+        is_active: true,
+        ...(data.provisioningMode === "invite" ? {
+          invitation_sent_at: invitedAt,
+          invitation_last_sent_at: invitedAt,
+        } : {
+          invitation_accepted_at: now,
+        }),
+      } as any)
+      .eq("id", authUserId);
+
+    if (activationError) {
+      return {
+        success: false as const,
+        state: "incomplete" as const,
+        userId: authUserId,
+        emailMayHaveBeenSent,
+        error: "Cuenta creada, pero no se pudo activar el perfil",
+      };
     }
 
     revalidatePath("/admin/users");
 
     return {
       success: true as const,
+      state: "created" as const,
+      userId: authUserId,
       message: data.provisioningMode === "invite"
         ? "Usuario invitado correctamente"
         : "Usuario creado con contraseña temporal",
     };
   } catch (error) {
+    if (authUserId) {
+      return {
+        success: false as const,
+        state: "incomplete" as const,
+        userId: authUserId,
+        emailMayHaveBeenSent,
+        error: "Usuario creado en Auth, pero no se pudo confirmar su perfil",
+      };
+    }
     return {
       success: false as const,
+      state: "failed" as const,
       error: error instanceof Error ? error.message : "Error inesperado creando usuario",
     };
   }
