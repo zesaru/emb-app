@@ -38,7 +38,7 @@ describe("createAdminUser", () => {
   function mockProfileUpsert(profileError: unknown = null) {
     const upsertMock = vi.fn().mockResolvedValue({ error: profileError });
     const activationMock = vi.fn().mockResolvedValue({ error: null });
-    const updateMock = vi.fn(() => ({ eq: activationMock }));
+    const updateMock = vi.fn((_payload: unknown) => ({ eq: activationMock }));
     const fromMock = vi.fn(() => ({ upsert: upsertMock, update: updateMock }));
 
     requireAdminContextMock.mockResolvedValue({
