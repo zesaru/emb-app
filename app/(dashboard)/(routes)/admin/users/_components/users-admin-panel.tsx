@@ -131,6 +131,7 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
   const [grantNotes, setGrantNotes] = useState("");
   const [grantHistory, setGrantHistory] = useState<VacationGrantItem[]>([]);
   const [grantsLoading, setGrantsLoading] = useState(false);
+  const [isSendingInvitationPreview, setIsSendingInvitationPreview] = useState(false);
   const [editingGrant, setEditingGrant] = useState<VacationGrantItem | null>(null);
 
   const filteredUsers = useMemo(() => {
@@ -486,6 +487,23 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
     openGrantDialog(user);
   };
 
+  const sendInvitationPreview = async () => {
+    setIsSendingInvitationPreview(true);
+    try {
+      const response = await fetch("/api/admin/test-invitation-email", { method: "POST" });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        setError(result.error || "No se pudo enviar la prueba");
+        return;
+      }
+      setSuccess("Prueba de invitación enviada a tu correo");
+    } catch {
+      setError("No se pudo enviar la prueba");
+    } finally {
+      setIsSendingInvitationPreview(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       {message && (
@@ -536,6 +554,11 @@ export function UsersAdminPanel({ initialUsers, initialError, isSuperAdmin }: Pr
                 Crear usuario
               </Button>
             </div>
+          </div>
+          <div className="mt-3 flex justify-end">
+            <Button type="button" variant="outline" onClick={sendInvitationPreview} disabled={isSendingInvitationPreview}>
+              {isSendingInvitationPreview ? "Enviando prueba..." : "Enviar prueba de invitación a mi correo"}
+            </Button>
           </div>
         </CardContent>
       </Card>
