@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { adminUserPasswordResetLinkSchema } from "@/lib/validation/schemas";
+import { sendUserInvitation } from "@/lib/email/send-user-invitation";
+import { isEmailDeliveryEnabled } from "@/components/email/utils/email-config";
+import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getUserById, requireAdminContext } from "./shared";
 
 function getInviteRedirectUrl() {
@@ -27,10 +29,24 @@ export async function resendUserInvitation(input: { userId: string }) {
     if (!inviteRedirectUrl) {
       return { success: false as const, error: "Falta configurar NEXT_PUBLIC_APP_URL para enviar invitaciones" };
     }
+    if (!isEmailDeliveryEnabled()) {
+      return { success: false as const, error: "El envío de invitaciones está deshabilitado" };
+    }
 
-    const { error: inviteError } = await (getSupabaseAdminClient().auth.admin as any)
-      .inviteUserByEmail(target.email, { redirectTo: inviteRedirectUrl });
-    if (inviteError) return { success: false as const, error: inviteError.message || "No se pudo reenviar la invitación" };
+    const { data: authUser, error: authError } = await getSupabaseAdminClient().auth.admin.getUserById(target.id);
+    if (authError || !authUser.user || authUser.user.email?.toLowerCase() !== target.email.toLowerCase()) {
+      return { success: false as const, error: "No se pudo verificar la cuenta en Auth" };
+    }
+    if (authUser.user.email_confirmed_at) {
+      return { success: false as const, error: "Esta cuenta ya aceptó la invitación" };
+    }
+
+    const inviteResult = await sendUserInvitation({
+      email: target.email,
+      name: target.name?.trim() || target.email,
+      redirectTo: inviteRedirectUrl,
+    });
+    if (!inviteResult.success) return { success: false as const, error: inviteResult.error };
 
     const { error: profileError } = await supabase
       .from("users")

@@ -4,6 +4,11 @@ const revalidatePathMock = vi.fn();
 const requireAdminContextMock = vi.fn();
 const getSupabaseAdminClientMock = vi.fn();
 const requireCurrentUserSuperAdminAndActiveMock = vi.fn();
+const sendUserInvitationMock = vi.fn();
+
+vi.mock("@/lib/email/send-user-invitation", () => ({
+  sendUserInvitation: (...args: unknown[]) => sendUserInvitationMock(...args),
+}));
 
 vi.mock("next/cache", () => ({
   revalidatePath: (...args: any[]) => revalidatePathMock(...args),
@@ -26,6 +31,7 @@ describe("createAdminUser", () => {
     vi.clearAllMocks();
     vi.resetModules();
     requireCurrentUserSuperAdminAndActiveMock.mockResolvedValue("super-admin-1");
+    sendUserInvitationMock.mockResolvedValue({ success: true });
     process.env.NEXT_PUBLIC_APP_URL = "https://emb-app.vercel.app";
   });
 
@@ -68,6 +74,25 @@ describe("createAdminUser", () => {
     expect(createUserMock).not.toHaveBeenCalled();
   });
 
+  it("no crea una cuenta si la entrega de correo está deshabilitada", async () => {
+    process.env.EMAIL_DELIVERY_ENABLED = "false";
+    try {
+      mockProfileUpsert();
+      const createUserMock = vi.fn();
+      getSupabaseAdminClientMock.mockReturnValue({ auth: { admin: { createUser: createUserMock } } });
+
+      const createAdminUser = (await import("@/actions/admin/users/create-user")).default;
+      const result = await createAdminUser({
+        email: "no-mail@example.com", name: "Sin Correo", role: "user", provisioningMode: "invite",
+      });
+
+      expect(result).toMatchObject({ success: false, state: "failed" });
+      expect(createUserMock).not.toHaveBeenCalled();
+    } finally {
+      delete process.env.EMAIL_DELIVERY_ENABLED;
+    }
+  });
+
   it("crea usuario por invitacion y sincroniza perfil", async () => {
     const { upsertMock } = mockProfileUpsert();
     const inviteUserByEmailMock = vi.fn().mockResolvedValue({
@@ -98,7 +123,9 @@ describe("createAdminUser", () => {
     expect(result.success).toBe(true);
     expect(result.state).toBe("created");
     expect(requireCurrentUserSuperAdminAndActiveMock).toHaveBeenCalledOnce();
-    expect(inviteUserByEmailMock).toHaveBeenCalledWith("newuser@example.com", {
+    expect(sendUserInvitationMock).toHaveBeenCalledWith({
+      email: "newuser@example.com",
+      name: "Nuevo Usuario",
       redirectTo: "https://emb-app.vercel.app/auth/complete-invite",
     });
     expect(createUserMock).toHaveBeenCalledWith(expect.objectContaining({
@@ -172,7 +199,7 @@ describe("createAdminUser", () => {
     });
 
     expect(result).toEqual({ success: false, state: "failed", error: "No autorizado" });
-    expect(inviteUserByEmailMock).not.toHaveBeenCalled();
+    expect(sendUserInvitationMock).not.toHaveBeenCalled();
     expect(revalidatePathMock).not.toHaveBeenCalled();
   });
 
@@ -281,13 +308,24 @@ describe("createAdminUser", () => {
       operations.push("auth");
       return { data: { user: { id: "staged-id" } }, error: null };
     });
-    const inviteUserByEmailMock = vi.fn().mockImplementation(async () => {
+    sendUserInvitationMock.mockImplementation(async () => {
       operations.push("invite");
-      return { data: { user: { id: "staged-id" } }, error: null };
+      return { success: true };
     });
+    const claimFrom = mockDispatchClaim();
     getSupabaseAdminClientMock.mockReturnValue({
-      from: mockDispatchClaim(),
-      auth: { admin: { createUser: createUserMock, inviteUserByEmail: inviteUserByEmailMock } },
+      from: vi.fn(() => ({
+        update: (payload: Record<string, unknown>) => {
+          if (payload.invitation_sent_at) {
+            return { eq: async () => {
+              operations.push("record-send");
+              return { error: null };
+            } };
+          }
+          return claimFrom().update();
+        },
+      })),
+      auth: { admin: { createUser: createUserMock } },
     });
 
     const createAdminUser = (await import("@/actions/admin/users/create-user")).default;
@@ -296,17 +334,18 @@ describe("createAdminUser", () => {
     });
 
     expect(result.state).toBe("created");
-    expect(operations).toEqual(["auth", "profile", "invite", "activate"]);
+    expect(operations).toEqual(["auth", "profile", "invite", "record-send", "activate"]);
   });
 
   it("un fallo de invitación deja la cuenta pendiente sin activarla", async () => {
     const { activationMock } = mockProfileUpsert();
-    const inviteUserByEmailMock = vi.fn().mockResolvedValue({ error: new Error("SMTP failed") });
+    sendUserInvitationMock.mockResolvedValue({
+      success: false, deliveryAttempted: true, error: "SMTP failed",
+    });
     getSupabaseAdminClientMock.mockReturnValue({
       from: mockDispatchClaim(),
       auth: { admin: {
         createUser: vi.fn().mockResolvedValue({ data: { user: { id: "mail-fail-id" } }, error: null }),
-        inviteUserByEmail: inviteUserByEmailMock,
       } },
     });
 
@@ -317,6 +356,94 @@ describe("createAdminUser", () => {
 
     expect(result).toMatchObject({ success: false, state: "incomplete", userId: "mail-fail-id" });
     expect(activationMock).not.toHaveBeenCalled();
+  });
+
+  it("no marca un correo como enviado si falla la generación del enlace", async () => {
+    const { activationMock } = mockProfileUpsert();
+    sendUserInvitationMock.mockResolvedValue({
+      success: false, deliveryAttempted: false, error: "No se pudo generar el enlace de invitación",
+    });
+    getSupabaseAdminClientMock.mockReturnValue({
+      from: mockDispatchClaim(),
+      auth: { admin: { createUser: vi.fn().mockResolvedValue({
+        data: { user: { id: "link-fail-id" } }, error: null,
+      }) } },
+    });
+
+    const createAdminUser = (await import("@/actions/admin/users/create-user")).default;
+    const result = await createAdminUser({
+      email: "linkfail@example.com", name: "Link Fail", role: "user", provisioningMode: "invite",
+    });
+
+    expect(result).toMatchObject({
+      success: false, state: "incomplete", userId: "link-fail-id", emailMayHaveBeenSent: false,
+    });
+    expect(activationMock).not.toHaveBeenCalled();
+  });
+
+  it("no confunde invited_at de un enlace generado con un correo entregado al reanudar", async () => {
+    mockProfileUpsert();
+    const dispatchFrom = mockDispatchClaim();
+    getSupabaseAdminClientMock.mockReturnValue({
+      from: vi.fn(() => ({
+        ...dispatchFrom(),
+        select: () => ({ eq: () => ({ single: async () => ({
+          data: { provisioning_status: "pending", provisioning_mode: "invite", invitation_sent_at: null },
+          error: null,
+        }) }) }),
+      })),
+      auth: { admin: {
+        createUser: vi.fn(),
+        getUserById: vi.fn().mockResolvedValue({ data: { user: {
+          id: "550e8400-e29b-41d4-a716-446655440000",
+          email: "retry-m365@example.com",
+          invited_at: "2026-09-30T05:00:00Z",
+          user_metadata: { provisioning_mode: "invite", invitation_delivery: "m365" },
+        } }, error: null }),
+      } },
+    });
+
+    const createAdminUser = (await import("@/actions/admin/users/create-user")).default;
+    const result = await createAdminUser({
+      resumeUserId: "550e8400-e29b-41d4-a716-446655440000",
+      email: "retry-m365@example.com", name: "Retry", role: "user", provisioningMode: "invite",
+    });
+
+    expect(result.state).toBe("created");
+    expect(sendUserInvitationMock).toHaveBeenCalledOnce();
+  });
+
+  it("no invita de nuevo a quien ya confirmó el correo durante un alta pendiente", async () => {
+    const { activationMock, updateMock } = mockProfileUpsert();
+    getSupabaseAdminClientMock.mockReturnValue({
+      from: vi.fn(() => ({ select: () => ({ eq: () => ({ single: async () => ({
+        data: { provisioning_status: "pending", provisioning_mode: "invite", invitation_sent_at: null },
+        error: null,
+      }) }) }) })),
+      auth: { admin: {
+        createUser: vi.fn(),
+        getUserById: vi.fn().mockResolvedValue({ data: { user: {
+          id: "550e8400-e29b-41d4-a716-446655440000",
+          email: "accepted@example.com",
+          email_confirmed_at: "2026-09-30T09:00:00Z",
+          user_metadata: { provisioning_mode: "invite", invitation_delivery: "m365" },
+        } }, error: null }),
+      } },
+    });
+
+    const createAdminUser = (await import("@/actions/admin/users/create-user")).default;
+    const result = await createAdminUser({
+      resumeUserId: "550e8400-e29b-41d4-a716-446655440000",
+      email: "accepted@example.com", name: "Aceptada", role: "user", provisioningMode: "invite",
+    });
+
+    expect(result.state).toBe("created");
+    expect(sendUserInvitationMock).not.toHaveBeenCalled();
+    expect(activationMock).toHaveBeenCalledOnce();
+    expect(updateMock.mock.calls[0][0]).toMatchObject({
+      invitation_accepted_at: "2026-09-30T09:00:00Z",
+    });
+    expect(updateMock.mock.calls[0][0]).not.toHaveProperty("invitation_sent_at");
   });
 
   it("no duplica el correo si otra petición reservó el envío", async () => {
@@ -338,7 +465,7 @@ describe("createAdminUser", () => {
     });
 
     expect(result).toMatchObject({ success: false, state: "incomplete", userId: "concurrent-id" });
-    expect(inviteUserByEmailMock).not.toHaveBeenCalled();
+    expect(sendUserInvitationMock).not.toHaveBeenCalled();
     expect(activationMock).not.toHaveBeenCalled();
   });
 
@@ -368,7 +495,7 @@ describe("createAdminUser", () => {
 
     expect(result.state).toBe("created");
     expect(createUserMock).not.toHaveBeenCalled();
-    expect(inviteUserByEmailMock).not.toHaveBeenCalled();
+    expect(sendUserInvitationMock).not.toHaveBeenCalled();
     expect(upsertMock).toHaveBeenCalledOnce();
     expect(activationMock).toHaveBeenCalledOnce();
   });
@@ -419,7 +546,7 @@ describe("createAdminUser", () => {
 
     expect(result.state).toBe("created");
     expect(createUserMock).not.toHaveBeenCalled();
-    expect(inviteUserByEmailMock).not.toHaveBeenCalled();
+    expect(sendUserInvitationMock).not.toHaveBeenCalled();
     expect(activationMock).toHaveBeenCalledOnce();
   });
 });

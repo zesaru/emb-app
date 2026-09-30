@@ -6,6 +6,8 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { requireCurrentUserSuperAdminAndActive } from "@/lib/auth/admin-check";
 import { adminUserCreateSchema } from "@/lib/validation/schemas";
 import { toUsersTableUpdate } from "@/lib/users/user-mappers";
+import { sendUserInvitation } from "@/lib/email/send-user-invitation";
+import { isEmailDeliveryEnabled } from "@/components/email/utils/email-config";
 import { requireAdminContext } from "./shared";
 
 function getInviteRedirectUrl() {
@@ -46,6 +48,9 @@ export async function createAdminUser(input: CreateAdminUserInput) {
     if (data.provisioningMode === "invite" && !inviteRedirectUrl) {
       return { success: false as const, state: "failed" as const, error: "Falta configurar NEXT_PUBLIC_APP_URL para enviar invitaciones" };
     }
+    if (data.provisioningMode === "invite" && !isEmailDeliveryEnabled()) {
+      return { success: false as const, state: "failed" as const, error: "El envío de invitaciones está deshabilitado" };
+    }
     const adminClient = getSupabaseAdminClient();
 
     let existingInviteAt: string | null = null;
@@ -62,7 +67,7 @@ export async function createAdminUser(input: CreateAdminUserInput) {
 
       const { data: profile, error: profileLookupError } = await (adminClient
         .from("users") as any)
-        .select("provisioning_status, provisioning_mode")
+        .select("provisioning_status, provisioning_mode, invitation_sent_at")
         .eq("id", data.resumeUserId)
         .single();
       if (profileLookupError || profile?.provisioning_status !== "pending") {
@@ -73,7 +78,13 @@ export async function createAdminUser(input: CreateAdminUserInput) {
       }
 
       authUserId = existing.user.id;
-      existingInviteAt = existing.user.invited_at ?? null;
+      // generateLink sets invited_at before our mail transport runs. For new
+      // invitations only the profile's sent timestamp proves delivery.
+      existingInviteAt = profile.invitation_sent_at ?? (
+        existing.user.user_metadata?.invitation_delivery === "m365"
+          ? null
+          : existing.user.invited_at ?? null
+      );
       existingAcceptedAt = existing.user.email_confirmed_at ?? null;
       emailMayHaveBeenSent = Boolean(existingInviteAt);
     } else {
@@ -85,7 +96,11 @@ export async function createAdminUser(input: CreateAdminUserInput) {
         } : {
           email_confirm: false,
         }),
-        user_metadata: { name: data.name, provisioning_mode: data.provisioningMode },
+        user_metadata: {
+          name: data.name,
+          provisioning_mode: data.provisioningMode,
+          ...(data.provisioningMode === "invite" ? { invitation_delivery: "m365" } : {}),
+        },
       });
 
       if (createError) {
@@ -136,7 +151,7 @@ export async function createAdminUser(input: CreateAdminUserInput) {
       };
     }
 
-    if (data.provisioningMode === "invite" && !existingInviteAt) {
+    if (data.provisioningMode === "invite" && !existingInviteAt && !existingAcceptedAt) {
       const dispatchStartedAt = new Date().toISOString();
       const claimQuery = () => (adminClient.from("users") as any)
         .update({ invitation_dispatch_started_at: dispatchStartedAt })
@@ -157,16 +172,19 @@ export async function createAdminUser(input: CreateAdminUserInput) {
 
       let claimed = Boolean(initialClaim);
       if (!claimed) {
-        const { data: currentAuth, error: currentAuthError } = await adminClient.auth.admin.getUserById(authUserId);
-        if (currentAuthError || !currentAuth.user) {
+        const { data: currentProfile, error: currentProfileError } = await (adminClient.from("users") as any)
+          .select("invitation_sent_at")
+          .eq("id", authUserId)
+          .single();
+        if (currentProfileError || !currentProfile) {
           return {
             success: false as const, state: "incomplete" as const,
             userId: authUserId, emailMayHaveBeenSent: true,
             error: "No se pudo consultar si la invitación ya fue enviada",
           };
         }
-        if (currentAuth.user.invited_at) {
-          existingInviteAt = currentAuth.user.invited_at;
+        if (currentProfile.invitation_sent_at) {
+          existingInviteAt = currentProfile.invitation_sent_at;
           emailMayHaveBeenSent = true;
         } else {
           const staleBefore = new Date(Date.now() - 5 * 60_000).toISOString();
@@ -194,33 +212,48 @@ export async function createAdminUser(input: CreateAdminUserInput) {
       }
 
       if (claimed) {
-        emailMayHaveBeenSent = true;
-        const { error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(
-          data.email,
-          { redirectTo: inviteRedirectUrl },
-        );
-        if (inviteError) {
+        const inviteResult = await sendUserInvitation({
+          email: data.email,
+          name: data.name,
+          redirectTo: inviteRedirectUrl!,
+        });
+        emailMayHaveBeenSent = inviteResult.success || inviteResult.deliveryAttempted;
+        if (!inviteResult.success) {
           return {
             success: false as const,
             state: "incomplete" as const,
             userId: authUserId,
             emailMayHaveBeenSent,
-            error: "Perfil guardado, pero no se pudo confirmar el envío de la invitación",
+            error: inviteResult.error,
           };
         }
+        const sentAt = new Date().toISOString();
+        const { error: sentAtError } = await (adminClient.from("users") as any)
+          .update({ invitation_sent_at: sentAt, invitation_last_sent_at: sentAt })
+          .eq("id", authUserId);
+        if (sentAtError) {
+          return {
+            success: false as const, state: "incomplete" as const,
+            userId: authUserId, emailMayHaveBeenSent: true,
+            error: "Invitación enviada, pero no se pudo registrar el envío",
+          };
+        }
+        existingInviteAt = sentAt;
       }
     }
 
     const now = new Date().toISOString();
-    const invitedAt = existingInviteAt ?? now;
     const { error: activationError } = await supabase
       .from("users")
       .update({
         provisioning_status: "ready",
         is_active: true,
         ...(data.provisioningMode === "invite" ? {
-          invitation_sent_at: invitedAt,
-          invitation_last_sent_at: invitedAt,
+          ...(existingInviteAt ? {
+            invitation_sent_at: existingInviteAt,
+            invitation_last_sent_at: existingInviteAt,
+          } : {}),
+          ...(existingAcceptedAt ? { invitation_accepted_at: existingAcceptedAt } : {}),
         } : {
           invitation_accepted_at: now,
         }),
