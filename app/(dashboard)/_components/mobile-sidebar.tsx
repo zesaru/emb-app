@@ -7,16 +7,16 @@ import {
   SheetContent,
   SheetTrigger
 } from "@/components/ui/sheet";
-import Sidebar  from "./sidebar";
+import Sidebar, { type SidebarAccess } from "./sidebar";
 
-export const MobileSidebar = () => {
+export const MobileSidebar = ({ isAdmin, isSuperAdmin }: SidebarAccess) => {
   return (
     <Sheet>
       <SheetTrigger className="md:hidden pr-4 hover:opacity-75 transition">
         <Menu />
       </SheetTrigger>
       <SheetContent side="left" className="p-0 bg-white">
-        <Sidebar />
+        <Sidebar isAdmin={isAdmin} isSuperAdmin={isSuperAdmin} />
       </SheetContent>
     </Sheet>
   )

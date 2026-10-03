@@ -1,22 +1,17 @@
 "use client"
 
 import * as React from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import {
   ColumnDef,
-  ColumnFiltersState,
   SortingState,
   flexRender,
   getCoreRowModel,
-  getSortedRowModel,
   useReactTable,
-  getPaginationRowModel,
-  getFilteredRowModel,
-  
 
 } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 
 import {
   Table,
@@ -30,50 +25,45 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  page: number
+  pages: number
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  
+  page,
+  pages,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useSearchParams();
+  const [pending, startTransition] = React.useTransition();
+  const sorting: SortingState = [{ id: "event_date", desc: params.get("sort") !== "asc" }];
+  function navigate(nextPage: number, sort = params.get("sort") || "desc") {
+    const next = new URLSearchParams(params.toString());
+    next.set("page", String(nextPage));
+    next.set("sort", sort);
+    startTransition(() => router.push(`${pathname}?${next}`));
+  }
 
   const table = useReactTable({
     data,
     columns,
-    initialState: {
-      pagination: {
-          pageSize: 25,
-      },
-    },
+    manualPagination: true,
+    manualSorting: true,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),    
+    onSortingChange: (updater) => {
+      const next = typeof updater === "function" ? updater(sorting) : updater;
+      navigate(1, next[0]?.desc === false ? "asc" : "desc");
+    },
     state: {
       sorting,
-      columnFilters,
     },  
   })
 
   return (
     <div className="p-8">
-    {/* <div className="flex items-center py-4">
-        <Input
-          placeholder="Filtrar por evento"
-          value={(table.getColumn("event_name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("event_name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div> */}
     <div className="rounded-md border">
       <Table>
         <TableHeader>
@@ -111,7 +101,7 @@ export function DataTable<TData, TValue>({
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
+                No hay registros para estos filtros.
               </TableCell>
             </TableRow>
           )}
@@ -119,21 +109,22 @@ export function DataTable<TData, TValue>({
       </Table>
     </div>
     <div className="flex items-center justify-end space-x-2 py-4">
+        <span className="mr-auto text-sm text-slate-500" role="status">Página {page} de {pages}{pending ? " · Cargando…" : ""}</span>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          onClick={() => navigate(page - 1)}
+          disabled={pending || page <= 1}
         >
-          Previous
+          Anterior
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          onClick={() => navigate(page + 1)}
+          disabled={pending || page >= pages}
         >
-          Next
+          Siguiente
         </Button>
       </div>
     </div>    

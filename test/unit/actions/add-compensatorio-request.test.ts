@@ -23,7 +23,7 @@ vi.mock("next/cache", () => ({
 vi.mock("@/components/email/utils/email-config", () => ({
   buildUrl: vi.fn((path: string) => `http://localhost:3003${path}`),
   isEmailDeliveryEnabled: vi.fn(() => true),
-  resolveEmailRecipients: (...args: any[]) => resolveEmailRecipientsMock(...args),
+  resolveEmailRecipients: resolveEmailRecipientsMock,
 }));
 
 vi.mock("@/lib/notifications/get-active-admin-emails", () => ({
@@ -151,7 +151,7 @@ describe("add-compensatorio-request", () => {
 
     const action = (await import("@/actions/add-compensatorio-request")).default;
     const result = await action({
-      dob: "2099-01-20",
+      dob: new Date("2099-01-20T00:00:00+09:00"),
       hours: 4,
       time_start: "09:00",
       time_finish: "13:00",
@@ -188,7 +188,7 @@ describe("add-compensatorio-request", () => {
 
     const action = (await import("@/actions/add-compensatorio-request")).default;
     const result = await action({
-      dob: "2099-01-20",
+      dob: new Date("2099-01-20T00:00:00+09:00"),
       hours: 4,
       time_start: "09:00",
       time_finish: "13:00",
@@ -212,7 +212,7 @@ describe("add-compensatorio-request", () => {
 
     const action = (await import("@/actions/add-compensatorio-request")).default;
     const result = await action({
-      dob: "2099-01-20",
+      dob: new Date("2099-01-20T00:00:00+09:00"),
       hours: 8,
       time_start: "09:00",
       time_finish: "13:00",
@@ -240,7 +240,7 @@ describe("add-compensatorio-request", () => {
 
     const action = (await import("@/actions/add-compensatorio-request")).default;
     const result = await action({
-      dob: "2099-01-20",
+      dob: new Date("2099-01-20T00:00:00+09:00"),
       hours: 4,
       time_start: "09:00",
       time_finish: "13:00",

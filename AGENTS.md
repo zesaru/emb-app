@@ -66,10 +66,18 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - Reuse `lib/auth/admin-check.ts`: admin checks use `users.admin = 'admin'`; super-admin checks use `users.role = 'super_admin'`. They are distinct checks. Use active-user guards for operations requiring an active account.
 - `compensatorys.view_all` in `user_permissions` grants read access via `lib/auth/compensatory-permissions.ts`; it does not grant approval or administrative privileges.
 - Authenticate and authorize each protected action/handler on the server; hidden controls and proxy redirects are not sufficient authorization. Derive the acting user from the verified session.
+- Reuse `lib/auth/request-user.ts` for verified session/profile reads during server rendering. Its `React.cache` scope is one render; never persist sessions or permissions across requests. Pass only the needed name/access flags to navigation components.
 - Use the request-scoped Supabase server adapter for user operations. `lib/supabase/admin.ts` exposes a privileged service-role client for authorized server operations only.
 - Vacation grants coexist with legacy `users.num_vacations`. Preserve compatibility unless the task explicitly changes it; consult `lib/vacations/`, the current migrations, and relevant unit tests.
 - Vacation approval uses `approve_vacation_with_grants` to approve and consume balance atomically. Preserve duplicate-processing protection and grant restoration on forced cancellation; do not split these into independent client writes.
 - Preserve grant expiry boundaries and consumption ordering (earliest expiry first). Cover insufficient balance, repeat approval/cancellation, and legacy fallback when modifying these flows.
+
+## Dashboard Queries & Loading
+- The administrative home uses `actions/get-dashboard-approval-summary.ts` for three HEAD counts; it does not build the full report. Normal users must not load administrative approval queues.
+- Compensatorios uses `actions/list-compensatory-records.ts`: server pagination of 25 rows, filters in Supabase, stable date/ID ordering and owner restriction alongside RLS. Monthly reports require a valid month and fetch the complete filtered period in batches; never calculate report totals from one detail page.
+- Calendar events come from `app/api/calendar/route.ts` and `actions/get-calendar-events.ts`, with verified active sessions, real date validation, an exclusive end and at most 62 days per request. Preserve team visibility: vacations use the scoped client/RLS; compensatorios use the existing authorized server-only privileged projection of calendar fields. Do not reuse this projection to expose full compensatory records.
+- `lib/calendar/events.ts` distinguishes date-only values from timestamps, converts vacation timestamps to Tokyo dates and makes the inclusive vacation finish exclusive for FullCalendar. Keep the calendar independent of the browser timezone and test overlapping periods and boundary days.
+- Route `loading.tsx` files sit below the authenticated dashboard layout and share `_components/route-loading.tsx`. Keep Spanish status messages, decorative placeholders, reduced-motion support and the navigation available; do not show placeholder counts or actionable controls.
 
 ## Email & Scheduled Jobs
 - Reuse `sendOrCaptureEmail` in `lib/email/dev-email-outbox.ts`, React Email templates, and recipient/URL helpers in `components/email/utils/email-config.ts`.

@@ -34,7 +34,7 @@ describe("lib/auth/admin-check", () => {
       await expect(requireAdmin("user-1")).resolves.toBeUndefined();
 
       expect(client.__mocks.fromMock).toHaveBeenCalledWith("users");
-      expect(client.__mocks.selectMock).toHaveBeenCalledWith("admin");
+      expect(client.__mocks.selectMock).toHaveBeenCalledWith("*");
       expect(client.__mocks.eqMock).toHaveBeenCalledWith("id", "user-1");
     });
 
@@ -141,7 +141,7 @@ describe("lib/auth/admin-check", () => {
       const { requireSuperAdmin } = await import("@/lib/auth/admin-check");
       await expect(requireSuperAdmin("user-1")).resolves.toBeUndefined();
 
-      expect(client.__mocks.selectMock).toHaveBeenCalledWith("role");
+      expect(client.__mocks.selectMock).toHaveBeenCalledWith("*");
     });
 
     it("rechaza a un admin normal (role=admin, no super_admin)", async () => {

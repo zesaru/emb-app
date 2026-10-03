@@ -1,6 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useRef, useState } from "react";
+import type { CalendarApi, EventSourceFuncArg } from "@fullcalendar/core";
+import type { CalendarEvent } from "@/lib/calendar/events";
+import { Button } from "@/components/ui/button";
 import dynamic from 'next/dynamic';
 import dayGridPlugin from "@fullcalendar/daygrid";
 import esLocale from '@fullcalendar/core/locales/es';
@@ -21,85 +24,38 @@ const FullCalendar = dynamic(
   }
 );
 
-interface CalendarEvent {
-  title: string;
-  start: Date;
-  end?: Date;
-  backgroundColor: string;
-  borderColor: string;
-  extendedProps: {
-    type: 'vacation' | 'compensatory';
-    user?: string;
-    id?: string;
-  };
-}
-
-interface CalendarProps {
-  vacations: any[];
-  compensatorys: any[];
-}
-
-export default function Calendar({ vacations, compensatorys }: CalendarProps) {
-  // Vercel best practice: Memoization to prevent unnecessary recalculations
-  const events = useMemo<CalendarEvent[]>(() => {
-    const eventList: CalendarEvent[] = [];
-
-    // Process vacations - Green color
-    vacations.forEach((item: any) => {
-      if (item.start && item.finish) {
-        eventList.push({
-          title: `🏖️ ${item.user1?.name || 'Usuario'}`,
-          start: new Date(item.start),
-          end: new Date(item.finish),
-          backgroundColor: '#10b981', // emerald-500
-          borderColor: '#059669', // emerald-600
-          extendedProps: {
-            type: 'vacation',
-            user: item.user1?.name,
-            id: item.id
-          }
-        });
+export default function Calendar({ initialDate }: { initialDate: string }) {
+  const calendarRef = useRef<CalendarApi | null>(null);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const requestVersion = useRef(0);
+  const pendingRequests = useRef(new Map<string, Promise<CalendarEvent[]>>());
+  const fetchEvents = useCallback(async (info: EventSourceFuncArg): Promise<CalendarEvent[]> => {
+    const version = ++requestVersion.current;
+    setError(null);
+    setEvents([]);
+    const params = new URLSearchParams({ start: info.startStr.slice(0, 10), end: info.endStr.slice(0, 10) });
+    try {
+      const key = params.toString();
+      let request = pendingRequests.current.get(key);
+      if (!request) {
+        request = fetch(`/api/calendar?${params}`, { cache: "no-store" }).then(async response => {
+          if (!response.ok) throw new Error("No se pudo cargar el calendario. Intenta nuevamente.");
+          return await response.json() as CalendarEvent[];
+        }).finally(() => { pendingRequests.current.delete(key); });
+        pendingRequests.current.set(key, request);
       }
-    });
-
-    // Process compensatorys - Blue color
-    compensatorys.forEach((item: any) => {
-      // Mostrar compensatorios que tienen horas trabajadas registradas
-      if (item.compensated_hours_day && item.t_time_start && item.t_time_finish) {
-        const startTime = new Date(`${item.compensated_hours_day}T${item.t_time_start}`);
-        const endTime = new Date(`${item.compensated_hours_day}T${item.t_time_finish}`);
-
-        eventList.push({
-          title: `💼 ${item.user1?.name || 'Usuario'}: ${item.compensated_hours}h`,
-          start: startTime,
-          end: endTime,
-          backgroundColor: '#3b82f6', // blue-500
-          borderColor: '#2563eb', // blue-600
-          extendedProps: {
-            type: 'compensatory',
-            user: item.user1?.name,
-            id: item.id
-          }
-        });
-      }
-      // También mostrar eventos (trabajo extra) que tienen nombre y fecha
-      else if (item.event_name && item.event_date) {
-        eventList.push({
-          title: `💼 ${item.user1?.name || 'Usuario'}: ${item.event_name}`,
-          start: new Date(item.event_date),
-          backgroundColor: '#60a5fa', // lighter blue
-          borderColor: '#3b82f6',
-          extendedProps: {
-            type: 'compensatory',
-            user: item.user1?.name,
-            id: item.id
-          }
-        });
-      }
-    });
-
-    return eventList;
-  }, [vacations, compensatorys]);
+      const result = await request;
+      if (version === requestVersion.current) setEvents(result);
+      return result;
+    } catch (cause) {
+      if (version === requestVersion.current) setError("No se pudo cargar el calendario. Intenta nuevamente.");
+      throw cause;
+    }
+  }, []);
+  const vacations = events.filter(event => event.extendedProps.type === "vacation");
+  const compensatorys = events.filter(event => event.extendedProps.type === "compensatory");
 
   return (
     <div className="space-y-4">
@@ -116,13 +72,20 @@ export default function Calendar({ vacations, compensatorys }: CalendarProps) {
         </div>
       </div>
 
+      {loading && <p role="status" className="text-sm text-gray-500">Cargando eventos del periodo…</p>}
+      {error && <div role="alert" className="flex items-center gap-3 text-sm text-red-700"><p>{error}</p><Button variant="outline" onClick={() => calendarRef.current?.refetchEvents()}>Reintentar</Button></div>}
       {/* Calendar */}
       <div className="bg-white rounded-lg shadow-lg p-4 border border-gray-200">
         <FullCalendar
+          datesSet={info => { calendarRef.current = info.view.calendar; }}
+          initialDate={initialDate}
+          now={() => new Intl.DateTimeFormat("sv-SE", { timeZone: "Asia/Tokyo", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date())}
+          timeZone="Asia/Tokyo"
+          loading={setLoading}
           plugins={[dayGridPlugin]}
           initialView="dayGridMonth"
           weekends={false}
-          events={events}
+          events={fetchEvents}
           locale={esLocale}
           headerToolbar={{
             left: 'prev,next today',
@@ -146,16 +109,16 @@ export default function Calendar({ vacations, compensatorys }: CalendarProps) {
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <p className="text-gray-600">Total Vacaciones</p>
-          <p className="text-2xl font-bold text-emerald-600">{vacations.length}</p>
+          <p className="text-gray-600">Vacaciones del periodo</p>
+          <p className="text-2xl font-bold text-emerald-600">{loading || error ? "—" : vacations.length}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <p className="text-gray-600">Total Compensatorios</p>
-          <p className="text-2xl font-bold text-blue-600">{compensatorys.length}</p>
+          <p className="text-gray-600">Compensatorios del periodo</p>
+          <p className="text-2xl font-bold text-blue-600">{loading || error ? "—" : compensatorys.length}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
-          <p className="text-gray-600">Total Eventos</p>
-          <p className="text-2xl font-bold text-gray-700">{events.length}</p>
+          <p className="text-gray-600">Eventos del periodo</p>
+          <p className="text-2xl font-bold text-gray-700">{loading || error ? "—" : events.length}</p>
         </div>
       </div>
     </div>

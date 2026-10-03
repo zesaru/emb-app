@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { createClient } from "@/utils/supabase/server";
+import { getRequestUser } from "@/lib/auth/request-user";
 
 import { CompensatorysWithUser } from "./../types/collections";
 
@@ -11,7 +12,7 @@ export const getCompensatoriosHourNoapproved = cache(async():Promise<Compensator
 
     // Verificar autenticación - CRÍTICO PARA SEGURIDAD
     // Solo admins deberían ver la cola de aprobación
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const { data: { user }, error: authError } = await getRequestUser();
     if (authError || !user) {
       return [];
     }

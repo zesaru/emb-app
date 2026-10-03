@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { getRequestUser, getRequestUserProfile } from "@/lib/auth/request-user";
 
 /**
  * Verifica que el usuario tenga rol de administrador.
@@ -8,13 +8,7 @@ import { createClient } from '@/utils/supabase/server';
  * @throws Error si el usuario no existe o no es admin
  */
 export async function requireAdmin(userId: string): Promise<void> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("users")
-    .select("admin")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await getRequestUserProfile(userId);
 
   if (error) {
     throw new Error("Error verificando permisos de administrador");
@@ -52,9 +46,7 @@ export async function isAdmin(userId: string): Promise<boolean> {
  * @throws Error si no hay usuario autenticado o no es admin
  */
 export async function requireCurrentUserAdmin(): Promise<void> {
-  const supabase = await createClient();
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await getRequestUser();
 
   if (authError || !user) {
     throw new Error("No autenticado: Se requiere sesión activa");
@@ -67,13 +59,7 @@ export async function requireCurrentUserAdmin(): Promise<void> {
  * Verifica que un usuario esté activo en la tabla public.users.
  */
 export async function requireUserActive(userId: string): Promise<void> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("users")
-    .select("is_active")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await getRequestUserProfile(userId);
 
   if (error) {
     throw new Error("Error verificando estado del usuario");
@@ -95,12 +81,10 @@ export async function requireUserActive(userId: string): Promise<void> {
  * Verifica que el usuario actual esté autenticado, activo y sea admin.
  */
 export async function requireCurrentUserAdminAndActive(): Promise<string> {
-  const supabase = await createClient();
-
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = await getRequestUser();
 
   if (authError || !user) {
     throw new Error("No autenticado: Se requiere sesión activa");
@@ -120,13 +104,7 @@ export async function requireCurrentUserAdminAndActive(): Promise<string> {
  * @throws Error si el usuario no existe o no es super admin
  */
 export async function requireSuperAdmin(userId: string): Promise<void> {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await getRequestUserProfile(userId);
 
   if (error) {
     throw new Error("Error verificando permisos de super administrador");
@@ -161,9 +139,7 @@ export async function isSuperAdmin(userId: string): Promise<boolean> {
  * @throws Error si no hay usuario autenticado o no es super admin
  */
 export async function requireCurrentUserSuperAdmin(): Promise<void> {
-  const supabase = await createClient();
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await getRequestUser();
 
   if (authError || !user) {
     throw new Error("No autenticado: Se requiere sesión activa");
@@ -176,12 +152,10 @@ export async function requireCurrentUserSuperAdmin(): Promise<void> {
  * Verifica que el usuario actual esté autenticado, activo y sea super admin.
  */
 export async function requireCurrentUserSuperAdminAndActive(): Promise<string> {
-  const supabase = await createClient();
-
   const {
     data: { user },
     error: authError,
-  } = await supabase.auth.getUser();
+  } = await getRequestUser();
 
   if (authError || !user) {
     throw new Error("No autenticado: Se requiere sesión activa");
@@ -199,8 +173,7 @@ export async function requireCurrentUserSuperAdminAndActive(): Promise<string> {
  */
 export async function isCurrentUserSuperAdmin(): Promise<boolean> {
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await getRequestUser();
     if (!user) return false;
     return await isSuperAdmin(user.id);
   } catch {
