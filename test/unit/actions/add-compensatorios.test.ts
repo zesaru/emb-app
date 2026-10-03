@@ -24,7 +24,7 @@ vi.mock("@/lib/notifications/get-active-admin-emails", () => ({
 
 vi.mock("@/components/email/utils/email-config", () => ({
   buildUrl: (path: string) => `http://localhost:3003${path}`,
-  resolveEmailRecipients: (...args: any[]) => resolveEmailRecipientsMock(...args),
+  resolveEmailRecipients: resolveEmailRecipientsMock,
 }));
 
 function buildFormData(overrides: Partial<Record<string, string>> = {}) {

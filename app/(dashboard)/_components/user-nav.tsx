@@ -15,11 +15,8 @@
 import { LogOut } from "lucide-react"
 import { Logo } from "./logo"
 import LogoutButton from "@/components/LogoutButton"
-import { useUserName } from "@/lib/use-user"
 
-  export function UserNav() {
-
-    const userName = useUserName();
+  export function UserNav({ userName }: { userName: string }) {
 
     return (
       <div className="flex items-center gap-3">

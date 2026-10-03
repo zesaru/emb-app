@@ -1,33 +1,28 @@
-import { createClient } from "@/utils/supabase/server";
-import getVacationswithUser from "@/actions/getVacationswithUser";
-import getCalendarCompensatorios from "@/actions/getCalendarCompensatorios";
+import { getRequestUser } from "@/lib/auth/request-user";
+import { requireUserActive } from "@/lib/auth/admin-check";
+import { formatInTimeZone } from "date-fns-tz";
 import { redirect } from "next/navigation";
 import Calendar from "./_components/calendar";
 
 export const dynamic = "force-dynamic";
 
 export default async function CalendarPage() {
-  const supabase = await createClient();
-
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getRequestUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  // Vercel best practice: Parallel data fetching to eliminate waterfalls
-  const [vacations, compensatorys] = await Promise.all([
-    getVacationswithUser(),
-    getCalendarCompensatorios()
-  ]);
+  await requireUserActive(user.id);
+  const initialDate = formatInTimeZone(new Date(), "Asia/Tokyo", "yyyy-MM-dd");
 
   return (
     <>
       <div className="flex flex-col">
         <div className="container mx-auto py-10">
-          <Calendar vacations={vacations} compensatorys={compensatorys} />
+          <Calendar initialDate={initialDate} />
         </div>
       </div>
     </>

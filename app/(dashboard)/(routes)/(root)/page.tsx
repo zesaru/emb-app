@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { getRequestUser, getRequestUserProfile } from "@/lib/auth/request-user";
 import { redirect } from "next/navigation";
 import { DataTable } from "../../_components/data-table";
 import { columns } from "../../_components/columns";
@@ -10,54 +10,39 @@ import { columnVacations } from "../../_components/columms-vacations";
 import getsCompensatoriosNoApproved from "@/actions/getCompensatoriosNoApproved";
 import getCompensatoriosHourNoapproved from "@/actions/getCompensatoriosHourNoapproved";
 import getVacationsNoapproved from "@/actions/getVacationsNoApproved";
-import getUsersById from "@/actions/getUsersById";
-import { getAdminDashboardReport } from "@/actions/get-admin-dashboard-report";
-import { DashboardReportView } from "../report/_components/dashboard-report";
+import { getDashboardApprovalSummary } from "@/actions/get-dashboard-approval-summary";
+import { ApprovalSummary } from "../../_components/approval-summary";
 import Usertabs from "../../_components/usertabs";
 export const dynamic = "force-dynamic";
 
 export default async function Index() {
-  const supabase = await createClient();
-
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+    error: authError,
+  } = await getRequestUser();
 
-  if (!user) {
+  if (authError || !user) {
     redirect("/login");
   }
 
-  // Parallel data fetching to eliminate waterfalls (Vercel best practice)
-  const [
-    userData,
-    compensatorysnoapproved,
-    compensatorysHournoapproved,
-    vacationsnoapproved
-  ] = await Promise.all([
-    getUsersById(user.id),
-    getsCompensatoriosNoApproved(),
-    getCompensatoriosHourNoapproved(),
-    getVacationsNoapproved()
-  ]);
+  const { data: currentUserProfile, error: profileError } = await getRequestUserProfile(user.id);
+  if (profileError || !currentUserProfile) redirect("/login");
 
-  const currentUserProfile = userData?.[0] ?? {
-    id: user.id,
-    email: user.email ?? "",
-    name: user.user_metadata?.name ?? user.email?.split("@")[0] ?? "Usuario",
-    role: "user",
-    admin: null,
-    num_vacations: 0,
-    num_compensatorys: 0,
-  };
-  const dashboardReport = currentUserProfile.admin === "admin"
-    ? await getAdminDashboardReport()
-    : null;
+  const [compensatorysnoapproved, compensatorysHournoapproved, vacationsnoapproved, approvalSummary] =
+    currentUserProfile.admin === "admin"
+      ? await Promise.all([
+          getsCompensatoriosNoApproved(),
+          getCompensatoriosHourNoapproved(),
+          getVacationsNoapproved(),
+          getDashboardApprovalSummary(),
+        ])
+      : [[], [], [], null];
 
   return (
     <div className="w-full flex flex-col items-center">
       {currentUserProfile?.admin === "admin" ? (
         <div className="w-full space-y-8 bg-slate-50 px-4 py-6 md:px-6 lg:px-8">
-          <DashboardReportView report={dashboardReport!} showDetailedReports={false} showHeader={false} showOverview={false} />
+          <ApprovalSummary summary={approvalSummary!} />
           {compensatorysnoapproved.length > 0 && (
             <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
               <div className="flex items-center justify-between">
