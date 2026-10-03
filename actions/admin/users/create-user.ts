@@ -139,7 +139,10 @@ export async function createAdminUser(input: CreateAdminUserInput) {
 
     const { error: profileError } = await supabase
       .from("users")
-      .upsert(profilePayload as any, { onConflict: "id" });
+      .update(profilePayload as any)
+      .eq("id", authUserId)
+      .select("id")
+      .single();
 
     if (profileError) {
       return {

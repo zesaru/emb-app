@@ -27,7 +27,10 @@ describe.skipIf(!runLocally)("invitación y recuperación con Supabase local", (
 
   afterEach(async () => {
     for (const id of createdIds.splice(0)) {
-      await testState.client?.auth.admin.deleteUser(id);
+      const profile = await testState.client!.from("users").delete().eq("id", id);
+      expect(profile.error).toBeNull();
+      const auth = await testState.client!.auth.admin.deleteUser(id);
+      expect(auth.error).toBeNull();
     }
   });
 

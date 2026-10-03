@@ -35,18 +35,20 @@ describe("createAdminUser", () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://emb-app.vercel.app";
   });
 
-  function mockProfileUpsert(profileError: unknown = null) {
-    const upsertMock = vi.fn().mockResolvedValue({ error: profileError });
+  function mockProfileUpdate(profileError: unknown = null) {
+    const profileUpdateMock = vi.fn().mockResolvedValue({ error: profileError });
     const activationMock = vi.fn().mockResolvedValue({ error: null });
-    const updateMock = vi.fn((_payload: unknown) => ({ eq: activationMock }));
-    const fromMock = vi.fn(() => ({ upsert: upsertMock, update: updateMock }));
+    const updateMock = vi.fn((payload: Record<string, unknown>) => payload.provisioning_status === "pending"
+      ? { eq: () => ({ select: () => ({ single: () => profileUpdateMock(payload) }) }) }
+      : { eq: activationMock });
+    const fromMock = vi.fn(() => ({ update: updateMock }));
 
     requireAdminContextMock.mockResolvedValue({
       adminUserId: "admin-1",
       supabase: { from: fromMock },
     });
 
-    return { fromMock, upsertMock, updateMock, activationMock };
+    return { fromMock, profileUpdateMock, updateMock, activationMock };
   }
 
   function mockDispatchClaim(claimed = true) {
@@ -61,7 +63,7 @@ describe("createAdminUser", () => {
 
   it("rechaza una invitación sin URL de retorno antes de crear Auth", async () => {
     delete process.env.NEXT_PUBLIC_APP_URL;
-    mockProfileUpsert();
+    mockProfileUpdate();
     const createUserMock = vi.fn();
     getSupabaseAdminClientMock.mockReturnValue({ auth: { admin: { createUser: createUserMock } } });
 
@@ -77,7 +79,7 @@ describe("createAdminUser", () => {
   it("no crea una cuenta si la entrega de correo está deshabilitada", async () => {
     process.env.EMAIL_DELIVERY_ENABLED = "false";
     try {
-      mockProfileUpsert();
+      mockProfileUpdate();
       const createUserMock = vi.fn();
       getSupabaseAdminClientMock.mockReturnValue({ auth: { admin: { createUser: createUserMock } } });
 
@@ -94,7 +96,7 @@ describe("createAdminUser", () => {
   });
 
   it("crea usuario por invitacion y sincroniza perfil", async () => {
-    const { upsertMock } = mockProfileUpsert();
+    const { profileUpdateMock } = mockProfileUpdate();
     const inviteUserByEmailMock = vi.fn().mockResolvedValue({
       data: { user: { id: "new-auth-id" } },
       error: null,
@@ -131,8 +133,8 @@ describe("createAdminUser", () => {
     expect(createUserMock).toHaveBeenCalledWith(expect.objectContaining({
       email: "newuser@example.com", email_confirm: false,
     }));
-    expect(upsertMock).toHaveBeenCalled();
-    const [payload] = upsertMock.mock.calls[0];
+    expect(profileUpdateMock).toHaveBeenCalled();
+    const [payload] = profileUpdateMock.mock.calls[0];
     expect(payload).toMatchObject({
       id: "new-auth-id",
       email: "newuser@example.com",
@@ -152,7 +154,7 @@ describe("createAdminUser", () => {
   });
 
   it("crea usuario con password temporal usando Auth admin.createUser", async () => {
-    mockProfileUpsert();
+    mockProfileUpdate();
     const createUserMock = vi.fn().mockResolvedValue({
       data: { user: { id: "temp-auth-id" } },
       error: null,
@@ -183,7 +185,7 @@ describe("createAdminUser", () => {
   });
 
   it("rechaza crear un admin si el actor no es super admin antes de crear Auth", async () => {
-    mockProfileUpsert();
+    mockProfileUpdate();
     const inviteUserByEmailMock = vi.fn();
     getSupabaseAdminClientMock.mockReturnValue({
       auth: { admin: { createUser: vi.fn(), inviteUserByEmail: inviteUserByEmailMock } },
@@ -204,7 +206,7 @@ describe("createAdminUser", () => {
   });
 
   it("retorna error cuando Auth no devuelve user id", async () => {
-    mockProfileUpsert();
+    mockProfileUpdate();
     const createUserMock = vi.fn().mockResolvedValue({
       data: { user: null },
       error: null,
@@ -228,7 +230,7 @@ describe("createAdminUser", () => {
   });
 
   it("retorna error si falla la sincronizacion del perfil", async () => {
-    mockProfileUpsert({ message: "db down" });
+    mockProfileUpdate({ message: "db down" });
     getSupabaseAdminClientMock.mockReturnValue({
       auth: {
         admin: {
@@ -258,9 +260,9 @@ describe("createAdminUser", () => {
     expect(revalidatePathMock).not.toHaveBeenCalled();
   });
 
-  it("conserva el ID de Auth cuando el upsert lanza tras crear la cuenta", async () => {
-    const { upsertMock } = mockProfileUpsert();
-    upsertMock.mockRejectedValue(new Error("network timeout"));
+  it("conserva el ID de Auth cuando la actualización lanza tras crear la cuenta", async () => {
+    const { profileUpdateMock } = mockProfileUpdate();
+    profileUpdateMock.mockRejectedValue(new Error("network timeout"));
     getSupabaseAdminClientMock.mockReturnValue({
       auth: { admin: { createUser: vi.fn().mockResolvedValue({
         data: { user: { id: "temp-uncertain" } },
@@ -287,7 +289,7 @@ describe("createAdminUser", () => {
 
   it("prepara el perfil inactivo antes de enviar la invitación y activa al final", async () => {
     const operations: string[] = [];
-    const upsertMock = vi.fn().mockImplementation(async (payload) => {
+    const profileUpdateMock = vi.fn().mockImplementation(async (payload) => {
       operations.push("profile");
       expect(payload).toMatchObject({ is_active: false, provisioning_status: "pending" });
       return { error: null };
@@ -297,12 +299,15 @@ describe("createAdminUser", () => {
       return { error: null };
     });
     const updateMock = vi.fn().mockImplementation((payload) => {
+      if (payload.provisioning_status === "pending") {
+        return { eq: () => ({ select: () => ({ single: () => profileUpdateMock(payload) }) }) };
+      }
       expect(payload).toMatchObject({ is_active: true, provisioning_status: "ready" });
       return { eq: eqMock };
     });
     requireAdminContextMock.mockResolvedValue({
       adminUserId: "admin-1",
-      supabase: { from: vi.fn(() => ({ upsert: upsertMock, update: updateMock })) },
+      supabase: { from: vi.fn(() => ({ update: updateMock })) },
     });
     const createUserMock = vi.fn().mockImplementation(async () => {
       operations.push("auth");
@@ -338,7 +343,7 @@ describe("createAdminUser", () => {
   });
 
   it("un fallo de invitación deja la cuenta pendiente sin activarla", async () => {
-    const { activationMock } = mockProfileUpsert();
+    const { activationMock } = mockProfileUpdate();
     sendUserInvitationMock.mockResolvedValue({
       success: false, deliveryAttempted: true, error: "SMTP failed",
     });
@@ -359,7 +364,7 @@ describe("createAdminUser", () => {
   });
 
   it("no marca un correo como enviado si falla la generación del enlace", async () => {
-    const { activationMock } = mockProfileUpsert();
+    const { activationMock } = mockProfileUpdate();
     sendUserInvitationMock.mockResolvedValue({
       success: false, deliveryAttempted: false, error: "No se pudo generar el enlace de invitación",
     });
@@ -382,7 +387,7 @@ describe("createAdminUser", () => {
   });
 
   it("no confunde invited_at de un enlace generado con un correo entregado al reanudar", async () => {
-    mockProfileUpsert();
+    mockProfileUpdate();
     const dispatchFrom = mockDispatchClaim();
     getSupabaseAdminClientMock.mockReturnValue({
       from: vi.fn(() => ({
@@ -414,7 +419,7 @@ describe("createAdminUser", () => {
   });
 
   it("no invita de nuevo a quien ya confirmó el correo durante un alta pendiente", async () => {
-    const { activationMock, updateMock } = mockProfileUpsert();
+    const { activationMock, updateMock } = mockProfileUpdate();
     getSupabaseAdminClientMock.mockReturnValue({
       from: vi.fn(() => ({ select: () => ({ eq: () => ({ single: async () => ({
         data: { provisioning_status: "pending", provisioning_mode: "invite", invitation_sent_at: null },
@@ -440,14 +445,14 @@ describe("createAdminUser", () => {
     expect(result.state).toBe("created");
     expect(sendUserInvitationMock).not.toHaveBeenCalled();
     expect(activationMock).toHaveBeenCalledOnce();
-    expect(updateMock.mock.calls[0][0]).toMatchObject({
+    expect(updateMock.mock.calls[1][0]).toMatchObject({
       invitation_accepted_at: "2026-09-30T09:00:00Z",
     });
-    expect(updateMock.mock.calls[0][0]).not.toHaveProperty("invitation_sent_at");
+    expect(updateMock.mock.calls[1][0]).not.toHaveProperty("invitation_sent_at");
   });
 
   it("no duplica el correo si otra petición reservó el envío", async () => {
-    const { activationMock } = mockProfileUpsert();
+    const { activationMock } = mockProfileUpdate();
     const inviteUserByEmailMock = vi.fn();
     const claimFromMock = mockDispatchClaim(false);
     getSupabaseAdminClientMock.mockReturnValue({
@@ -470,7 +475,7 @@ describe("createAdminUser", () => {
   });
 
   it("reanuda por ID sin crear Auth ni reenviar una invitación registrada", async () => {
-    const { upsertMock, activationMock } = mockProfileUpsert();
+    const { profileUpdateMock, activationMock } = mockProfileUpdate();
     const inviteUserByEmailMock = vi.fn();
     const createUserMock = vi.fn();
     const singleMock = vi.fn().mockResolvedValue({ data: { provisioning_status: "pending" }, error: null });
@@ -496,12 +501,12 @@ describe("createAdminUser", () => {
     expect(result.state).toBe("created");
     expect(createUserMock).not.toHaveBeenCalled();
     expect(sendUserInvitationMock).not.toHaveBeenCalled();
-    expect(upsertMock).toHaveBeenCalledOnce();
+    expect(profileUpdateMock).toHaveBeenCalledOnce();
     expect(activationMock).toHaveBeenCalledOnce();
   });
 
   it("mantiene la cuenta pendiente si falla la activación después del envío", async () => {
-    const { activationMock } = mockProfileUpsert();
+    const { activationMock } = mockProfileUpdate();
     activationMock.mockResolvedValue({ error: new Error("write failed") });
     getSupabaseAdminClientMock.mockReturnValue({
       from: mockDispatchClaim(),
@@ -521,7 +526,7 @@ describe("createAdminUser", () => {
   });
 
   it("reanuda un alta con contraseña temporal sin volver a crear Auth", async () => {
-    const { activationMock } = mockProfileUpsert();
+    const { activationMock } = mockProfileUpdate();
     const createUserMock = vi.fn();
     const inviteUserByEmailMock = vi.fn();
     getSupabaseAdminClientMock.mockReturnValue({

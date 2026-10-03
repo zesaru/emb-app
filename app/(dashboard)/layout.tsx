@@ -1,3 +1,4 @@
+import { needsInvitationPassword } from "@/lib/auth/invitation-password";
 import Navbar from "./_components/navbar";
 import Sidebar from "./_components/sidebar";
 import { redirect } from "next/navigation";
@@ -15,6 +16,11 @@ const DashboardLayout = async ({ children }: { children: React.ReactNode }) => {
   } catch {
     redirect("/login");
   }
+
+  const { data: profile, error: profileError } = await supabase.from("users")
+    .select("provisioning_mode, invitation_status").eq("id", user.id).single();
+  if (profileError || !profile) redirect("/login");
+  if (needsInvitationPassword(profile)) redirect("/welcome");
 
   return (
     <div className="h-full">

@@ -22,6 +22,7 @@
     "supabase:reset": "npx supabase db reset",
     "test": "vitest",
     "test:invitation:local": "node scripts/test-local-invitation.mjs",
+    "test:invitation:e2e:local": "node scripts/test-local-invitation-e2e.mjs",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:e2e": "playwright test",

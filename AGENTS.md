@@ -31,6 +31,8 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - `pnpm build` / `pnpm start`: Build and run production output.
 - `pnpm test`: Run Vitest interactively in local development. Use `pnpm test --run` for a single non-interactive run.
 - `pnpm test --run test/unit/actions/add-vacations.test.ts`: Run a focused unit suite.
+- `pnpm test:invitation:local`: Run invitation recovery against isolated local Supabase with simulated email delivery.
+- `pnpm test:invitation:e2e:local`: Run the real admin form, delivery failure/retry, password setup, and invite acceptance against local Supabase. Requires local services; starts its own Next.js server on port 3000 and removes disposable accounts and temporary email artifacts.
 - `pnpm test:coverage --run`: Request coverage; verify the matching Vitest coverage provider is installed (it is not currently declared in `package.json`).
 - `pnpm exec tsc --noEmit`: Check application TypeScript types.
 - `pnpm test:e2e`: Run Playwright E2E suite.

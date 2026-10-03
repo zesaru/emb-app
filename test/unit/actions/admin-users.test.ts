@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const revalidatePathMock = vi.fn();
 
@@ -31,6 +31,10 @@ describe("Admin Users Actions", () => {
 
   afterAll(() => {
     consoleErrorMock.mockRestore();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe("deactivateAdminUser", () => {
@@ -183,6 +187,8 @@ describe("Admin Users Actions", () => {
 
   describe("listAdminUsers", () => {
     it("calcula fechas y saldo desde grants reales, no desde valores legacy", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-09-30T03:00:00.000Z"));
       const orderUsersMock = vi.fn().mockResolvedValue({
         data: [
           {
