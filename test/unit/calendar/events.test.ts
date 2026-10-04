@@ -36,4 +36,12 @@ describe("eventos del calendario", () => {
   it("mantiene eventos de fecha como días completos sin convertirlos a timestamps", () => {
     expect(buildCalendarEvents([], [{ id: "c", event_date: "2026-10-01", event_name: "Extra", user1: null }], range)[0]).toMatchObject({ start: "2026-10-01", allDay: true });
   });
+  it("incluye los datos de detalle ya proyectados sin añadir información privada", () => {
+    const events = buildCalendarEvents(
+      [{ id: "v", start: "2026-10-01", finish: "2026-10-02", user1: { name: "Persona A" } }],
+      [{ id: "c", event_date: "2026-09-01", event_name: "Recepción", compensated_hours_day: "2026-10-02", t_time_start: "09:00:00", t_time_finish: "11:00:00", compensated_hours: 2, user1: { name: "Persona B" } }], range,
+    );
+    expect(events[0].extendedProps).toEqual({ type: "vacation", personName: "Persona A" });
+    expect(events[1].extendedProps).toEqual({ type: "compensatory", personName: "Persona B", eventName: "Recepción", compensatedHours: 2 });
+  });
 });

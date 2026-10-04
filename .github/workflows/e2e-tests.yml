@@ -48,6 +48,29 @@ jobs:
           path: coverage/
           retention-days: 7
 
+  calendar-ui:
+    name: Calendar UI
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Check calendar interface with fictional data
+        run: pnpm test:calendar:ui
+
   # Authenticated mutation tests use an ephemeral local database, without production secrets.
   local-critical-flows:
     name: Local Critical Flows
