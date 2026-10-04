@@ -33,6 +33,7 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - `pnpm test --run test/unit/actions/add-vacations.test.ts`: Run a focused unit suite.
 - `pnpm test:invitation:local`: Run invitation recovery against isolated local Supabase with simulated email delivery.
 - `pnpm test:invitation:e2e:local`: Run the real admin form, delivery failure/retry, password setup, and invite acceptance against local Supabase. Requires local services; starts its own Next.js server on port 3000 and removes disposable accounts and temporary email artifacts.
+- `pnpm test:logout:local`: Run logout with mouse/keyboard, failed-request retry, cookie removal, protected-route checks and preservation of another session against local Supabase. Starts its own app on port 3000 and removes disposable accounts; local services must already be running.
 - `pnpm test:coverage --run`: Request coverage; verify the matching Vitest coverage provider is installed (it is not currently declared in `package.json`).
 - `pnpm exec tsc --noEmit`: Check application TypeScript types.
 - `pnpm test:e2e`: Run Playwright E2E suite.

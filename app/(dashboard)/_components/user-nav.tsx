@@ -12,7 +12,6 @@
     DropdownMenuShortcut,
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
-import { LogOut } from "lucide-react"
 import { Logo } from "./logo"
 import LogoutButton from "@/components/LogoutButton"
 
@@ -33,7 +32,7 @@ import LogoutButton from "@/components/LogoutButton"
         {/* Avatar with Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+            <Button variant="ghost" className="relative h-9 w-9 rounded-full" aria-label="Menú de usuario">
               <UserAvatar name={userName || undefined} />
             </Button>
           </DropdownMenuTrigger>
@@ -45,8 +44,8 @@ import LogoutButton from "@/components/LogoutButton"
             </p>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
-            <LogOut/><LogoutButton />
+          <DropdownMenuItem asChild onSelect={(event) => event.preventDefault()}>
+            <LogoutButton className="w-full" />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
