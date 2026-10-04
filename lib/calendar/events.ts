@@ -14,7 +14,12 @@ export type CalendarCompensatory = {
 export type CalendarEvent = {
   id: string; title: string; start: string; end?: string; allDay: boolean;
   backgroundColor: string; borderColor: string;
-  extendedProps: { type: "vacation" | "compensatory" };
+  extendedProps: {
+    type: "vacation" | "compensatory";
+    personName?: string;
+    eventName?: string | null;
+    compensatedHours?: number | null;
+  };
 };
 
 export function parseCalendarRange(start: string | null, end: string | null): CalendarRange | null {
@@ -44,7 +49,7 @@ export function buildCalendarEvents(vacations: CalendarVacation[], compensatorys
     const end = new Date(`${finish}T00:00:00Z`);
     end.setUTCDate(end.getUTCDate() + 1);
     events.push({ id: `vacation-${item.id}`, title: `🏖️ ${item.user1?.name || "Usuario"}`, start,
-      end: end.toISOString().slice(0, 10), allDay: true, backgroundColor: "#10b981", borderColor: "#059669", extendedProps: { type: "vacation" } });
+      end: end.toISOString().slice(0, 10), allDay: true, backgroundColor: "#047857", borderColor: "#065f46", extendedProps: { type: "vacation", personName: item.user1?.name || "Usuario" } });
   }
   for (const item of compensatorys) {
     const timed = Boolean(item.compensated_hours_day && item.t_time_start && item.t_time_finish);
@@ -55,7 +60,10 @@ export function buildCalendarEvents(vacations: CalendarVacation[], compensatorys
       // These are Tokyo wall-clock values. The named calendar zone keeps them independent of the browser zone.
       start: timed ? `${day}T${item.t_time_start}` : day,
       ...(timed ? { end: `${day}T${item.t_time_finish}` } : {}),
-      allDay: !timed, backgroundColor: timed ? "#3b82f6" : "#60a5fa", borderColor: "#2563eb", extendedProps: { type: "compensatory" } });
+      allDay: !timed, backgroundColor: timed ? "#2563eb" : "#b45309", borderColor: timed ? "#1d4ed8" : "#92400e", extendedProps: {
+        type: "compensatory", personName: item.user1?.name || "Usuario",
+        eventName: item.event_name, compensatedHours: item.compensated_hours,
+      } });
   }
   return events;
 }

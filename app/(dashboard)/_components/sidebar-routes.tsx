@@ -52,7 +52,7 @@ const routes = [
   },
   {
     icon: CalendarDays,
-    label: "Calendario de vacaciones",
+    label: "Calendario del equipo",
     href: "/calendar",
   },
   {

@@ -26,6 +26,7 @@
     "test:logout:local": "node scripts/test-local-logout-e2e.mjs",
     "test:vacations:local": "node scripts/test-local-vacations-e2e.mjs",
     "test:dashboard:local": "node scripts/test-local-dashboard-e2e.mjs",
+    "test:calendar:ui": "playwright test --config=e2e/calendar-ui.config.ts",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
     "test:e2e": "playwright test",
