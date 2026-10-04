@@ -3,6 +3,7 @@
 import { Row } from "@tanstack/react-table";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import adminCancelCompensatorio from "@/actions/admin-cancel-compensatorio";
 import {
@@ -26,6 +27,11 @@ interface DataTableRowActionsProps<TData> {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
+  return <CompensatoryRestActions request={row.original} />;
+}
+
+export function CompensatoryRestActions<TData>({ request }: { request: TData }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDeleting, startDeleteTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -38,12 +44,13 @@ export function DataTableRowActions<TData>({
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(row.original),
+          body: JSON.stringify(request),
         });
         const response = await responseRequest.json();
 
         if (response?.success) {
           toast.success("Ha sido aprobado el descanso.");
+          router.refresh();
           return;
         }
 
@@ -55,7 +62,7 @@ export function DataTableRowActions<TData>({
   };
 
   const handleDelete = () => {
-    const id = (row.original as CompensatorioRow).id;
+    const id = (request as CompensatorioRow).id;
     if (!id) return;
 
     startDeleteTransition(async () => {
@@ -64,6 +71,7 @@ export function DataTableRowActions<TData>({
       if (response?.success) {
         toast.success("La solicitud fue eliminada.");
         setOpen(false);
+        router.refresh();
       } else {
         toast.error(response?.error || "No se pudo eliminar la solicitud.");
       }
@@ -71,7 +79,7 @@ export function DataTableRowActions<TData>({
   };
 
   return (
-    <div className="flex flex-row space-x-2">
+    <div className="flex flex-row gap-2 [&_button]:min-h-11">
       <button
         disabled={isPending}
         onClick={handleClick}

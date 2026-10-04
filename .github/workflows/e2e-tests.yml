@@ -98,6 +98,8 @@ jobs:
         run: pnpm test:logout:local
       - name: Vacation pagination, permissions and error recovery
         run: pnpm test:vacations:local
+      - name: Mobile dashboard approval flows
+        run: pnpm test:dashboard:local
       - name: Stop isolated Supabase
         if: always() && steps.local-backup.outcome == 'success'
         run: pnpm exec supabase stop --no-backup > /dev/null

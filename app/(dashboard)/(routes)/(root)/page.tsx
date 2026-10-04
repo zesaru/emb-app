@@ -12,6 +12,7 @@ import getCompensatoriosHourNoapproved from "@/actions/getCompensatoriosHourNoap
 import getVacationsNoapproved from "@/actions/getVacationsNoApproved";
 import { getDashboardApprovalSummary } from "@/actions/get-dashboard-approval-summary";
 import { ApprovalSummary } from "../../_components/approval-summary";
+import { MobileApprovalQueues } from "../../_components/mobile-approval-queues";
 import Usertabs from "../../_components/usertabs";
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,12 @@ export default async function Index() {
     <div className="w-full flex flex-col items-center">
       {currentUserProfile?.admin === "admin" ? (
         <div className="w-full space-y-8 bg-slate-50 px-4 py-6 md:px-6 lg:px-8">
-          <ApprovalSummary summary={approvalSummary!} />
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-950">Aprobaciones pendientes</h1>
+            <p className="mt-1 text-sm text-slate-600">Revisa las solicitudes del equipo y gestiona cada aprobación.</p>
+          </div>
+          <ApprovalSummary summary={approvalSummary!} compactOnMobile />
+          <MobileApprovalQueues compensatorys={compensatorysnoapproved} rests={compensatorysHournoapproved} vacations={vacationsnoapproved} />
           {compensatorysnoapproved.length > 0 && (
             <div className="hidden h-full flex-1 flex-col pl-4 pt-6 md:flex">
               <div className="flex items-center justify-between">

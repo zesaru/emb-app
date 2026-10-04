@@ -38,6 +38,7 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - `pnpm test:coverage --run`: Request coverage; verify the matching Vitest coverage provider is installed (it is not currently declared in `package.json`).
 - `pnpm exec tsc --noEmit`: Check application TypeScript types.
 - `pnpm test:e2e`: Run Playwright E2E suite.
+- `pnpm test:dashboard:local`: Verify mobile dashboard approvals against isolated local Supabase. The launcher verifies a private database/roles backup before creating fixtures and refuses to proceed if local Storage has files requiring a separate backup. Emails are captured; fixtures are cleaned even after worker termination.
 - `pnpm exec playwright test e2e/scenarios/smoke-test.spec.ts --project=unauthenticated`: Smoke check without the authenticated setup dependency.
 - `pnpm exec playwright install chromium`: Install the browser needed by the configured projects.
 - `pnpm gen-types`: Regenerate `types/database.type.ts` from the **linked** Supabase project; verify the target first. This does not generate from the local database.
@@ -73,6 +74,7 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - Reuse `lib/auth/request-user.ts` for verified session/profile reads during server rendering. Its `React.cache` scope is one render; never persist sessions or permissions across requests. Pass only the needed name/access flags to navigation components.
 - Use the request-scoped Supabase server adapter for user operations. `lib/supabase/admin.ts` exposes a privileged service-role client for authorized server operations only.
 - Vacation grants coexist with legacy `users.num_vacations`. Preserve compatibility unless the task explicitly changes it; consult `lib/vacations/`, the current migrations, and relevant unit tests.
+- The admin home shows mobile approval cards and desktop tables using shared mutation controls. Successful mutations refresh the queues. Vacation pending reads include false/null states, exclude cancellations, retain RLS and require an active administrator; a read error must not look like an empty queue. Keep summary counts aligned with those conditions.
 - Vacation approval uses `approve_vacation_with_grants` to approve and consume balance atomically. Preserve duplicate-processing protection and grant restoration on forced cancellation; do not split these into independent client writes.
 - Preserve grant expiry boundaries and consumption ordering (earliest expiry first). Cover insufficient balance, repeat approval/cancellation, and legacy fallback when modifying these flows.
 

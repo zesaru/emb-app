@@ -16,7 +16,7 @@ export async function getDashboardApprovalSummary(): Promise<DashboardApprovalSu
     supabase.from("compensatorys").select("id", { count: "exact", head: true })
       .is("event_name", null).is("final_approve_request", null).is("cancelled_at", null),
     supabase.from("vacations").select("id", { count: "exact", head: true })
-      .or("approve_request.is.null,approve_request.eq.false"),
+      .or("approve_request.is.null,approve_request.eq.false").is("cancelled_at", null),
   ]);
   if (results.some((result) => result.error || result.count == null)) {
     throw new Error("No se pudieron cargar las aprobaciones del inicio.");

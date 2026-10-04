@@ -3,11 +3,12 @@
 import { Row } from "@tanstack/react-table"
 import { useContext, useTransition } from "react"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 import updateApproveVacations from "@/actions/updateVacations"
 import { VacationsWithUser } from "@/types/collections"
 
-import { VacationsApprovalContext } from "./data-table-vacaciones"
+import { VacationsApprovalContext } from "./vacations-approval-context"
 
 interface DataTableRowActionsProps {
   row: Row<VacationsWithUser>
@@ -22,6 +23,11 @@ type VacationApprovalRow = VacationsWithUser & {
 export function DataTableRowActions({
   row,
 }: DataTableRowActionsProps) {
+  return <VacationRequestActions request={row.original} />
+}
+
+export function VacationRequestActions({ request }: { request: VacationsWithUser }) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const approvalContext = useContext(VacationsApprovalContext)
   const isApproving = approvalContext?.isApproving ?? false
@@ -37,7 +43,7 @@ export function DataTableRowActions({
 
       try {
         // Soporta tanto el shape del RPC list_unapproved_vacations como joins legacy.
-        const data = row.original as VacationApprovalRow
+        const data = request as VacationApprovalRow
         const userEmail =
           data.email ??
           data.user1?.email ??
@@ -62,11 +68,14 @@ export function DataTableRowActions({
         const response = await updateApproveVacations(vacationInput)
         if (response?.success) {
           toast.success("Vacaciones aprobadas correctamente.")
+          router.refresh()
         } else if (response?.error) {
           toast.error(`Error: ${response.error}`)
         } else {
           toast.error("No se pudo completar la aprobación.")
         }
+      } catch {
+        toast.error("No se pudo aprobar la solicitud. Intenta nuevamente.")
       } finally {
         setIsApproving?.(false)
       }
@@ -74,7 +83,7 @@ export function DataTableRowActions({
   }
 
   return (
-    <div className="flex flex-row space-x-2">
+    <div className="flex flex-row gap-2 [&_button]:min-h-11">
       <button
         onClick={handleClick}
         type="button"
