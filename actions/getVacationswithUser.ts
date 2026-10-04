@@ -25,7 +25,7 @@ const getVacationsWithUser = async():Promise<VacationsWithUser[]> => {
       .order('request_date', { ascending: false });
 
     if (error) {
-      console.log(error.message);
+      throw new Error("No se pudieron cargar las vacaciones");
     }
 
     return (data as any) || [];

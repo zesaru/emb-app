@@ -38,7 +38,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run Unit Tests
-        run: pnpm run test
+        run: pnpm test --run
 
       - name: Upload Coverage
         uses: actions/upload-artifact@v4
@@ -48,7 +48,61 @@ jobs:
           path: coverage/
           retention-days: 7
 
-  # Job 2: Run E2E Tests on Production (after merge)
+  # Authenticated mutation tests use an ephemeral local database, without production secrets.
+  local-critical-flows:
+    name: Local Critical Flows
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Start isolated Supabase
+        run: pnpm exec supabase start --exclude studio,imgproxy,logflare,vector,supavisor,edge-runtime > /dev/null
+      - name: Back up isolated Supabase before mutating tests
+        id: local-backup
+        run: |
+          set -euo pipefail
+          backup_dir=$(mktemp -d "$RUNNER_TEMP/emb-supabase-backup.XXXXXX")
+          chmod 700 "$backup_dir"
+          umask 077
+          # This newly created CI instance has no Storage files to export.
+          test "$(docker exec supabase_db_emb-app psql --username=postgres --dbname=postgres --tuples-only --no-align --command='SELECT count(*) FROM storage.objects')" = "0"
+          docker exec supabase_db_emb-app pg_dump --username=postgres --dbname=postgres --format=custom > "$backup_dir/database.dump"
+          docker exec supabase_db_emb-app pg_dumpall --username=postgres --roles-only --no-role-passwords > "$backup_dir/roles.sql"
+          docker exec -i supabase_db_emb-app pg_restore --list < "$backup_dir/database.dump" > "$backup_dir/archive.list"
+          test -s "$backup_dir/archive.list"
+          docker exec -i supabase_db_emb-app pg_restore --file=/dev/null < "$backup_dir/database.dump"
+          sha256sum "$backup_dir/database.dump" "$backup_dir/roles.sql" > "$backup_dir/checksums.sha256"
+          sha256sum --check "$backup_dir/checksums.sha256" > /dev/null
+          # Auth hashes stay private on the disposable runner; never upload this backup.
+          echo 'Isolated Supabase backup verified before invitation/logout/vacation tests.'
+      - name: Invitation failure, recovery and acceptance
+        run: pnpm test:invitation:e2e:local
+      - name: Logout and session isolation
+        run: pnpm test:logout:local
+      - name: Vacation pagination, permissions and error recovery
+        run: pnpm test:vacations:local
+      - name: Stop isolated Supabase
+        if: always() && steps.local-backup.outcome == 'success'
+        run: pnpm exec supabase stop --no-backup > /dev/null
+
+  # Anonymous smoke/auth tests use the local Next.js webServer after a main push.
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
@@ -111,7 +165,7 @@ jobs:
   comment-pr:
     name: Comment PR with Test Results
     runs-on: ubuntu-latest
-    needs: [unit-tests, e2e-tests]
+    needs: [unit-tests, e2e-tests, local-critical-flows]
     if: always() && github.event_name == 'pull_request'
     permissions:
       pull-requests: write
@@ -123,15 +177,19 @@ jobs:
           script: |
             const unitTestsStatus = '${{ needs.unit-tests.result }}' === 'success' ? '✅ Passed' : '❌ Failed';
             const e2eTestsStatus = '${{ needs.e2e-tests.result }}' === 'success' ? '✅ Passed' : '⏭️ Skipped (PR only)';
+            const localFlowsStatus = '${{ needs.local-critical-flows.result }}' === 'success' ? '✅ Passed' : '❌ Failed or skipped';
 
             const comment = `## 🧪 Test Results
 
             ### Unit Tests
             ${unitTestsStatus}
 
+            ### Authenticated local flows
+            ${localFlowsStatus}
+
             ### E2E Tests
             ${e2eTestsStatus}
-            > E2E tests run on production deployment after merging to main
+            > Anonymous tests run against the local Next.js server on main pushes. Authenticated flows run against ephemeral local Supabase on PRs and main pushes.
 
             **Commit**: ${{ github.sha }}
             `;

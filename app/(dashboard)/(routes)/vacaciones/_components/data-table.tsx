@@ -1,20 +1,15 @@
 "use client"
 
 import * as React from "react"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
   flexRender,
   getCoreRowModel,
-  getSortedRowModel,
   useReactTable,
-  getPaginationRowModel,
-  getFilteredRowModel,
 } from "@tanstack/react-table"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 
 import {
   Table,
@@ -28,47 +23,33 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  page: number
+  pages: number
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  page,
+  pages,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const router = useRouter(), pathname = usePathname(), params = useSearchParams();
+  const [pending, startTransition] = React.useTransition();
+  function navigate(page: number) {
+    const next = new URLSearchParams(params.toString());
+    next.set("page", String(page));
+    startTransition(() => router.push(`${pathname}?${next}`));
+  }
 
   const table = useReactTable({
     data,
     columns,
-    initialState: {
-      pagination: {
-        pageSize: 100,
-      },
-    },
+    manualPagination: true,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      columnFilters,
-    },
   })
 
   return (
     <div className="p-6">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filtrar usuarios..."
-          value={(table.getColumn("user1.name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("user1.name")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-      </div>
       <div className="rounded-md border border-gray-200">
         <Table>
           <TableHeader>
@@ -115,19 +96,20 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
+        <span className="mr-auto text-sm text-slate-500" role="status">Página {page} de {pages}{pending ? " · Cargando…" : ""}</span>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
+          onClick={() => navigate(page - 1)}
+          disabled={pending || page <= 1}
         >
           Anterior
         </Button>
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
+          onClick={() => navigate(page + 1)}
+          disabled={pending || page >= pages}
         >
           Siguiente
         </Button>
