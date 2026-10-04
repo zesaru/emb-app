@@ -1,52 +1,32 @@
-import { createClient } from "@/utils/supabase/server";
+import { getRequestUser } from "@/lib/auth/request-user";
 import { DataTable } from "./_components/data-table"
 import { columns } from "./_components/columns"
-import getVacationswithUser from "@/actions/getVacationswithUser";
+import { listVacationRecords } from "@/actions/list-vacation-records";
+import { VacationFilters } from "./_components/filters";
 import { redirect } from "next/navigation";
 import { Clock, CalendarCheck, Users } from 'lucide-react';
-import { isAdmin } from "@/lib/auth/admin-check";
 
 export const dynamic = "force-dynamic";
 
-export default async function Vacaciones() {
-
-  const supabase = await createClient();
+export default async function Vacaciones({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getRequestUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const admin = await isAdmin(user.id);
-  const allVacations = await getVacationswithUser();
-  const vacations = admin
-    ? allVacations
-    : allVacations.filter((v) => v.id_user === user.id);
-
-  // Calcular estadísticas para admin
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  const totalPendientes = vacations.filter(v => !v.approve_request).length;
-
-  const totalDiasAprobadosMes = vacations
-    .filter(v => {
-      if (!v.approve_request || !v.start) return false;
-      const startDate = new Date(v.start);
-      return startDate.getMonth() === currentMonth && startDate.getFullYear() === currentYear;
-    })
-    .reduce((sum, v) => sum + Number(v.days || 0), 0);
-
-  const vacacionesActivas = vacations.filter(v => {
-    if (!v.approve_request || !v.start || !v.finish) return false;
-    const startDate = new Date(v.start);
-    const finishDate = new Date(v.finish);
-    return now >= startDate && now <= finishDate;
-  }).length;
+  const params = await searchParams;
+  const value = (key: string) => typeof params[key] === "string" ? params[key] : undefined;
+  const status = value("status");
+  const result = await listVacationRecords({ page: Number(value("page")), user: value("user"), from: value("from"), to: value("to"),
+    status: status === "approved" || status === "pending" ? status : "all" });
+  const vacations = result.rows;
+  const totalPendientes = result.summary.pending;
+  const totalDiasAprobadosMes = result.summary.approvedDays;
+  const vacacionesActivas = result.summary.active;
 
   return (
     <div className="flex flex-col bg-gray-50 min-h-screen">
@@ -57,8 +37,9 @@ export default async function Vacaciones() {
             <h1 className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">Personal administrativo activo</h1>
             <p className="mt-1 text-sm text-slate-600">Solo se incluyen colaboradores activos no diplomáticos.</p>
           </div>
-          <p className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700">{vacations.length} solicitudes visibles</p>
+          <p className="rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700">{result.total} solicitudes encontradas</p>
         </div>
+        <VacationFilters />
         {/* Tarjetas de estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Solicitudes Pendientes */}
@@ -82,7 +63,7 @@ export default async function Vacaciones() {
               </div>
             </div>
             <div>
-              <p className="text-sm text-gray-500 font-medium">Días Aprobados (Mes)</p>
+              <p className="text-sm text-gray-500 font-medium">Días Aprobados ({result.summary.month})</p>
               <p className="text-2xl font-bold text-green-600">{totalDiasAprobadosMes} <span className="text-base font-normal text-gray-500">días</span></p>
             </div>
           </div>
@@ -103,7 +84,7 @@ export default async function Vacaciones() {
 
         {/* Tabla de registros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-          <DataTable columns={columns} data={vacations} />
+          <DataTable columns={columns} data={vacations} page={result.page} pages={result.pages} />
         </div>
       </div>
     </div>

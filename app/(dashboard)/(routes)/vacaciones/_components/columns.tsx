@@ -1,18 +1,19 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { VacationsWithUser } from '@/types/collections';
+import type { VacationRecord } from '@/actions/list-vacation-records';
+import { formatVacationDate } from '@/lib/vacations/dates';
 import { Eye } from "lucide-react"
 import Link from "next/link"
 
-export const columns: ColumnDef<VacationsWithUser>[] = [
+export const columns: ColumnDef<VacationRecord>[] = [
   {
     accessorKey: "id_user",
     header: "Ver",
     cell: ({ row }) => {
       const userId = row.getValue("id_user") as string;
       return (
-        <Link href={`/vacaciones/${userId}`} className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 text-gray-600">
+        <Link href={`/vacaciones/${userId}`} aria-label={`Ver vacaciones de ${row.original.user1?.name || "usuario"}`} className="inline-flex items-center justify-center w-8 h-8 rounded hover:bg-gray-100 text-gray-600">
           <Eye className="h-4 w-4" />
         </Link>
       );
@@ -33,7 +34,7 @@ export const columns: ColumnDef<VacationsWithUser>[] = [
     cell: ({ row }) => {
       const date = row.getValue("request_date") as string | null;
       if (date) {
-        const formatted = new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const formatted = formatVacationDate(date);
         return <div className="text-gray-600">{formatted}</div>;
       }
       return <div className="text-gray-400">-</div>;
@@ -45,7 +46,7 @@ export const columns: ColumnDef<VacationsWithUser>[] = [
     cell: ({ row }) => {
       const date = row.getValue("start") as string | null;
       if (date) {
-        const formatted = new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const formatted = formatVacationDate(date);
         return <div className="text-gray-600">{formatted}</div>;
       }
       return <div className="text-gray-400">-</div>;
@@ -57,7 +58,7 @@ export const columns: ColumnDef<VacationsWithUser>[] = [
     cell: ({ row }) => {
       const date = row.getValue("finish") as string | null;
       if (date) {
-        const formatted = new Date(date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const formatted = formatVacationDate(date);
         return <div className="text-gray-600">{formatted}</div>;
       }
       return <div className="text-gray-400">-</div>;

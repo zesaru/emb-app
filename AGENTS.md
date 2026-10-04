@@ -34,6 +34,7 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - `pnpm test:invitation:local`: Run invitation recovery against isolated local Supabase with simulated email delivery.
 - `pnpm test:invitation:e2e:local`: Run the real admin form, delivery failure/retry, password setup, and invite acceptance against local Supabase. Requires local services; starts its own Next.js server on port 3000 and removes disposable accounts and temporary email artifacts.
 - `pnpm test:logout:local`: Run logout with mouse/keyboard, failed-request retry, cookie removal, protected-route checks and preservation of another session against local Supabase. Starts its own app on port 3000 and removes disposable accounts; local services must already be running.
+- `pnpm test:vacations:local`: Run vacation pagination, complete indicators, literal name search, owner access and simulated database-error recovery against local Supabase. Uses UTC on the server and Los Angeles in the browser to check date handling; starts its own app on port 3000 and cleans disposable records.
 - `pnpm test:coverage --run`: Request coverage; verify the matching Vitest coverage provider is installed (it is not currently declared in `package.json`).
 - `pnpm exec tsc --noEmit`: Check application TypeScript types.
 - `pnpm test:e2e`: Run Playwright E2E suite.
@@ -76,6 +77,7 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 ## Dashboard Queries & Loading
 - The administrative home uses `actions/get-dashboard-approval-summary.ts` for three HEAD counts; it does not build the full report. Normal users must not load administrative approval queues.
 - Compensatorios uses `actions/list-compensatory-records.ts`: server pagination of 25 rows, filters in Supabase, stable date/ID ordering and owner restriction alongside RLS. Monthly reports require a valid month and fetch the complete filtered period in batches; never calculate report totals from one detail page.
+- The vacation list uses `actions/list-vacation-records.ts`: 25 rows per page, eligible active/non-diplomatic users, owner restriction alongside RLS, and a separate summary over all filtered records. Monthly approved days are fetched in bounded batches; the current month/day is Tokyo and the vacation finish is inclusive. `lib/vacations/dates.ts` keeps calendar days independent of browser/server timezones. Query failures must reach the route's retry boundary instead of appearing as an empty list.
 - Calendar events come from `app/api/calendar/route.ts` and `actions/get-calendar-events.ts`, with verified active sessions, real date validation, an exclusive end and at most 62 days per request. Preserve team visibility: vacations use the scoped client/RLS; compensatorios use the existing authorized server-only privileged projection of calendar fields. Do not reuse this projection to expose full compensatory records.
 - `lib/calendar/events.ts` distinguishes date-only values from timestamps, converts vacation timestamps to Tokyo dates and makes the inclusive vacation finish exclusive for FullCalendar. Keep the calendar independent of the browser timezone and test overlapping periods and boundary days.
 - Route `loading.tsx` files sit below the authenticated dashboard layout and share `_components/route-loading.tsx`. Keep Spanish status messages, decorative placeholders, reduced-motion support and the navigation available; do not show placeholder counts or actionable controls.
@@ -95,7 +97,7 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - Playwright reads `BASE_URL` (default `http://localhost:3000`) but its `webServer` still starts a local dev server on port 3000. Do not assume setting `BASE_URL` disables that startup.
 - Auth setup currently creates only `e2e/.auth/admin.json`, using `E2E_ADMIN_EMAIL` and `E2E_ADMIN_PASSWORD`; the `authenticated-user` project expects `user.json`, which this setup does not create. Supply dedicated test accounts/state before running those projects; do not rely on hardcoded fallback credentials.
 - Run mutating E2E scenarios against a controlled test environment. Report missing credentials/services or existing failures explicitly rather than treating skipped checks as passing.
-- CI runs unit tests on PRs and main pushes; E2E runs only the `unauthenticated` project on main pushes. Workflow comments mentioning production do not override the actual Playwright configuration.
+- CI runs unit tests and authenticated invitation/logout/vacation flows against ephemeral local Supabase on PRs and main pushes. The separate E2E job still runs only the `unauthenticated` project on main pushes, using a local Next.js server; it is not a production deployment check.
 
 ## Commit & Pull Request Guidelines
 - Follow the existing conventional commit pattern: `feat:`, `fix:`, `test:`, `chore:`, `ci:`, `perf:`, `security:`.
