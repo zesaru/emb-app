@@ -28,7 +28,7 @@ describe("resumen de aprobaciones del inicio", () => {
     expect(selects).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(filters[0]).toEqual([["event_name", ["is", null]], ["approve_request", null], ["cancelled_at", null]]);
     expect(filters[1]).toEqual([["event_name", null], ["final_approve_request", null], ["cancelled_at", null]]);
-    expect(filters[2]).toEqual([["or", "approve_request.is.null,approve_request.eq.false"]]);
+    expect(filters[2]).toEqual([["or", "approve_request.is.null,approve_request.eq.false"], ["cancelled_at", null]]);
   });
   it("rechaza usuarios sin permisos antes de consultar datos", async () => {
     authorize.mockRejectedValue(new Error("No autorizado"));

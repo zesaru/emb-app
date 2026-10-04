@@ -23,10 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export const VacationsApprovalContext = React.createContext<{
-  isApproving: boolean
-  setIsApproving: React.Dispatch<React.SetStateAction<boolean>>
-} | null>(null)
+import { VacationsApprovalContext } from "./vacations-approval-context"
+export { VacationsApprovalContext } from "./vacations-approval-context"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]

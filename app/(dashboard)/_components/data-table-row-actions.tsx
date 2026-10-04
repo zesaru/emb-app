@@ -3,6 +3,7 @@
 import { Row } from "@tanstack/react-table";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import adminCancelCompensatorio from "@/actions/admin-cancel-compensatorio";
 import {
@@ -21,12 +22,17 @@ interface DataTableRowActionsProps {
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
+  return <CompensatoryRequestActions request={row.original} />;
+}
+
+export function CompensatoryRequestActions({ request }: { request: CompensatorysWithUser }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isDeleting, startDeleteTransition] = useTransition();
   const [open, setOpen] = useState(false);
 
   const handleDelete = () => {
-    const id = row.original.id;
+    const id = request.id;
     if (!id) return;
 
     startDeleteTransition(async () => {
@@ -35,6 +41,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       if (response?.success) {
         toast.success("La solicitud fue eliminada.");
         setOpen(false);
+        router.refresh();
       } else {
         toast.error(response?.error || "No se pudo eliminar la solicitud.");
       }
@@ -43,8 +50,8 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   const handleClick = () => {
     startTransition(async () => {
-      const data = row.original;
-      const userEmail = data.user1?.email ?? data.users?.[0]?.email ?? "";
+      const data = request as CompensatorysWithUser & { email?: string | null };
+      const userEmail = data.email ?? data.user1?.email ?? data.users?.[0]?.email ?? "";
       const compensatoryInput = {
         id: data.id ?? "",
         user_id: data.user_id ?? "",
@@ -64,6 +71,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
         if (response?.success) {
           toast.success("El registro ha sido aprobado.");
+          router.refresh();
           return;
         }
 
@@ -75,7 +83,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   };
 
   return (
-    <div className="flex flex-row space-x-2">
+    <div className="flex flex-row gap-2 [&_button]:min-h-11">
       <button
         disabled={isPending}
         onClick={handleClick}
