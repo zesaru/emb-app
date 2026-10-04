@@ -1,5 +1,6 @@
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/utils/supabase/server";
+import { calendarCompensatoryEligibility } from "@/lib/calendar/compensatory-query";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,8 @@ export default async function getCalendarCompensatorios() {
   const { data, error } = await adminClient
     .from("compensatorys")
     .select("id, user_id, event_date, event_name, compensated_hours, compensated_hours_day, t_time_start, t_time_finish, user1:users!compensatorys_user_id_fkey(name)")
-    .gte("hours", 0)
+    .is("cancelled_at", null)
+    .or(calendarCompensatoryEligibility)
     .order("event_date", { ascending: false });
 
   if (error) {
