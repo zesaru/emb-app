@@ -3,6 +3,7 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getRequestUser } from "@/lib/auth/request-user";
 import { requireUserActive } from "@/lib/auth/admin-check";
 import { buildCalendarEvents, type CalendarRange, type CalendarVacation, type CalendarCompensatory } from "@/lib/calendar/events";
+import { calendarCompensatoryEligibility } from "@/lib/calendar/compensatory-query";
 
 export class CalendarAccessError extends Error {
   constructor(public status: number, message: string) { super(message); }
@@ -40,7 +41,8 @@ export async function getCalendarEvents(range: CalendarRange) {
     for (let offset = 0; ; offset += 1000) {
       const result = await admin.from("compensatorys")
         .select("id,event_date,event_name,compensated_hours,compensated_hours_day,t_time_start,t_time_finish,user1:users!compensatorys_user_id_fkey(name)")
-        .gte("hours", 0)
+        .is("cancelled_at", null)
+        .or(calendarCompensatoryEligibility)
         .or(`and(compensated_hours_day.gte.${range.start},compensated_hours_day.lt.${range.end}),and(event_date.gte.${range.start},event_date.lt.${range.end})`)
         .order("id").range(offset, offset + 999);
       if (result.error) throw new Error("No se pudieron cargar los compensatorios del calendario");

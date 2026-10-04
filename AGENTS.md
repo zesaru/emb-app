@@ -86,6 +86,8 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - `lib/calendar/events.ts` distinguishes date-only values from timestamps, converts vacation timestamps to Tokyo dates and makes the inclusive vacation finish exclusive for FullCalendar. Keep the calendar independent of the browser timezone and test overlapping periods and boundary days.
 - Route `loading.tsx` files sit below the authenticated dashboard layout and share `_components/route-loading.tsx`. Keep Spanish status messages, decorative placeholders, reduced-motion support and the navigation available; do not show placeholder counts or actionable controls.
 
+- Calendar compensatory eligibility uses `lib/calendar/compensatory-query.ts`: rests use `compensated_hours` and may have `hours = NULL`; additional work uses `hours`. Exclude `cancelled_at` records, preserve rest priority when date and both times are present, and verify actual query filters alongside UI fixtures.
+
 ## Email & Scheduled Jobs
 - Reuse `sendOrCaptureEmail` in `lib/email/dev-email-outbox.ts`, React Email templates, and recipient/URL helpers in `components/email/utils/email-config.ts`.
 - `EMAIL_DELIVERY_ENABLED=false` captures messages in `dev_email_outbox`; `EMAIL_TEST_MODE` changes recipients and does not disable delivery. Mock email delivery in unit tests.
