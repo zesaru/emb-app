@@ -46,6 +46,8 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - `env:dev` and `env:staging` use PowerShell and overwrite `.env.local`; do not assume they work on macOS/Linux.
 
 ## Local Environment & Database Work
+- User requirement: before any operation that changes Supabase data, schema, Auth, Storage, functions, configuration, or existing local/test environments, create a complete backup of the target environment and verify that it finished successfully. Do not proceed if the backup fails or its coverage cannot be confirmed. Identify the project and environment explicitly; never confuse temporary CI services with production.
+- This requirement also applies to migrations, resets, restores, sync/backfill scripts and mutating tests. For a new disposable environment with no existing database to back up, explain that fact and obtain the user's agreement before treating it as an exception. Keep backups outside Git and never expose secrets or personal data in logs.
 - Local Supabase project ID is `emb-app`; API port `55421`, Postgres `55422`, and Studio `55423` are configured in `supabase/config.toml`.
 - `pnpm dev` uses the existing environment. `pnpm dev:all` starts Supabase but does not inject local credentials; use the local launcher above when targeting the isolated database.
 - Add schema, RPC, and RLS changes as new migrations; preserve already applied migration history. Check the installed CLI's help before choosing flags.
@@ -97,7 +99,7 @@ Use Node 24 (`.nvmrc` and `package.json`) and pnpm 10, matching CI.
 - Playwright reads `BASE_URL` (default `http://localhost:3000`) but its `webServer` still starts a local dev server on port 3000. Do not assume setting `BASE_URL` disables that startup.
 - Auth setup currently creates only `e2e/.auth/admin.json`, using `E2E_ADMIN_EMAIL` and `E2E_ADMIN_PASSWORD`; the `authenticated-user` project expects `user.json`, which this setup does not create. Supply dedicated test accounts/state before running those projects; do not rely on hardcoded fallback credentials.
 - Run mutating E2E scenarios against a controlled test environment. Report missing credentials/services or existing failures explicitly rather than treating skipped checks as passing.
-- CI runs unit tests and authenticated invitation/logout/vacation flows against ephemeral local Supabase on PRs and main pushes. The separate E2E job still runs only the `unauthenticated` project on main pushes, using a local Next.js server; it is not a production deployment check.
+- CI runs unit tests and authenticated invitation/logout/vacation flows against ephemeral local Supabase on PRs and main pushes. A private PostgreSQL/roles backup is verified before mutating tests; the job fails if its initially empty Storage contains objects that would require a separate file backup. Never upload these backups as CI artifacts. The separate E2E job still runs only the `unauthenticated` project on main pushes, using a local Next.js server; it is not a production deployment check.
 
 ## Commit & Pull Request Guidelines
 - Follow the existing conventional commit pattern: `feat:`, `fix:`, `test:`, `chore:`, `ci:`, `perf:`, `security:`.

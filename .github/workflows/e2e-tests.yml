@@ -74,6 +74,24 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Start isolated Supabase
         run: pnpm exec supabase start --exclude studio,imgproxy,logflare,vector,supavisor,edge-runtime > /dev/null
+      - name: Back up isolated Supabase before mutating tests
+        id: local-backup
+        run: |
+          set -euo pipefail
+          backup_dir=$(mktemp -d "$RUNNER_TEMP/emb-supabase-backup.XXXXXX")
+          chmod 700 "$backup_dir"
+          umask 077
+          # This newly created CI instance has no Storage files to export.
+          test "$(docker exec supabase_db_emb-app psql --username=postgres --dbname=postgres --tuples-only --no-align --command='SELECT count(*) FROM storage.objects')" = "0"
+          docker exec supabase_db_emb-app pg_dump --username=postgres --dbname=postgres --format=custom > "$backup_dir/database.dump"
+          docker exec supabase_db_emb-app pg_dumpall --username=postgres --roles-only --no-role-passwords > "$backup_dir/roles.sql"
+          docker exec -i supabase_db_emb-app pg_restore --list < "$backup_dir/database.dump" > "$backup_dir/archive.list"
+          test -s "$backup_dir/archive.list"
+          docker exec -i supabase_db_emb-app pg_restore --file=/dev/null < "$backup_dir/database.dump"
+          sha256sum "$backup_dir/database.dump" "$backup_dir/roles.sql" > "$backup_dir/checksums.sha256"
+          sha256sum --check "$backup_dir/checksums.sha256" > /dev/null
+          # Auth hashes stay private on the disposable runner; never upload this backup.
+          echo 'Isolated Supabase backup verified before invitation/logout/vacation tests.'
       - name: Invitation failure, recovery and acceptance
         run: pnpm test:invitation:e2e:local
       - name: Logout and session isolation
@@ -81,7 +99,7 @@ jobs:
       - name: Vacation pagination, permissions and error recovery
         run: pnpm test:vacations:local
       - name: Stop isolated Supabase
-        if: always()
+        if: always() && steps.local-backup.outcome == 'success'
         run: pnpm exec supabase stop --no-backup > /dev/null
 
   # Anonymous smoke/auth tests use the local Next.js webServer after a main push.
