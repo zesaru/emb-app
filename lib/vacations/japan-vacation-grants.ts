@@ -1,3 +1,5 @@
+import { vacationToday } from "@/lib/vacations/dates";
+
 export const JAPAN_SERVICE_BANDS = [
   "6_months",
   "1_year_6_months",
@@ -30,7 +32,7 @@ type GrantDraftInput = {
   notes?: string | null;
 };
 
-type GrantDraft = {
+export type GrantDraft = {
   user_id: string;
   granted_on: string;
   service_band: JapanServiceBand;
@@ -152,7 +154,11 @@ export function resolveJapanServiceBand(hireDate: string, grantedOn: string): Ja
 }
 
 export function getJapanNextGrantDate(hireDate: string, grantedOn: string) {
-  return formatIsoDate(addUtcMonths(parseIsoDate(grantedOn), 12));
+  const hire = parseIsoDate(hireDate);
+  const previous = parseIsoDate(grantedOn);
+  let months = 6;
+  while (addUtcMonths(hire, months) <= previous) months += 12;
+  return formatIsoDate(addUtcMonths(hire, months));
 }
 
 export function resolveJapanUpcomingGrantDate(hireDate: string, latestGrantedOn?: string | null) {
@@ -195,11 +201,11 @@ export function resolveJapanNextExpectedGrantDate(
     return getJapanNextGrantDate(hireDate, normalizedGrant.grantedOn);
   }
 
-  const reference = referenceDate ? parseIsoDate(referenceDate) : new Date();
+  const reference = parseIsoDate(referenceDate ?? vacationToday());
   let nextGrant = firstGrantDate;
 
   while (nextGrant < reference) {
-    nextGrant = addUtcMonths(nextGrant, 12);
+    nextGrant = parseIsoDate(getJapanNextGrantDate(hireDate, formatIsoDate(nextGrant)));
   }
 
   return formatIsoDate(nextGrant);
@@ -208,13 +214,15 @@ export function resolveJapanNextExpectedGrantDate(
 /** Returns the legal anniversary that is currently due, if the employee is eligible. */
 export function resolveJapanDueGrantDate(hireDate: string, referenceDate?: string | null) {
   const firstGrantDate = parseIsoDate(formatIsoDate(addUtcMonths(parseIsoDate(hireDate), 6)));
-  const reference = referenceDate ? parseIsoDate(referenceDate) : new Date();
+  const reference = parseIsoDate(referenceDate ?? vacationToday());
 
   if (firstGrantDate > reference) return null;
 
   let dueGrant = firstGrantDate;
-  while (addUtcMonths(dueGrant, 12) <= reference) {
-    dueGrant = addUtcMonths(dueGrant, 12);
+  let nextGrant = parseIsoDate(getJapanNextGrantDate(hireDate, formatIsoDate(dueGrant)));
+  while (nextGrant <= reference) {
+    dueGrant = nextGrant;
+    nextGrant = parseIsoDate(getJapanNextGrantDate(hireDate, formatIsoDate(dueGrant)));
   }
 
   return formatIsoDate(dueGrant);

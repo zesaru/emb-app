@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdminContext } from "@/actions/admin/users/shared";
 import { normalizeUserRow } from "@/lib/users/user-mappers";
 import { adminVacationGrantCreateSchema } from "@/lib/validation/schemas";
+import { vacationToday } from "@/lib/vacations/dates";
 import {
   buildJapanVacationGrantDraft,
   resolveJapanDueGrantDate,
@@ -70,7 +71,7 @@ export async function issueUserVacationGrant(input: IssueUserVacationGrantInput)
         return { success: false as const, error: "No se pudo verificar el calendario legal de grants" };
       }
 
-      const today = new Date().toISOString().slice(0, 10);
+      const today = vacationToday();
       const dueDate = resolveJapanDueGrantDate(user.hireDate, today);
       if (!dueDate) {
         return { success: false as const, error: "El primer grant legal todavía no está vigente" };

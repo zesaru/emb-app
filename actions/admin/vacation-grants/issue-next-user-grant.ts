@@ -4,6 +4,7 @@ import { requireAdminContext } from "@/actions/admin/users/shared";
 import { normalizeUserRow } from "@/lib/users/user-mappers";
 import { adminVacationGrantListSchema } from "@/lib/validation/schemas";
 import { resolveJapanDueGrantDate } from "@/lib/vacations/japan-vacation-grants";
+import { vacationToday } from "@/lib/vacations/dates";
 import issueUserVacationGrant from "./issue-user-grant";
 
 type IssueNextUserVacationGrantInput = {
@@ -45,7 +46,7 @@ export async function issueNextUserVacationGrant(input: IssueNextUserVacationGra
       return { success: false as const, error: "No se pudo calcular el siguiente grant" };
     }
 
-    const grantedOn = resolveJapanDueGrantDate(user.hireDate, new Date().toISOString().slice(0, 10));
+    const grantedOn = resolveJapanDueGrantDate(user.hireDate, vacationToday());
     if (!grantedOn) return { success: false as const, error: "El primer grant legal todavía no está vigente" };
     if ((grants ?? []).some((grant) => grant.granted_on === grantedOn)) {
       return { success: false as const, error: `El grant legal del ${grantedOn} ya fue emitido` };
