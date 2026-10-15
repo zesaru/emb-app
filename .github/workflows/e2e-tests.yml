@@ -71,6 +71,9 @@ jobs:
       - name: Check calendar interface with fictional data
         run: pnpm test:calendar:ui
 
+      - name: Users directory UI
+        run: pnpm test:users:ui
+
   # Authenticated mutation tests use an ephemeral local database, without production secrets.
   local-critical-flows:
     name: Local Critical Flows

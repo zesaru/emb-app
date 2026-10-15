@@ -209,7 +209,7 @@ describe("Admin Users Actions", () => {
         error: null,
       });
 
-      const grantsOrderMock = vi.fn().mockResolvedValue({
+      const grantsRangeMock = vi.fn().mockResolvedValue({
         data: [
           {
             user_id: "user-1",
@@ -222,6 +222,10 @@ describe("Admin Users Actions", () => {
         ],
         error: null,
       });
+      const grantsQuery = {
+        order: vi.fn().mockReturnThis(),
+        range: grantsRangeMock,
+      };
 
       const fromMock = vi.fn((table: string) => {
         if (table === "users") {
@@ -235,9 +239,7 @@ describe("Admin Users Actions", () => {
         if (table === "vacation_grants") {
           return {
             select: vi.fn(() => ({
-              in: vi.fn(() => ({
-                order: grantsOrderMock,
-              })),
+              in: vi.fn(() => grantsQuery),
             })),
           };
         }

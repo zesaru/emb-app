@@ -53,7 +53,7 @@ test("recupera una invitación fallida desde el formulario y acepta el enlace lo
     expect(leaseError).toBeNull();
     await dialog.getByRole("button", { name: "Reintentar alta" }).click();
     await expect(dialog).toBeHidden();
-    await page.getByPlaceholder("Buscar por nombre, email o cargo").fill(email);
+    await page.getByRole("textbox", { name: "Buscar usuario" }).fill(email);
     await expect(page.getByRole("row").filter({ hasText: email })).toHaveCount(1);
     const { data: ready } = await admin.from("users").select("id, provisioning_status, is_active, invitation_sent_at").eq("email", email).single();
     expect(ready).toMatchObject({ id: pending!.id, provisioning_status: "ready", is_active: true });

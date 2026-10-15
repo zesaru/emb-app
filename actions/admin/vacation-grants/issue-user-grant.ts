@@ -22,13 +22,13 @@ function mapGrantDraftError(reason: string) {
     case "attendance_pending":
       return "La elegibilidad de asistencia (80%) sigue pendiente para este usuario";
     case "attendance_ineligible":
-      return "El usuario no es elegible por asistencia para este grant";
+      return "El usuario no es elegible por asistencia para esta asignación";
     case "invalid_schedule":
       return "No se puede determinar la regla legal con la jornada actual del usuario";
     case "grant_before_eligibility":
-      return "La fecha del grant es anterior al primer hito legal de 6 meses";
+      return "La fecha de la asignación es anterior al primer hito legal de 6 meses";
     default:
-      return "No se pudo construir el grant";
+      return "No se pudo construir la asignación";
   }
 }
 
@@ -54,7 +54,7 @@ export async function issueUserVacationGrant(input: IssueUserVacationGrantInput)
     }
 
     if (user.attendanceEligible === false) {
-      return { success: false as const, error: "El usuario no es elegible por asistencia para este grant" };
+      return { success: false as const, error: "El usuario no es elegible por asistencia para esta asignación" };
     }
 
     // For the standard schedule, an administrator may issue only the next
@@ -68,17 +68,17 @@ export async function issueUserVacationGrant(input: IssueUserVacationGrantInput)
         .order("granted_on", { ascending: false });
 
       if (grantsError) {
-        return { success: false as const, error: "No se pudo verificar el calendario legal de grants" };
+        return { success: false as const, error: "No se pudo verificar el calendario legal de asignaciones" };
       }
 
       const today = vacationToday();
       const dueDate = resolveJapanDueGrantDate(user.hireDate, today);
       if (!dueDate) {
-        return { success: false as const, error: "El primer grant legal todavía no está vigente" };
+        return { success: false as const, error: "La primera asignación legal todavía no está vigente" };
       }
 
       if ((grants ?? []).some((grant) => grant.granted_on === dueDate)) {
-        return { success: false as const, error: `El grant legal del ${dueDate} ya fue emitido` };
+        return { success: false as const, error: `La asignación legal del ${dueDate} ya fue emitida` };
       }
 
       if (data.grantedOn !== dueDate) {
@@ -113,11 +113,11 @@ export async function issueUserVacationGrant(input: IssueUserVacationGrantInput)
       .maybeSingle();
 
     if (existingGrantError) {
-      return { success: false as const, error: "No se pudo verificar grants existentes" };
+      return { success: false as const, error: "No se pudo verificar las asignaciones existentes" };
     }
 
     if (existingGrant) {
-      return { success: false as const, error: "Ya existe un grant para ese usuario, fecha y tramo legal" };
+      return { success: false as const, error: "Ya existe una asignación para ese usuario, fecha y tramo legal" };
     }
 
     const { data: insertedGrant, error: insertError } = await supabase
@@ -127,11 +127,11 @@ export async function issueUserVacationGrant(input: IssueUserVacationGrantInput)
       .single();
 
     if (insertError?.code === "23505") {
-      return { success: false as const, error: "El grant legal ya fue emitido por otro proceso" };
+      return { success: false as const, error: "La asignación legal ya fue emitida por otro proceso" };
     }
 
     if (insertError || !insertedGrant) {
-      return { success: false as const, error: "No se pudo crear el grant de vacaciones" };
+      return { success: false as const, error: "No se pudo crear la asignación de vacaciones" };
     }
 
     revalidatePath("/admin/users");
@@ -139,12 +139,12 @@ export async function issueUserVacationGrant(input: IssueUserVacationGrantInput)
     return {
       success: true as const,
       data: insertedGrant,
-      message: "Grant de vacaciones creado",
+      message: "Asignación de vacaciones creada",
     };
   } catch (error) {
     return {
       success: false as const,
-      error: error instanceof Error ? error.message : "Error inesperado creando grant",
+      error: error instanceof Error ? error.message : "Error inesperado creando asignación",
     };
   }
 }

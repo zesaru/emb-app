@@ -30,11 +30,11 @@ export async function updateUserVacationGrant(input: UpdateUserVacationGrantInpu
       .maybeSingle();
 
     if (existingGrantError) {
-      return { success: false as const, error: "No se pudo verificar el grant a editar" };
+      return { success: false as const, error: "No se pudo verificar la asignación a editar" };
     }
 
     if (!existingGrant) {
-      return { success: false as const, error: "Grant no encontrado para este usuario" };
+      return { success: false as const, error: "Asignación no encontrada para este usuario" };
     }
 
     const payload = {
@@ -56,7 +56,7 @@ export async function updateUserVacationGrant(input: UpdateUserVacationGrantInpu
       .single();
 
     if (updateError || !updatedGrant) {
-      return { success: false as const, error: "No se pudo actualizar el grant de vacaciones" };
+      return { success: false as const, error: "No se pudo actualizar la asignación de vacaciones" };
     }
 
     revalidatePath("/admin/users");
@@ -65,12 +65,12 @@ export async function updateUserVacationGrant(input: UpdateUserVacationGrantInpu
     return {
       success: true as const,
       data: updatedGrant,
-      message: "Grant de vacaciones actualizado",
+      message: "Asignación de vacaciones actualizada",
     };
   } catch (error) {
     return {
       success: false as const,
-      error: error instanceof Error ? error.message : "Error inesperado actualizando grant",
+      error: error instanceof Error ? error.message : "Error inesperado actualizando asignación",
     };
   }
 }

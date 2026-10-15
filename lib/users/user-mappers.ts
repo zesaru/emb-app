@@ -43,6 +43,8 @@ export type AdminUserListItem = {
   manualNextGrantDate: string | null;
   nextExpectedGrantDate: string | null;
   vacationBalance: number;
+  vacationExpirations?: { date: string; days: number }[];
+  vacationSpecialNotes?: string[];
   nextVacationExpirationDate: string | null;
   invitationStatus: "pending" | "accepted";
   invitationSentAt: string | null;

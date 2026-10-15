@@ -187,7 +187,7 @@ describe("Admin Vacation Grants Actions", () => {
 
     expect(result).toEqual({
       success: false,
-      error: "El grant legal ya fue emitido por otro proceso",
+      error: "La asignación legal ya fue emitida por otro proceso",
     });
     expect(revalidatePathMock).not.toHaveBeenCalled();
     vi.useRealTimers();
@@ -199,7 +199,7 @@ describe("Admin Vacation Grants Actions", () => {
 
     const issueUserVacationGrantMock = vi.fn().mockResolvedValue({
       success: true,
-      message: "Grant de vacaciones creado",
+      message: "Asignación de vacaciones creada",
     });
 
     vi.doMock("@/actions/admin/vacation-grants/issue-user-grant", () => ({

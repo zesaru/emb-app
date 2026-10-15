@@ -33,7 +33,7 @@ export async function issueNextUserVacationGrant(input: IssueNextUserVacationGra
     }
 
     if (user.grantMode === "manual") {
-      return { success: false as const, error: "Este usuario requiere emisión manual de grants" };
+      return { success: false as const, error: "Este usuario requiere emisión manual de asignaciones" };
     }
 
     const { data: grants, error: grantsError } = await supabase
@@ -43,13 +43,13 @@ export async function issueNextUserVacationGrant(input: IssueNextUserVacationGra
       .order("granted_on", { ascending: false })
 
     if (grantsError) {
-      return { success: false as const, error: "No se pudo calcular el siguiente grant" };
+      return { success: false as const, error: "No se pudo calcular la siguiente asignación" };
     }
 
     const grantedOn = resolveJapanDueGrantDate(user.hireDate, vacationToday());
-    if (!grantedOn) return { success: false as const, error: "El primer grant legal todavía no está vigente" };
+    if (!grantedOn) return { success: false as const, error: "La primera asignación legal todavía no está vigente" };
     if ((grants ?? []).some((grant) => grant.granted_on === grantedOn)) {
-      return { success: false as const, error: `El grant legal del ${grantedOn} ya fue emitido` };
+      return { success: false as const, error: `La asignación legal del ${grantedOn} ya fue emitida` };
     }
 
     return issueUserVacationGrant({
@@ -60,7 +60,7 @@ export async function issueNextUserVacationGrant(input: IssueNextUserVacationGra
   } catch (error) {
     return {
       success: false as const,
-      error: error instanceof Error ? error.message : "Error inesperado creando el siguiente grant",
+      error: error instanceof Error ? error.message : "Error inesperado creando la siguiente asignación",
     };
   }
 }
