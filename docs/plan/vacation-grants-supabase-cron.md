@@ -65,5 +65,12 @@ reversión. Las funciones privadas pueden conservarse deshabilitadas.
   Edge Functions ni configuración del proyecto: la API administrativa devuelve
   403. Se registró la excepción específica para esta migración en el directorio
   privado del respaldo.
-- Pendiente: publicar y comprobar el endpoint Vercel retirado, activar el job
-  Supabase, verificar su primera ejecución y confirmar CI/despliegue.
+- Publicado en `main` mediante el commit `2e0648d`; Vercel desplegó correctamente
+  y `GET /api/cron/vacation-grants` devuelve HTTP 410. Las pruebas Unit,
+  Calendar UI y los cuatro shards E2E de GitHub aprobaron.
+- El job `vacation-grants-daily` quedó activo a `01:00 UTC` (`10:00 JST`). La
+  verificación posterior a la activación volvió a dar `wouldIssue: 0` y los
+  datos de negocio permanecen idénticos. Como la hora diaria de hoy ya pasó,
+  la primera ejecución automática programada es el 16 de octubre de 2026; su
+  resultado aún no aparece en el historial. `Local Critical Flows` seguía en
+  ejecución al actualizar este plan.
