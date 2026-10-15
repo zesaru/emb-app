@@ -27,7 +27,8 @@ Implementación de las seis fases solicitadas para `/report`.
 - TypeScript y compilación de producción aprobados.
 - PDF ficticio de 28 registros revisado visualmente: tres páginas, todos los registros presentes y encabezados repetidos.
 - Lectura de producción `vgtqgwjjtbkqiwhbplqi`, con transacción explícita de solo lectura: coincidencia con los saldos del directorio para todos los colaboradores; Uemise 39 (19+20), Oyanagi 21 (9+12), Tessy 45 (25+20), con sus vencimientos acordados.
-- La verificación visual autenticada de producción requiere una sesión disponible en el navegador.
+- Verificación visual autenticada de producción completada: resumen general e informes individuales de Uemise, Oyanagi y Tessy. Se detectaron saldos negativos de compensatorios para Uemise y Tessy que requieren una revisión independiente de sus registros.
+- Las capturas y PDF de pruebas usan rutas portables de Playwright; las pestañas se ajustan a 320 px también con fuentes de Linux.
 
 Las capturas adjuntas contienen únicamente perfiles ficticios:
 

@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 for (const width of [320, 390, 1280, 1536]) {
-  test(`resumen legible a ${width}px`, async ({ page }) => {
+  test(`resumen legible a ${width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height: 1000 });
     await expect(page.getByRole("heading", { name: "Reportes del equipo" })).toBeVisible();
     const desktop = width >= 1280;
@@ -24,7 +24,7 @@ for (const width of [320, 390, 1280, 1536]) {
       true,
     );
     if (width === 390 || width === 1536)
-      await page.screenshot({ path: `/private/tmp/emb-report-${width}.png`, fullPage: true });
+      await page.screenshot({ path: testInfo.outputPath(`report-${width}.png`), fullPage: true });
   });
 }
 test("filtra activos, inactivos, búsquedas y días por vencer", async ({ page }) => {
@@ -40,7 +40,7 @@ test("filtra activos, inactivos, búsquedas y días por vencer", async ({ page }
 });
 test("informe individual distingue estados, saldo, vencimientos y todos los registros al imprimir", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.setViewportSize({ width: 1536, height: 1000 });
   await page
     .locator(".report-desktop")
@@ -64,7 +64,7 @@ test("informe individual distingue estados, saldo, vencimientos y todos los regi
   await expect(page.locator(".report-history tbody tr:visible")).toHaveCount(28);
   await expect(page.getByRole("button", { name: "Imprimir / Guardar PDF" })).toBeHidden();
   await page.pdf({
-    path: "/private/tmp/emb-report-individual.pdf",
+    path: testInfo.outputPath("report-individual.pdf"),
     format: "A4",
     printBackground: true,
   });

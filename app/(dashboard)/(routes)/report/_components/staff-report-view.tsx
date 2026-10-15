@@ -551,10 +551,16 @@ export function StaffReportView({ initialReport }: { initialReport: StaffReport 
       </div>
       <Tabs value={view} onValueChange={setView}>
         <TabsList className="report-controls mb-5 h-11 w-full justify-start rounded-lg bg-slate-200/60 p-1 sm:w-auto">
-          <TabsTrigger value="general" className="flex-1 px-4 sm:flex-none">
+          <TabsTrigger
+            value="general"
+            className="min-w-0 flex-1 px-2 text-xs sm:flex-none sm:px-4 sm:text-sm"
+          >
             Resumen general
           </TabsTrigger>
-          <TabsTrigger value="individual" className="flex-1 px-4 sm:flex-none">
+          <TabsTrigger
+            value="individual"
+            className="min-w-0 flex-1 px-2 text-xs sm:flex-none sm:px-4 sm:text-sm"
+          >
             Informe individual
           </TabsTrigger>
         </TabsList>
