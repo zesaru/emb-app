@@ -143,6 +143,7 @@ export function buildStaffReport(input: {
     today = vacationToday(now);
   const period = validateReportPeriod(input.period);
   const employees = input.users
+    .filter((user) => user.is_diplomatic === false)
     .map((user): StaffReportEmployee => {
       const grants = input.grants.filter((grant) => grant.user_id === user.id);
       const latest = [...grants].sort(

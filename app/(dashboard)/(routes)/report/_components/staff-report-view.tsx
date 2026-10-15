@@ -481,7 +481,7 @@ export function StaffReportView({ initialReport }: { initialReport: StaffReport 
             Reportes del equipo
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">
-            Vacaciones registradas, días disponibles y vencimientos de cada colaborador.
+            Vacaciones registradas, días disponibles y vencimientos del personal no diplomático.
           </p>
         </div>
         <Button
@@ -757,7 +757,7 @@ export function StaffReportView({ initialReport }: { initialReport: StaffReport 
           <p className="text-xs leading-5 text-slate-500">
             Los saldos son actuales. “Próximo vencimiento” indica los días del primer grupo que
             vence; el informe individual muestra todos los grupos. Las horas de compensatorios
-            descuentan descansos utilizados o reservados. Vacaciones de diplomáticos: no aplica.
+            descuentan descansos utilizados o reservados.
           </p>
         </TabsContent>
         <TabsContent value="individual" className="space-y-5">

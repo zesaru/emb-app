@@ -138,21 +138,21 @@ describe("informes de colaboradores", () => {
     expect(() => validateReportPeriod({ from: "2026-02-30", to: "2026-12-31" })).toThrow();
     expect(() => validateReportPeriod({ from: "2027-01-01", to: "2026-12-31" })).toThrow();
   });
-  it("incluye diplomáticos e inactivos sin atribuir vacaciones a los diplomáticos", () => {
+  it("excluye diplomáticos activos e inactivos y conserva al personal no diplomático", () => {
     const result = buildStaffReport({
-      users: [{ ...user, is_diplomatic: true, is_active: false }],
+      users: [
+        user,
+        { ...user, id: "inactive", is_active: false },
+        { ...user, id: "diplomat", is_diplomatic: true },
+        { ...user, id: "former-diplomat", is_diplomatic: true, is_active: false },
+      ],
       grants: [grant(25, "2027-09-01")],
       vacations: [],
       compensatory: [],
       period,
     });
-    expect(result.employees[0]).toMatchObject({
-      diplomatic: true,
-      active: false,
-      balance: 0,
-      expirations: [],
-      nextGrantDate: null,
-    });
+    expect(result.employees.map((row) => row.id).sort()).toEqual(["inactive", "u"]);
+    expect(result.employees.find((row) => row.id === "inactive")?.active).toBe(false);
   });
   it("descuenta descansos reservados, excluye cancelaciones y no oculta saldos negativos", () => {
     const base = {

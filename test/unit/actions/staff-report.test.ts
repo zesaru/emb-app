@@ -113,6 +113,7 @@ describe("lectura administrativa de informes", () => {
     expect(employee.compensatoryHours).toBe(1001);
     for (const q of queries) {
       expect(q.order).toHaveBeenCalledWith("id");
+      if (q.table === "users") expect(q.eq).toHaveBeenCalledWith("is_diplomatic", false);
     }
     for (const table of ["users", "vacation_grants", "vacations", "compensatorys"]) {
       expect(queries.filter((q) => q.table === table).flatMap((q) => q.range.mock.calls)).toEqual([
@@ -145,6 +146,20 @@ describe("lectura administrativa de informes", () => {
         id,
       );
     expect(mocks.history).toHaveBeenCalledWith({ userId: id });
+  });
+  it("rechaza informes individuales de diplomáticos antes de obtener su historial", async () => {
+    setup();
+    const original = mocks.from.getMockImplementation()!;
+    mocks.from.mockImplementation((table: string) => {
+      const q = original(table);
+      if (table === "users")
+        q.range.mockResolvedValue({ data: [{ ...person, is_diplomatic: true }], error: null });
+      return q;
+    });
+    await expect(getIndividualStaffReport({ userId: id, period })).rejects.toThrow(
+      "No se encontró el colaborador",
+    );
+    expect(mocks.history).not.toHaveBeenCalled();
   });
   it("no entrega un informe parcial si falla el historial de consumos", async () => {
     setup();

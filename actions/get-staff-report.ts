@@ -24,7 +24,8 @@ async function loadReport(period: ReportPeriod, userId?: string) {
         .from("users")
         .select(
           "id,name,email,position,is_active,is_diplomatic,hire_date,grant_mode,manual_next_grant_date",
-        );
+        )
+        .eq("is_diplomatic", false);
       if (userId) query = query.eq("id", userId);
       const { data, error } = await query.order("id").range(offset, offset + 999);
       if (error || !data) throw new Error("No se pudieron cargar los colaboradores del reporte.");

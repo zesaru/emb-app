@@ -4,7 +4,7 @@ Implementación de las seis fases solicitadas para `/report`.
 
 1. Datos: lecturas completas por lotes de 1.000 filas con orden único por ID; cualquier lote fallido aborta el informe. Ambas acciones requieren sesión de administrador activo y usan el cliente del usuario con RLS.
 2. Diseño: resumen general e informe individual en pestañas, controles con etiquetas, tarjetas móviles y tabla de escritorio. El directorio y los reportes comparten la misma regla de saldo vigente: asignación iniciada, remanente positivo y vencimiento inclusivo, con fecha de Tokio.
-3. Resumen: colaboradores activos por defecto, búsqueda por nombre/correo/cargo, consulta de inactivos y filtro de vencimientos en los próximos 90 días. Incluye diplomáticos con vacaciones “No aplica”. Los indicadores corresponden a las personas visibles.
+3. Resumen: colaboradores activos por defecto, búsqueda por nombre/correo/cargo, consulta de inactivos y filtro de vencimientos en los próximos 90 días. Incluye únicamente personal no diplomático, también al consultar inactivos. Esta restricción se aplica en el servidor, el resumen y el acceso al informe individual. Los indicadores corresponden a las personas visibles.
 4. Informe individual: registros disfrutados, en curso, programados, pendientes y cancelados; saldo actual agrupado por fecha de vencimiento; todas las asignaciones, sus notas y consumos de aprobación. Las excepciones dependen de autorización documentada, no de superar 40 días.
 5. Impresión: imprime la vista seleccionada, sus filtros y fechas, sin navegación ni controles. El historial muestra 25 registros por página en pantalla e incluye todas las filas al imprimir. Las tablas repiten encabezados. El botón abre el diálogo del navegador, desde donde se guarda como PDF.
 6. Validación y publicación: pruebas unitarias, navegador con datos ficticios, fechas de Tokio desde navegador en Los Ángeles, impresión y comprobación de producción de solo lectura.
@@ -21,7 +21,7 @@ Implementación de las seis fases solicitadas para `/report`.
 
 ## Comprobaciones realizadas
 
-- 399 pruebas unitarias aprobadas; una prueba de integración existente omitida.
+- 400 pruebas unitarias aprobadas; una prueba de integración existente omitida.
 - 9 pruebas de interfaz en `pnpm test:report:ui`, sin conexión a Supabase ni cambios de datos.
 - 2 pruebas de acceso anónimo aprobadas.
 - TypeScript y compilación de producción aprobados.

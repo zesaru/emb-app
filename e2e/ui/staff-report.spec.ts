@@ -98,14 +98,26 @@ test("actualiza el período y muestra errores de lectura sin presentar cero regi
   await expect(page.getByRole("alert")).toContainText("datos anteriores siguen visibles");
   await expect(page.getByRole("button", { name: "Imprimir / Guardar PDF" })).toBeDisabled();
 });
-test("muestra No aplica en diplomáticos y cambia de persona sin conservar el saldo anterior", async ({
+test("excluye diplomáticos del resumen, los filtros, el selector y la impresión", async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 1536, height: 1000 });
+  await page.getByRole("combobox", { name: "Estado del colaborador" }).selectOption("all");
+  await expect(page.locator(".report-desktop tbody tr")).toHaveCount(3);
+  await expect(page.getByText("Diego Diplomático", { exact: true })).toHaveCount(0);
+  await page.emulateMedia({ media: "print" });
+  await expect(page.locator(".report-desktop tbody tr:visible")).toHaveCount(3);
+  await expect(page.getByText("Diego Diplomático", { exact: true })).toHaveCount(0);
+  await page.emulateMedia({ media: "screen" });
   await page.getByRole("tab", { name: "Informe individual" }).click();
+  await expect(
+    page
+      .getByRole("combobox", { name: "Seleccionar colaborador" })
+      .locator('option[value="diplomat"]'),
+  ).toHaveCount(0);
   await page.getByRole("combobox", { name: "Seleccionar colaborador" }).selectOption("special");
   await expect(page.getByRole("heading", { name: "Persona Especial", exact: true })).toBeVisible();
-  await page.getByRole("combobox", { name: "Seleccionar colaborador" }).selectOption("diplomat");
-  await expect(page.getByRole("heading", { name: "Diego Diplomático", exact: true })).toBeVisible();
+  await page.getByRole("combobox", { name: "Seleccionar colaborador" }).selectOption("auto");
+  await expect(page.getByRole("heading", { name: "Ana Automática", exact: true })).toBeVisible();
   await expect(page.getByText("45 días", { exact: true })).toHaveCount(0);
-  await expect(page.getByText("No aplica", { exact: true }).first()).toBeVisible();
 });
