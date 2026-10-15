@@ -1,0 +1,118 @@
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm 11mm;
+  }
+  body:has(.staff-report) {
+    background: white !important;
+    color: #0f172a;
+  }
+  body:has(.staff-report) [data-dashboard-chrome],
+  body:has(.staff-report) [data-sonner-toaster],
+  .staff-report .report-controls {
+    display: none !important;
+  }
+  body:has(.staff-report) main {
+    padding: 0 !important;
+    height: auto !important;
+  }
+  body:has(.staff-report) main > div {
+    padding: 0 !important;
+    min-height: 0 !important;
+    background: white !important;
+  }
+  .staff-report {
+    max-width: none !important;
+    font-size: 10pt;
+  }
+  .staff-report .report-heading {
+    padding-bottom: 12px;
+  }
+  .staff-report h1 {
+    font-size: 23pt;
+  }
+  .staff-report .report-print-title,
+  .staff-report .report-desktop {
+    display: block !important;
+  }
+  .staff-report .report-mobile {
+    display: none !important;
+  }
+  .staff-report .report-print-row {
+    display: table-row !important;
+  }
+  .staff-report [role="tabpanel"][hidden] {
+    display: none !important;
+  }
+  .staff-report .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .staff-report .report-metric {
+    padding: 10px;
+  }
+  .staff-report .report-metric p {
+    font-size: 9pt;
+  }
+  .staff-report .report-metric p:nth-child(2) {
+    font-size: 18pt;
+  }
+  .staff-report table {
+    width: 100%;
+    table-layout: auto;
+    font-size: 9pt;
+  }
+  .staff-report th,
+  .staff-report td {
+    padding: 9px 6px;
+    overflow-wrap: anywhere;
+  }
+  .staff-report .report-summary th:last-child {
+    display: none;
+  }
+  .staff-report thead {
+    display: table-header-group;
+  }
+  .staff-report tr,
+  .staff-report .report-metric {
+    break-inside: avoid;
+  }
+  .staff-report .report-table-wrap,
+  .staff-report section {
+    overflow: visible !important;
+  }
+  .staff-report h2,
+  .staff-report h3 {
+    break-after: avoid;
+  }
+  .staff-report .report-overview {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .staff-report section:not(:has(table)) {
+    padding: 14px;
+  }
+  .staff-report .report-person dl {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+  .staff-report .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 16px;
+  }
+  .staff-report .report-section-heading {
+    padding: 12px;
+    break-inside: avoid;
+    break-after: avoid;
+  }
+  .staff-report .report-grant {
+    break-inside: auto;
+  }
+  .staff-report .report-grant dl {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .staff-report .report-person dl {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .staff-report * {
+    box-shadow: none !important;
+    print-color-adjust: exact;
+  }
+}

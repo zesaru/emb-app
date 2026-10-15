@@ -74,6 +74,9 @@ jobs:
       - name: Users directory UI
         run: pnpm test:users:ui
 
+      - name: Run reports UI tests
+        run: pnpm test:report:ui
+
   # Authenticated mutation tests use an ephemeral local database, without production secrets.
   local-critical-flows:
     name: Local Critical Flows
