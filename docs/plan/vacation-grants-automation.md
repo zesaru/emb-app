@@ -1,5 +1,10 @@
 # Asignación automática por aniversario
 
+> **Actualización (octubre de 2026):** la emisión diaria se migró a Supabase
+> Cron. Este documento conserva el contexto del runner TypeScript y de la
+> etapa inicial en Vercel; para el estado y operación vigentes, consulta
+> [Migración de vacaciones a Supabase Cron](vacation-grants-supabase-cron.md).
+
 ## Funcionamiento
 
 - `/api/cron/vacation-grants` se programa a diario a las 01:00 UTC
