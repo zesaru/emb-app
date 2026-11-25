@@ -83,24 +83,17 @@ describe('Compensatorios Actions', () => {
   })
 
   describe('getCompensatoriosbyId', () => {
-    it('debería filtrar por user_id', async () => {
-      const mockData = [
-        {
-          id: '123',
-          user_id: 'user-1',
-          hours: '8',
-          event_date: '2024-01-01',
-          type: 'register',
-        },
-      ]
-
+    it('debería filtrar por user_id y recuperar todos los lotes del historial', async () => {
+      const firstBatch = Array.from({ length: 1000 }, (_, index) => ({ id: String(index) }))
+      const secondBatch = [{ id: '1000' }]
       const mockSupabase = {
         from: vi.fn().mockReturnThis(),
         select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockResolvedValue({
-          data: mockData,
-          error: null,
-        }),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        range: vi.fn()
+          .mockResolvedValueOnce({ data: firstBatch, error: null })
+          .mockResolvedValueOnce({ data: secondBatch, error: null }),
       }
       vi.mocked(createClient).mockResolvedValue(mockSupabase as any)
 
@@ -110,7 +103,9 @@ describe('Compensatorios Actions', () => {
 
       expect(mockSupabase.from).toHaveBeenCalledWith('compensatorys')
       expect(mockSupabase.eq).toHaveBeenCalledWith('user_id', 'user-1')
-      expect(result).toEqual(mockData)
+      expect(mockSupabase.order).toHaveBeenCalledWith('id')
+      expect(mockSupabase.range.mock.calls).toEqual([[0, 999], [1000, 1999]])
+      expect(result).toEqual([...firstBatch, ...secondBatch])
     })
   })
 })

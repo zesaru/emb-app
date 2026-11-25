@@ -1,34 +1,20 @@
 "use client"
 
 import { ColumnDef } from "@tanstack/react-table"
-import { CompensatorysWithUser } from '@/types/collections';
+import { isCompensatoryMovementApproved as isApproved, type CompensatoryHistoryRow } from "@/lib/compensatorios/history";
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { CancelRequestButton } from "@/app/(dashboard)/_components/cancel-request-button";
 import { SuperAdminForceCancelButton } from "@/app/(dashboard)/_components/super-admin-force-cancel-button";
 
-function isCancelled(row: CompensatorysWithUser) {
-  return Boolean((row as { cancelled_at?: string | null }).cancelled_at);
+function isCancelled(row: CompensatoryHistoryRow) {
+  return Boolean(row.cancelled_at);
 }
 
-function isApproved(row: CompensatorysWithUser) {
-  return Boolean(row.approve_request) || Boolean(row.final_approve_request);
-}
-
-export const columns: ColumnDef<CompensatorysWithUser>[] = [
+export const columns: ColumnDef<CompensatoryHistoryRow>[] = [
   {
-    accessorKey: "event_date",
+    accessorKey: "movementDate",
     header: "Fecha",
-    cell: ({ row }) => {
-      const date = row.getValue("event_date") as string | null;
-      if (date) {
-        return <div className="text-gray-600 font-medium">{date.split('T')[0]}</div>;
-      }
-      const compensatedDay = row.original.compensated_hours_day as string | null;
-      if (compensatedDay) {
-        return <div className="text-gray-600 font-medium">{compensatedDay.split('T')[0]}</div>;
-      }
-      return <div className="text-gray-400">-</div>;
-    },
+    cell: ({ row }) => <div className="whitespace-nowrap font-medium text-gray-600">{row.original.movementDate ?? "—"}</div>,
   },
   {
     accessorKey: "description",
@@ -118,24 +104,9 @@ export const columns: ColumnDef<CompensatorysWithUser>[] = [
   },
   {
     id: "saldo",
-    header: "Saldo",
-    cell: ({ row, table }) => {
-      const { rows } = table.getRowModel();
-      const rowIndex = rows.findIndex(r => r.id === row.id);
-
-      // Solo las filas ya aprobadas afectan el saldo real; las pendientes
-      // o canceladas todavía no impactan num_compensatorys del usuario.
-      let balance = 0;
-      for (let i = 0; i <= rowIndex; i++) {
-        const r = rows[i];
-        if (!isApproved(r.original) || isCancelled(r.original)) {
-          continue;
-        }
-        const entrada = Number(r.original.hours ?? 0);
-        const salida = Number(r.original.compensated_hours ?? 0);
-        balance += entrada - salida;
-      }
-
+    header: "Saldo acumulado",
+    cell: ({ row }) => {
+      const balance = row.original.runningBalance;
       const balanceClass = balance >= 0 ? "text-gray-700" : "text-red-500";
 
       return (

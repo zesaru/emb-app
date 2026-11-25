@@ -1,21 +1,11 @@
 "use client"
 
-import * as React from "react"
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
   flexRender,
   getCoreRowModel,
-  getSortedRowModel,
   useReactTable,
-  getPaginationRowModel,
-  getFilteredRowModel,
-  
-
 } from "@tanstack/react-table"
-
-import { Button } from "@/components/ui/button"
 
 import {
   Table,
@@ -29,36 +19,19 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  emptyMessage: string
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
-  
+  emptyMessage,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  )
-
   const table = useReactTable({
     data,
     columns,
-    initialState: {
-      pagination: {
-          pageSize: 100,
-      },
-    },
+    getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),    
-    state: {
-      sorting,
-      columnFilters,
-    },  
   })
 
   return (
@@ -97,7 +70,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-gray-500">
-                  No hay movimientos en la cuenta
+                  {emptyMessage}
                 </TableCell>
               </TableRow>
             )}

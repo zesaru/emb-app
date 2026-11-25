@@ -1,22 +1,20 @@
 import { createClient } from "@/utils/supabase/server";
+import type { CompensatoryMovement } from "@/lib/compensatorios/history";
 
-import { CompensatorysWithUser } from "./../types/collections";
-
-export const dynamic = 'force-dynamic'
-
-const getsCompensatorioswithUserById = async(id:string):Promise<CompensatorysWithUser[]> => {
-    const supabase = await createClient();
-
+export default async function getCompensatoriosById(id: string): Promise<CompensatoryMovement[]> {
+  const supabase = await createClient();
+  const movements: CompensatoryMovement[] = [];
+  const batchSize = 1000;
+  for (let offset = 0; ; offset += batchSize) {
     const { data, error } = await supabase
-      .from('compensatorys')
-      .select('*, user1:users!compensatorys_user_id_fkey(*)')
-      .eq('user_id', id);
+      .from("compensatorys")
+      .select("id,user_id,event_date,compensated_hours_day,event_name,hours,compensated_hours,approve_request,final_approve_request,cancelled_at,t_time_start")
+      .eq("user_id", id)
+      .order("id")
+      .range(offset, offset + batchSize - 1);
 
-    if (error) {
-      console.log(error.message);
-    }
-
-    return (data as any) || [];
+    if (error || !data) throw new Error("No se pudo cargar el historial de compensatorios.");
+    movements.push(...data);
+    if (data.length < batchSize) return movements;
+  }
 }
-
-export default getsCompensatorioswithUserById;
